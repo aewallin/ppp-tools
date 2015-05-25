@@ -115,203 +115,19 @@ def bipm_utc_download(prefixdir=""):
     sys.stdout.flush()
     print "bipm_utc_download Done ", datetime.datetime.now()
 
-
-            
-def bipm_file(station=None, day=None, prefixdir=""):
-
-    if station=="opmt":
-        
-        bipm_dir = "data/UTC/OP/links/rinex/opmt/"
-        outfile = prefixdir + "/%s/%s" % (station, fname)
-        bipm_rinex_download(bipm_dir, fname, outfile)
-
-    if station=="sp01":
-        fname = "%s%03d0.%02dd.Z" % (station,doy, year)
-        bipm_dir = "data/UTC/SP/links/rinex/"
-        outfile = prefixdir + "/%s/%s" % (station, fname)
-        bipm_rinex_download(bipm_dir, fname, outfile)
-        #offset = 221.3
-        
-    if station=="nc02":
-        fname = "%s%03d0.%02do.Z" % (station,doy, year)
-        bipm_dir = "data/UTC/NICT/links/rinex/"
-        outfile = prefixdir + "/%s/%s" % (station, fname)
-        bipm_rinex_download(bipm_dir, fname, outfile)
-        # REF DLY =   416.8 ns ??
-        
-    if station=="NP11":
-        if doy in range(35,55+1):
-            fname = "%s%03d0.%02dO.z" % (station,doy, year)
-        elif doy in range(280,299+1):
-            fname = "%s%03d0.%02dO.z" % (station,doy, year)
-        else:
-            fname = "%s%03d0.%02dO.Z" % (station,doy, year)
-        bipm_dir = "data/UTC/NPL/links/rinex/"
-        outfile = prefixdir + "/%s/%s" % (station, fname)
-        bipm_rinex_download(bipm_dir, fname, outfile)
-                
-
-
-    return (outfile, fname)
-
-# for OP, we also need an LZ file.
-def bipm_lz_download(dt):
-    """
-    Download LZ file.
-    
-    example file:
-    ftp://5.144.141.242/data/UTC/OP/links/rinex/opmt/LZOP0156.847
-    """
-    print "bipm_lz_download start ", datetime.datetime.now()
-    bipm_directory = "data/UTC/OP/links/rinex/opmt/"
-    
-    mjd = jdutil.jd_to_mjd( jdutil.datetime_to_jd( dt ) )
-    print "MJD = ", mjd, " floor = ", math.floor(mjd)
-    bipm_file = "LZOP01%5d" % math.floor(mjd)
-    # now insert the dot.
-    bipm_file = bipm_file[:8] + '.' + bipm_file[8:]
-    print bipm_file
-    prefixdir = "/home/anders/Dropbox/gpsppp/BIPM"
-    local_file = prefixdir + "/%s/%s" % ("opmt", bipm_file)
-    print local_file
-    localfile = bipm_rinex_download( bipm_directory, bipm_file, local_file)
-    return localfile
-
-def CODE_read_file(fname):
-    """
-    Read result file
-    """
-    t = [] # datetime
-    x = [] # clock-offset ns
-    print "reading ",fname
-    with open(fname) as f:
-        for line in f:
-            if line.startswith("#"):
-                pass
-            else:
-                line2 = line.split()
-                if len(line2) == 8:
-                    year   = int(line2[0])
-                    month  = int(line2[1])
-                    day    = int(line2[2])
-                    hour   = int( line2[3] )
-                    minute = int( line2[4] )
-                    second = int( line2[5] )
-                    # ignore column 6 (?)
-                    ns =   float( line2[7] )
-                    dt = datetime.datetime( year, month, day, hour, minute, second, tzinfo=pytz.UTC)                    
-                    t.append(dt)
-                    x.append(ns)
-                elif len(line2) == 7:
-                    year   =  int(line2[0])
-                    month  = int(line2[1])
-                    day    = int(line2[2])
-                    hour   = int( line2[3] )
-                    minute = int( line2[4] )
-                    second = int( line2[5] )
-                    ns =   float( line2[6] )
-                    dt = datetime.datetime( year, month, day, hour, minute, second, tzinfo=pytz.UTC)                    
-                    t.append(dt)
-                    x.append(ns)
-    return (t,x)
-
-def COD_read_day(prefixdir, station, year, day, rapid):
-    fname = ""
-    rapidfinal = "Final"
-    if rapid:
-        rapidfinal = "Rapid"
-    
-    if station == "MIGT":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.%s.txt" % ( station , station, day, year-2000, rapidfinal)
-    
-    if station == "opmt":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dd.COD.%s.txt" % ( station , station, day, year-2000, rapidfinal)
-        #if not os.path.exists(fname):
-        #    fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dd.COD.Rapid.txt" % ( station , station, day, year-2000, )
-    
-    if station == "MI02":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.Rapid.txt" % ( station , station, day, year-2000, )
-
-    if station == "usn3":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02do.COD.Final.txt" % ( station , station, day, year-2000, )
-        if not os.path.exists(fname):
-            if day > 105 or year==2015:
-                fname = prefixdir + "/%s/COD_Final/%s%03d0.%02do.COD.%s.txt" % ( station , "usn6", day, year-2000, rapidfinal)
-            else:
-                fname = prefixdir + "/%s/COD_Final/%s%03d0.%02do.COD.Rapid.txt" % ( station , station, day, year-2000, )
-
-    if station == "NIST":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.Final.txt" % ( station , station, day, year-2000, )
-        if not os.path.exists(fname):
-            fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.Rapid.txt" % ( station , station, day, year-2000, )
-
-    if station == "nc02":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02do.COD.Final.txt" % ( station , station, day, year-2000, )
-        if not os.path.exists(fname):
-            fname = prefixdir + "/%s/COD_Final/%s%03d0.%02do.COD.Rapid.txt" % ( station , station, day, year-2000, )
-    if station == "PTBG":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dD.COD.Final.txt" % ( station , station, day, year-2000, )
-        if not os.path.exists(fname):
-            fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dD.COD.Rapid.txt" % ( station , station, day, year-2000, )
-    if station == "sp01":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dd.COD.Final.txt" % ( station , station, day, year-2000, )
-        if not os.path.exists(fname):
-            fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dd.COD.Rapid.txt" % ( station , station, day, year-2000, )
-    if station == "NP11":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.Final.txt" % ( station , station, day, year-2000, )
-        if not os.path.exists(fname):
-            fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.Rapid.txt" % ( station , station, day, year-2000, )
-    if station == "KAJA":
-        fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.Final.txt" % ( "GTR51" , station, day, year-2000, )
-        if not os.path.exists(fname):
-            fname = prefixdir + "/%s/COD_Final/%s%03d0.%02dO.COD.Rapid.txt" % ( "GTR51" , station, day, year-2000, )
-    if station == "WR01":
-        fname = prefixdir + "/%s/%s%03d.%02d.txt" % ( station , station, day, year-2000, )
-
-    if station == "oplz":
-        fname = prefixdir + "/opmt/COD_Final/%s%03d0.%4d.txt" % ( station , day, year )
-        
-    (t,ns) = COD_read_file( fname )
-    (t2,ns2) = mad.remove_timeseries_outliers(t,ns)
-    return (t2,ns2)
-
 def read_UTC(prefixdir, station, rapid=False):
     """
     Read Circular-T or UTC-Rapid data
     """
     
-    """
-    utctag = ""
-    if station=="MIGT":
-        utctag = "mike"
-    elif station=="usn3":
-        utctag = "usno"
-    elif station=="NIST":
-        utctag = "nist"
-    elif station=="opmt":
-        utctag = "op"
-    elif station=="nc02":
-        utctag = "nict"
-    elif station=="PTBG":
-        utctag = "ptb"
-    elif station=="sp01":
-        utctag = "sp"
-    elif station=="NP11":
-        utctag = "npl"
-    elif station=="oplz":
-        utctag = "op"
-    elif station=="KAJA":
-        return ([0],[0])
-    """
     if rapid:
         utcfile = prefixdir + "/UTCr/utcr-%s" % station.utctag
     else:
         utcfile = prefixdir + "/UTC/utc-%s" % station.utctag
     print "read_UTC reading: ", utcfile
-    t = []
-    x = []
-    # parse the circular-T or UTC-rapid format
-    with open(utcfile) as f:
+    t = [] # mjd
+    x = [] # UTC-UTC(k) in nanoseconds
+    with open(utcfile) as f: # parse the circular-T or UTC-rapid format
         for line in f:
             line2 = line.split()
             #print line2
@@ -354,9 +170,17 @@ class UTCStation():
     def rinex2(self,dt):# USNO style name
         fname = "%s%03d0.%02do.Z" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
         return fname
-    # OP fname = "%s%03d0.%02dd.Z" % (station,doy, year)
 
-
+    def rinex3(self,dt): # OP style name
+        fname = "%s%03d0.%02dd.Z" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
+        self.hatanaka = True
+        return fname
+    
+    def rinex4(self,dt): # PTB style name
+        fname = "%s%03d0.%02dD.Z" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
+        self.hatanaka = True
+        return fname
+        
     def rinex_download( self, dt):
         """
         Download the RINEX file for datetime dt.
@@ -394,6 +218,30 @@ class UTCStation():
         print "bipm_rinex_download Done ", datetime.datetime.now()
         sys.stdout.flush()
         return local_file
+        
+
+    # for OP, we also need an LZ file.
+    def lz_download(self,dt):
+        """
+        Download LZ file.
+        
+        example file:
+        ftp://5.144.141.242/data/UTC/OP/links/rinex/opmt/LZOP0156.847
+        """
+        print "bipm_lz_download start ", datetime.datetime.now()
+        bipm_directory = "data/UTC/OP/links/rinex/opmt/"
+        
+        mjd = jdutil.jd_to_mjd( jdutil.datetime_to_jd( dt ) )
+        print "MJD = ", mjd, " floor = ", math.floor(mjd)
+        bipm_file = "LZOP01%5d" % math.floor(mjd)
+        # now insert the dot.
+        bipm_file = bipm_file[:8] + '.' + bipm_file[8:]
+        print bipm_file
+        local_file = self.prefixdir + "/%s/%s" % ("opmt", bipm_file)
+        print local_file
+        #localfile = bipm_rinex_download( bipm_directory, bipm_file, local_file)
+        # FIXME
+        return localfile
     
 # example stations
 current_dir = os.getcwd() # the current directory
@@ -420,112 +268,42 @@ mike = UTCStation( name="MIKE", utctag="mike",
 mike.rinex = mike.rinex1
 mike.receiver = "MIGT"
 
-print usno.rinex(datetime.datetime(2015,5,5))
+### OP
+op = UTCStation( name="OP", utctag="op",        
+                 bipm_rinexdir = "data/UTC/OP/links/rinex/opmt/",
+                 refdelay = 349.0, prefixdir = current_dir)
+                 # refdelay is empirically found mean of CirT error vs. usn3
+op.rinex = op.rinex3
+op.receiver = "opmt"
 
-offset = { 'NP11': 0.0-2.797, 
-           'usn3': 0.0,
-           'MIGT': 0.0,   # 2.8ns ??
-           'sp01': 221.5-2.279, # ftp://5.144.141.242/data/UTC/SP/links/cggtts/gzSP0156.752 OR ftp://5.144.141.242/data/UTC/SP/links/cggtts/rzSP0256.751
-           'PTBG': 335.6+132.0,
-            # PTBG receiver: RT902232501         ASHTECH Z-XII3T     1L01-1D04 
-            # PT03 ASHTECH Z12T RT902232501      R2CGGTTS v4.3
-            # CAB DLY =  251.4 ns (GPS)
-            # REF DLY =   84.2 ns
-            'nc02': 17.628,
-            # CAB DLY =   248.5 ns (GPS)
-            # REF DLY =   416.8 ns after 2014-04-22 REF DLY = 422.5 ns
-            # REF = UTC(NICT)
-            'MI02': 0.0,
-            'oplz':  349} # mean of CirT error vs. usn3
-
-
-
-def read_lz(lzfile):
-    """
-    read LZ file
-    """
-    t = []
-    x = []
-    with open(lzfile) as f:
-        for line in f:
-
-            line2 = line.split()
-            #print line2
-            if len(line2) >= 2:
-                try:
-                    mjd = float(line2[0]) 
-                    ns =  float(line2[1]) 
-                    
-                    t.append( mjd )
-                    x.append( ns )
-                    #print int(line2[0]), float(line2[1] )
-                except:
-                    pass
-    assert( len(t) == len(x) )
-    return (t,x)
-
-def op_lz_process(prefixdir,dt, rapid):
-    mjd = jdutil.jd_to_mjd( jdutil.datetime_to_jd( dt ) )
-    doy = dt.timetuple().tm_yday
-    year = dt.year
-    print "op_lz_process()"
-    print "year= ", year
-    print "mjd=  ", mjd
-    print "doy=  ", doy
-    
-    station = "oplz" # new output file name
-    fname = "%s%03d0.%02d.txt" % (station,doy, year)
-    #prefixdir = "/home/anders/Dropbox/gpsppp/BIPM"
-    resultfile = prefixdir + "/opmt/COD_Final/%s" % fname
-    print resultfile
-    if os.path.exists(resultfile):
-        print "result exists, nothing to do: ", resultfile
-        return
+### SP
+sp = UTCStation( name="SP", utctag="sp",        
+                 bipm_rinexdir = "data/UTC/SP/links/rinex/",
+                 refdelay = 221.5-2.279, prefixdir = current_dir)
+# ftp://5.144.141.242/data/UTC/SP/links/cggtts/gzSP0156.752 OR ftp://5.144.141.242/data/UTC/SP/links/cggtts/rzSP0256.751
+sp.rinex = sp.rinex3
+sp.receiver = "sp01"
         
-    # get the lz file
-    lzfile = bipm_lz_download( dt )
-    print lzfile
-    (mjd,x) = read_lz( lzfile )
-    #print mjd,x 
-    # polyfit a line to the data
-    p = numpy.polyfit(mjd,x,1)
-    print p
-    print numpy.polyval(p,mjd[0])
-    
-    station = "oplz"
-    fname = "%s%03d0.%02d.txt" % (station,doy, year)
-    prefixdir = "/home/anders/Dropbox/gpsppp/BIPM"
-    resultfile = prefixdir + "/opmt/COD_Final/%s" % fname
-    print resultfile
-    if not os.path.exists(resultfile):
-        # generate a new file
-        station = "opmt"
-        (dtlist, nslist) = COD_read_day(prefixdir, station, year, doy, rapid)
-        dt2list = []
-        ns2list = []
-        for (dtl, nsl) in zip(dtlist,nslist):
-            mjdl = jdutil.jd_to_mjd( jdutil.datetime_to_jd( dtl ) )
-            lzcorr = numpy.polyval(p,mjdl)
-            nscorr = nsl + lzcorr
-            #print mjdl, nsl, lzcorr, nscorr
-            dt2list.append( dtl )
-            ns2list.append( nscorr )
-        archive_oplz(resultfile, dt2list, ns2list)
-    else:
-        print "result already exists nothing to do."
+### NICT
+nict = UTCStation( name="NICT", utctag="nict",        
+                 bipm_rinexdir = "data/UTC/NICT/links/rinex/",
+                 refdelay = 17.628, prefixdir = current_dir)
+nict.rinex = nict.rinex2
+nict.receiver = "nc02"
 
-def archive_oplz(fname, dtl, nsl):
-    print "archiving ", len(dtl), " numbers to", fname
-    with open(fname,'w') as f:
-        datastring = "# " + fname + " \n"
-        f.write(datastring)
-        datastring = "# Year\tMonth\tDay\tHour\tMin\tSec\tSecs\tClock(ns)\n"
-        f.write(datastring)
-        for (t,n) in zip(dtl,nsl):
-            datastring = "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%0.3f\n" % ( t.year, t.month, t.day, t.hour, t.minute, t.second, t.second, float(n)  )
-            #datastring = "%d %d %d %d %d %d %d %f \n" % ( int(t[0]), int(t[1]),int(t[2]),int(t[3]),int(t[4]), int(t[5]),int(s),float(n) )
-            #print datastring 
-            f.write(datastring)
+### NPL
+npl = UTCStation( name="NPL", utctag="npl",        
+                 bipm_rinexdir = "data/UTC/NPL/links/rinex/",
+                 refdelay = -2.797, prefixdir = current_dir)
+npl.rinex = npl.rinex1
+npl.receiver = "NP11"
+
+### PTB
+ptb = UTCStation( name="PTB", utctag="ptb",        
+                 bipm_rinexdir = "data/UTC/PTB/links/rinex/PTBG/",
+                 refdelay = 335.6+132.0, prefixdir = current_dir)
+ptb.rinex = ptb.rinex4
+ptb.receiver = "PTBG"
 
 if __name__ == "__main__":
     
@@ -540,16 +318,11 @@ if __name__ == "__main__":
     print usno.rinex_download(dt)
     print nist.rinex_download(dt)
     print mike.rinex_download(dt)
-    
-    #
-    #op_lz_process(prefixdir,dt)
-    
-    #(t,ns) = COD_read_file('/home/anders/Dropbox/gpsppp/BIPM/GTR51/COD_Final/KAJA0100.14O.COD.Final.txt')
-    #(t,ns) = COD_read_file('/home/anders/Dropbox/gpsppp/BIPM/MIGT/COD_Final/MIGT0190.14O.COD.Final.txt')
-    #(t2,ns2) = COD_remove_outliers(t,ns) 
-    #(t,x) = COD_read_day('/home/anders/Dropbox/gpsppp/BIPM/', 'MIGT', 2014, 19)
-    #(t,x) = read_UTC('/home/anders/Dropbox/gpsppp/BIPM/', 'MIGT')
-    #print len(t), len(x)
-    #print t
-    #print x
+    print op.rinex_download(dt)
+    print sp.rinex_download(dt)
+    print nict.rinex_download(dt)
+    print npl.rinex_download(dt)
+    print ptb.rinex_download(dt)
+
+
     pass
