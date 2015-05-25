@@ -463,4 +463,14 @@ class datetime(dt.datetime):
         
         """
         return jd_to_mjd(self.to_jd())
+
+def mjdnow():
+    return jd_to_mjd(datetime_to_jd( dt.datetime.utcnow() ))
     
+if __name__ == "__main__": 
+    print "Local time: ", dt.datetime.now()
+    utc = dt.datetime.utcnow()
+    print "UTC : ", utc
+    print "JD : ", datetime_to_jd(utc)
+    print "MJD : ", jd_to_mjd(datetime_to_jd(utc))
+    print mjdnow()
