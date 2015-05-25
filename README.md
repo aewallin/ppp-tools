@@ -6,6 +6,7 @@ Progress:
 This is a collection of python scripts for GPS-Precise Point Positioning post-processing of RINEX files based on open-source tools. I know of two open-source packages that can perform PPP calculations: rtklib and ESA gLab. Eventually both could be supported.
 
 The steps for PPP-processing are roughly:
+
 1. Download RINEX files (from e.g. BIPM or other ftp-server)
 2. Download SP3 orbit and CLK clock files (from e.g. CODE or other IGS datacenter)
 3. Run PPP-algorthm (this is a call to either rktpost or gLab)
