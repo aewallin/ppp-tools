@@ -19,6 +19,12 @@ import numpy
 
 import jdutil  # mjd-functions
 
+def check_dir(target_dir):
+    # check that directory exsits, create if not
+    if not os.path.isdir(target_dir):
+        print "creating target directory ", target_dir
+        os.mkdir(target_dir)
+
 def bipm_utcr_download(prefixdir=""):
     """
     Download UTC-rapid datafile from BIPM
@@ -26,10 +32,8 @@ def bipm_utcr_download(prefixdir=""):
     print "bipm_utcR_download start ", datetime.datetime.now()
     
     target_dir = prefixdir + "/UTCr/"
-    # check that directory exists, if not create it
-    if not os.path.isdir(target_dir):
-        print "creating target directory ", target_dir
-        os.mkdir(target_dir)
+    check_dir(target_dir)
+
     # Connection information
     server = "ftp2.bipm.org"   #  IP number '5.144.141.242'
     username = ''
@@ -72,10 +76,7 @@ def bipm_utc_download(prefixdir=""):
     print "bipm_utc_download start ", datetime.datetime.now()
     
     target_dir = prefixdir + "/UTC/"
-    # check that directory exists, if not create it
-    if not os.path.isdir(target_dir):
-        print "creating target directory ", target_dir
-        os.mkdir(target_dir)
+    check_dir(target_dir)
     
     # Connection information
     server = "ftp2.bipm.org" #'5.144.141.242'
@@ -189,14 +190,13 @@ class UTCStation():
         Return the full filename.
         """
         rinex_file = self.rinex(dt)
-        target_dir = self.prefixdir + "/" + self.name + "/"
+        check_dir(self.prefixdir+"/stations/")
+        target_dir = self.prefixdir + "/stations/" + self.name + "/"
         local_file = target_dir + rinex_file
         print "bipm_rinex_download start at", datetime.datetime.now()
         if not os.path.exists( local_file ):
             # check that target dir exists, if not create it
-            if not os.path.isdir(target_dir):
-                print "creating target directory ", target_dir
-                os.mkdir(target_dir)
+            check_dir(target_dir)
             
             server = '5.144.141.242' # Connection information
             username = 'labotai'
@@ -219,29 +219,6 @@ class UTCStation():
         sys.stdout.flush()
         return local_file
         
-
-    # for OP, we also need an LZ file.
-    def lz_download(self,dt):
-        """
-        Download LZ file.
-        
-        example file:
-        ftp://5.144.141.242/data/UTC/OP/links/rinex/opmt/LZOP0156.847
-        """
-        print "bipm_lz_download start ", datetime.datetime.now()
-        bipm_directory = "data/UTC/OP/links/rinex/opmt/"
-        
-        mjd = jdutil.jd_to_mjd( jdutil.datetime_to_jd( dt ) )
-        print "MJD = ", mjd, " floor = ", math.floor(mjd)
-        bipm_file = "LZOP01%5d" % math.floor(mjd)
-        # now insert the dot.
-        bipm_file = bipm_file[:8] + '.' + bipm_file[8:]
-        print bipm_file
-        local_file = self.prefixdir + "/%s/%s" % ("opmt", bipm_file)
-        print local_file
-        #localfile = bipm_rinex_download( bipm_directory, bipm_file, local_file)
-        # FIXME
-        return localfile
     
 # example stations
 current_dir = os.getcwd() # the current directory

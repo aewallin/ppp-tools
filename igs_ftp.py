@@ -16,6 +16,12 @@ import gpstime
 # ftp://ftp.unibe.ch/aiub/CODE/COD17840.ERP_R    erp, earth rotation parameters
 # ftp://ftp.unibe.ch/aiub/CODE/COD17840.CLK_R    clk, clocks
 
+def check_dir(target_dir):
+    # check that directory exsits, create if not
+    if not os.path.isdir(target_dir):
+        print "creating target directory ", target_dir
+        os.mkdir(target_dir)
+
 # retrieve rapid CODE products
 def CODE_rapid_files(dt, prefixdir=""):
     server = "ftp.unibe.ch"
@@ -30,7 +36,8 @@ def CODE_rapid_files(dt, prefixdir=""):
     print "SP3 = ", sp3
     print "ERP = ", erp
     
-    localdir = prefixdir + "/CODE_rapid/"
+    check_dir(prefixdir + "/products/")
+    localdir = prefixdir + "/products/CODE_rapid/"
     print "local dir = ", localdir
     
     #return  CODE_download(server, directory, [clk, sp3, erp], localdir)
@@ -52,16 +59,15 @@ def CODE_final_files(dt, prefixdir=""):
     print "SP3 = ", sp3
     print "ERP = ", erp
     
-    localdir = prefixdir + "/CODE_final/"
+    check_dir(prefixdir + "/products/")
+    localdir = prefixdir + "/products/CODE_final/"
     print "local dir = ", localdir
     return  (server, directory, [clk, sp3, erp], localdir)
 
 def CODE_download( server, directory, files, localdir):
     print "CODE_download start ", datetime.datetime.now()
-    # check if localdir exists, if not create it
-    if not os.path.isdir(localdir):
-        print "creating target directory ", localdir
-        os.mkdir(localdir)
+    check_dir(localdir)
+
     for f in files:
         local_file = localdir+f
         if not os.path.exists( local_file ):
