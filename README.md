@@ -26,3 +26,5 @@ The scripts store input and output files under the main folder:
 * 'products' stores clock, ephemeris/orbit, and ERP files from IGS datacenters
 * 'common' has common files
 * 'results' stores the output results of PPP processing
+* 'UTC' has Circular-T data from the BIPM ftp site.
+* 'UTCr' has rapid-UTC data from the BIPM ftp site.
