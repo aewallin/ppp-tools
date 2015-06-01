@@ -1,0 +1,57 @@
+    FILTER
+        Filter solution message. This message provides direct information on the filter estimates. It is shown
+        in each filter execution.
+        Field 1:  'FILTER'
+        Field 2:  Year
+        Field 3:  Doy
+        Field 4:  Seconds of day
+        Field 5-: Filter estimates. The order is: 3D estimated position, clock, troposphere and ambiguities
+        The number of fields is variable in this message. With a full filter (troposphere and ambiguities
+        estimation), the fields are as follows:
+            Field 5:  Receiver X position [m]
+            Field 6:  Receiver Y position [m]
+            Field 7:  Receiver Z position [m]
+            Field 8:  Receiver clock [m]
+            Field 9:  Zenith Tropospheric Delay [m]
+            Field 10: Carrierphase ambiguities [m]
+        Sample:
+            FILTER 2006 200   300.00   4849203.0770   -360328.5730   4114913.9184        -7.4867         2.1946        -0.0001         1.1079        -1.1073         0.3029         0.4555         0.0897         0.0001         0.3845         0.2136
+
+    OUTPUT
+        Receiver solution message. This message provides the estimated receiver position. It is shown in
+        each filter execution.
+        Field 1:  'OUTPUT'
+        Field 2:  Year
+        Field 3:  Doy
+        Field 4:  Seconds of day
+        Field 5:  Square root of the sum of the covariance matrix. This is a measure of the convergence of the filter
+        Field 6:  Receiver X position [m]
+        Field 7:  Receiver Y position [m]
+        Field 8:  Receiver Z position [m]
+        Field 9:  Receiver X position - Nominal a priori X position [m]
+        Field 10: Receiver Y position - Nominal a priori Y position [m]
+        Field 11: Receiver Z position - Nominal a priori Z position [m]
+        Field 12: Receiver X formal error [m]
+        Field 13: Receiver Y formal error [m]
+        Field 14: Receiver Z formal error [m]
+        Field 15: Receiver latitude [degrees]
+        Field 16: Receiver longitude [degrees]
+        Field 17: Receiver height [m]
+        Field 18: Receiver North difference in relation to nominal a priori position [m]
+        Field 19: Receiver East difference in relation to nominal a priori position [m]
+        Field 20: Receiver Up difference in relation to nominal a priori position [m]
+        Field 21: Receiver formal error in North direction [m]
+        Field 22: Receiver formal error in East direction [m]
+        Field 23: Receiver formal error in Up direction [m]
+        Field 24: Geometric Dilution of Precision (GDOP)
+        Field 25: Positioning Dilution of Precision (PDOP)
+        Field 26: Time Dilution of Precision (TDOP)
+        Field 27: Horizontal Dilution of Precision (HDOP)
+        Field 28: Vertical Dilution of Precision (VDOP)
+        Field 29: Zenith Tropospheric Delay (including nominal value) [m]
+        Field 30: Zenith Tropospheric Delay (excluding nominal value) [m]
+        Field 31: Zenith Tropospheric Delay formal error [m]
+        The nominal a priori position is a prerequisite of the processing, and can be specified or read from the RINEX
+        input file. See the option '-pre:setrecpos' in the help ('-help') for more details.
+        Sample:
+            OUTPUT 2006 200   300.00    2.6219   4849203.1236   -360328.5229   4114913.9535     0.7693     0.4145     0.7580     1.9353     0.6998     1.6246   40.429162956   -4.249653155  830.480629026     0.0993     0.4704     1.0522     1.1365     0.6772     2.2637     0.9572     12.2743     5.0975     7.2205     3.5866     3.0880     0.0097     0.4995

@@ -1,0 +1,281 @@
+gLAB version v2.2.3
+GNSS LABORATORY. Tool to analyse GNSS data
+
+Author:
+    Pere Ramos-Bosch        group of Astronomy and GEomatics (gAGE/UPC)
+
+Maintainer:
+    Adria Rovira-Garcia     group of Astronomy and GEomatics (gAGE/UPC)
+
+Developer:
+    Deimos Ibanez Segura    group of Astronomy and GEomatics (gAGE/UPC)
+
+                            Please send any bugs/comments to:  glab.gage @ upc.edu   
+
+Website:
+    www.gage.es/gLAB
+
+Usage:
+    gLAB [options]
+
+Options:
+    -help                   Shows this help
+    -examples               Shows some examples to call the program
+    -config                 Shows some info on the configuration file
+    -messages               Shows the fields of each output message (see below, 'VERBOSE OPTIONS')
+
+  INPUT OPTIONS
+    -input:cfg <file>       Sets the input configuration file
+    -input:obs <file>       Sets the input RINEX observation file
+    -input:nav <file>       Sets the input RINEX navigation message file
+    -input:sp3 <file>       Sets the input SP3 orbits and clocks file
+    -input:orb <file>       Sets the input SP3 orbits
+    -input:clk <file>       Sets the input clock file
+    -input:con <file>       Sets the input constellation status file (default GPSConstellationStatus.txt)
+    -input:ant <file>       Sets the input ANTEX satellite/receiver antenna data file
+    -input:klb <file>       Sets the input RINEX navigation file for Klobuchar corrections, if this parameter
+                            is avoided, it is used the -input:nav file
+    -input:bei <file>       Sets the input RINEX navigation file for BeiDou corrections, if this parameter
+                            is avoided, it is used the -input:nav file
+    -input:inx <file>       Sets the input IONEX file for ionospheric corrections
+    -input:fpp <file>       Sets the input FPPP file for ionospheric corrections
+    -input:neq <file>       Sets the input RINEX navigation file for NeQuick corrections, if this parameter
+                            is avoided, it is used the -input:nav file
+    -input:dcb <file>       Sets the input DCB source as a .DCB file, a RINEX navigation file, a IONEX file or a FPPP file.
+                            If more than one file is given for the same model, the last one will be used 
+    -input:rec <file>       Sets the input GPS receiver types file (default GPS_Receiver_Types) for DCB usage
+    -input:snx <file>       Sets the input SINEX file for receiver position
+    The use of '-input:nav' file will preconfigure the parameters to work in the Standard Point Positioning (SPP).
+    The use of '-input:SP3'/'-input:orb'/'-input:clk' will preconfigure the parameters to work in the Precise Point
+    Positioning (PPP) approach. All the values can be overridden by specifying the parameters. See below for more details
+    on which are the defaults for each mode
+
+  PREPROCESSING OPTIONS   (use -pre:... to activate, --pre:... to deactivate, when applicable)
+
+    -pre:dec #              # = number              Decimate input data by # seconds [default 300]
+                            In product comparison mode (see below, in 'WORK MODES'), it sets the time step of the
+                            comparisons
+    -pre:sat g#             Exclude satellite from processing
+                            g = character determining GNSS system (G->GPS)
+                            # = PRN number
+    -pre:elevation <val>    Elevation mask. Satellites below this threshold will be discarded (in degrees) [default 5]
+    -pre:eclipse            Discard satellites under Earth eclipse [default: enabled for PPP, disabled for SPP]
+    -pre:availf g#          Mark frequencies available [default all]
+                            g = character determining GNSS system (G->GPS)
+                            # = frequencies available
+                            Sample: '-pre:availf G12' Frequencies 1 and 2 of GPS available
+                                    '-pre:availf G1'  Frequency 1 of GPS available, 2 unavailable
+    -pre:smooth <val>       Number of epochs of smoothing [default 0, which means disabled]
+    -pre:smoothMeas <n> <meas>         Smooth measurement in filter <n> with measurement type <meas>
+                            In general, <n> is a pseudorange and <meas> a carrier phase, see option '-filter:select' for more
+                            information in the selection of measurements to be used in the filter
+                            Sample: '-pre:smoothMeas 1 LC'
+    -pre:setrecpos <val>    <val> = RINEX           Set the receiver a priori position as the one specified in the RINEX
+                                                    observation file [default]
+                            <val> = SINEX           Set the receiver a priori position to be read from a SINEX file (to be
+                                                    specified by the '-input:snx' parameter
+                            <val> = calculate       The receiver a priori position will be calculated by the program.
+                                                    This is specially useful when processing moving receivers (trajectories)
+                                                    or when the approximate receiver position is not known. With this option
+                                                    activated, the differential fields of the OUTPUT message will be zero.
+                            <val> = <x> <y> <z>     Specify the receiver a priori position in meters
+                                                    Sample: '-pre:setrecpos 4789032.7143 176594.9690 4195013.2268'
+    -pre:setrectype <val>   <val> = gpsrt           Set the receiver type as the one specified in the GPS_Receiver_Types
+                                                    file (provided by '-input:rec') [default if '-input:rec' provided]
+                            <val> = 0               Set the receiver type as 'Unknown' [default]
+                            <val> = 1               Set the receiver type as 'Cross-correlated'
+                                                    In this mode, P2 will be corrected with the DCB of P1-C1
+                            <val> = 2               Set the receiver type as 'No P1'
+                                                    In this mode, C1 will be used instead of P1
+                            <val> = 3               Set the receiver type as 'Consistent measurements'
+    -pre:prealign           Prealign carrier phase measurements with its corresponding pseudorange [default on]
+    -pre:cs:li              Use the carrier phase geometric-free combination (Li) for cycle-slip detection (2 frequencies) [default in PPP]
+    --pre:cs:li             Do not use carrier phase geometric-free combination (Li) for cycle-slip detection (2 frequencies) [default in SPP]
+                            Li combination is a slow varying function which only has ambiguity and ionosphere
+                            Each epoch and satellite an expected Li value is computed and compared against the
+                            measured one, if this difference is above a certain threshold, a cycle-slip is marked.
+                            This threshold is (max + (min-max)*exp(-dt/t)), being dt the time between epochs
+    -pre:cs:li:min <val>    Minimum threshold between estimated and measured Li values [default 0.034]
+    -pre:cs:li:max <val>    Maximum threshold between estimated and measured Li values [default 0.08]
+    -pre:cs:li:t0 <val>     Time constant to set the threshold between maximum and minimum [default 60]
+    -pre:cs:bw              Use Melbourne-Wübbena (BW) for cycle-slip detection (2 frequencies) [default in PPP]
+    --pre:cs:bw             Do not use Melbourne-Wübbena (BW) for cycle-slip detection (2 frequencies) [default in SPP]
+                            BW combination is a mixed combination between carrier phase and pseudoranges.
+                            This combination is free of ionosphere and geometry, thence constant, but
+                            has a high noise (due to the pseudorange measurements used). If this noise is
+                            low enough, it is straightforward to detect cycle-slips, but in noisy environments
+                            BW is not able to detect cycle-slips. The algorithm using BW computes the mean and
+                            the standard deviation of the last epochs in order to obtain an estimated value
+                            and the noise level of the combination. The estimated value is compared against the
+                            measured value, and the noise level is used for the threshold of this difference.
+                            Difference must be lower than standard deviation multiplied by a number (slope).
+                            This threshold has minimum (min) and maximum (max) saturation values.
+    -pre:cs:min <val>       Minimum threshold between estimated and measured BW values in relation to its standard deviation [default 0.9]
+    -pre:cs:max <val>       Maximum threshold between estimated and measured BW values in relation to its standard deviation [default 18]
+    -pre:cs:slope <val>     Relation between estimated and measured BW values in relation to its standard deviation [default 9]
+    -pre:cs:l1c1            Use the L1-C1 combination for cycle-slip detection (1 frequency) [default in PPP]
+    --pre:cs:l1c1           Do not use the L1-C1 combination for cycle-slip detection (1 frequency) [default in SPP]
+                            The L1-C1 averages the difference between carrier phase and pseudorange measurements in F1 for several epochs.
+                            This cycle-slip detection method is very useful for single-frequency receivers, as it only requires
+                            measurements from one frequency. As a counterpart, the ionospheric term is different for C1 and L1
+                            thence, this combination will tend to diverge. It becomes necessary to set a smoothing window
+                            to limit this divergence (-pre:cs:l1c1:window). This makes that this method becomes a bit limited
+                            with data rates too low. Ideally this method should be used with rates of 1Hz
+    -pre:cs:l1c1:slope <val>       Relation between estimated and measured L1-C1 values in relation to its standard deviation [default 5]
+    -pre:cs:l1c1:window <val>      Number of epochs to limit the L1-C1 ionosphere divergence [default 100]
+    -pre:cs:l1c1:max <val>         Maximum standard deviation for the threshold calculation in the L1-C1 [default 15] (m) 
+    -pre:cs:l1c1:init <val>        Initial standard deviation for the threshold calculation in the L1-C1 [default 1] (m) 
+
+  MODELLING OPTIONS   (use -model:... to activate, --model:... to deactivate)
+    -model:iono <val>       <val> = no              Do not correct ionosphere [default in PPP] (equivalent to '--model:iono')
+                                  = Klobuchar       Correct measurements with Klobuchar model [default in SPP]
+                                  = BeiDou          Correct measurements with BeiDou model
+                                  = IONEX           Correct measurements with IONEX file data
+                                  = FPPP            Correct measurements with FPPP file data
+                            If more than one iono model option is given, the last one will be used
+    -model:trop             Correct troposphere delay [default on] 
+    --model:trop            Do not correct troposphere delay 
+    -model:trop:nominal <val>   <val> = Simple     Compute a simple tropospheric nominal depending on receiver's height over the sea level. [default in PPP]
+                                <val> = UNB3       Troposphere nominals are calculated from the receiver’s height and estimates of five meteorological
+                                                   parameters: pressure, temperature, water vapour pressure, temperature lapse rate and water vapour lapse rate.
+                                                   It is adopted by SBAS systems (see RTCA-MOPS, 2006). [default in SPP]
+    -model:trop:mapping <val>   <val> = Simple     Compute the mapping as the obliquity factor described in Black and Eisner, 1984. This mapping
+                                                   only depends on satellite elevation and it is common for wet and dry components.  [default in SPP]
+                                <val> = Niell      Compute the mapping described in  A.E. Niell, 1996. This mapping  considers different obliquity
+                                                   factors for the wet and dry components [default in PPP]
+    -model:satclocks        Correct the measurements with the satellite clock offsets estimations [default on]
+    -model:relclock         Correct the measurements with the relativistic clock model [default on]
+    -model:satmovinflight   Consider satellite movement during signal flight time [default on]
+    -model:earthrotinflight Consider Earth rotation during signal flight time [default on]
+    -model:satphasecenter   Correct satellite phase centre to mass centre corrections [default on in PPP, off in SPP]
+    -model:satphasevar      Correct satellite phase centre to mass centre corrections variations with zenital angle [default off]
+    -model:recphasecenter <val>    <val> = no                Do not correct antenna receiver phase centre [default in SPP]
+                            <val> = ANTEX                    Use the ANTEX file to correct the antenna phase center [default in PPP]
+                            <val> = <nfreq> <dN> <dE> <dU>   Set dN, dE, dU as the antenna phase centre for the frequency <nfreq>
+                                       <nfreq> = Frequency number (typical for GPS, 1 and 2)
+                                       <dN>    = North correction [in meters]
+                                       <dE>    = East correction [in meters]
+                                       <dU>    = Up correction [in meters]
+                            Sample: '-model:recphasecenter 1 0 0 0.11 -model:recphasecenter 2 0 0 0.128'
+                                    Typical AOAD/M_T antenna phase centre correction, 11 cm and 12.8 cm in the
+                                    Up component for frequencies 1 and 2
+    -model:recphasevar      Correct antenna receiver phase centre variations [default off]
+    -model:radomestrict     When using ANTEX to correct the receiver phase centre, this option will force a perfect match between
+                            the antenna name and radome reported in the receiver RINEX file and the ones in the ANTEX file. If this option
+                            is disabled, and the radome is not found, the corrections will be used considering the radome "NONE" [default off]
+    -model:arp <val>        <val> = no              Do not apply any Antenna Reference Point (ARP) correction [default in SPP] (equivalent to '--model:arp')
+                            <val> = RINEX           Use as ARP the information on the RINEX file (field 'ANTENNA: DELTA H/E/N') [default in PPP]
+                            <val> = <dN> <dE> <dU>  Set dN, dE, dU as the ARP
+                                       <dN>    = North correction [in meters]
+                                       <dE>    = East correction [in meters]
+                                       <dU>    = Up correction [in meters]
+    -model:dcb:p1c1 <val>   <val> = no        Do not correct Differential Code Biases between P1 and C1 codes (equivalent to '--model:dcb:p1c1')
+                                              Do not identify C1 and P1 never
+                            <val> = flexible  Do not correct Differential Code Biases between P1 and C1 codes [default on]
+                                              Identify C1 and P1 when one of them is missing
+                            <val> = strict    Correct  Differential Code Biases between P1 and C1 codes
+                                              Identify C1 and P1 when applicable (defined by the receiver type)
+    -model:dcb:p1p2 <val>   <val> = no        Do not correct Differential Code Biases between codes P1 and P2 (equivalent to '--model:dcb:p1p2')
+                            <val> = RINEX     Correct Differential Code Biases between codes P1 and P2 using TGDs from the RINEX navigation file [default in SPP, off in PPP]
+                            <val> = DCB       Correct Differential Code Biases between codes P1 and P2 from a precise DCB file
+                                              Identify C1 and P1 when applicable (defined by the receiver type)
+                            <val> = IONEX     Correct Differential Code Biases between codes P1 and P2 using DCB from IONEX file
+                            <val> = FPPP      Correct Differential Code Biases between codes P1 and P2 using DCB from FPPP file
+    -model:windup           Correct the wind up term for carrier phase measurements [default]
+    -model:solidtides       Correct the Earth surface deformation due to solid tides [default in PPP, off in SPP]
+    -model:relpath          Correct the path range delay term due to the gravitational gradient between receiver and transmitter
+                            [default on in PPP, off in SPP]
+    -model:orbit:deg <val>  Precise orbit interpolation degree [default 10]
+    -model:clock:deg <val>  Precise clock interpolation degree [default 0 - no interpolation]
+    -model:satellitehealth  Only valid when using broadcast products. Use the healthy flag of the navigation message [default on]
+
+  FILTERING OPTIONS
+    -filter:SigmaIono       Use standard deviation data from IONEX or FPPP if these iono models are used [default on] ('--filter:SigmaIono' to disable it)
+    -filter:trop            Estimate the troposphere of the station [default in PPP with carrier phase] ('--filter:trop' to disable it)
+    -filter:nav <nav>       <nav> = static          Process supposing a static receiver [default in PPP]
+                                  = kinematic       Process supposing a moving receiver [default in SPP]
+    -filter:meas <meas>     <meas> = pseudorange    Use only pseudorange for positioning
+                                   = carrierphase   Use pseudorange and carrier phase for positioning [default]
+    -filter:select <num> <meas1> <meas2> ...        Select the measurements or combinations to include in the filtering
+                            <num> = Number of measurements/combinations
+                            <measN> = List of measurements/combinations
+                            [Defaults]: PPP - Pseudorange      => 1 PC
+                            [Defaults]: PPP - Carrierphase     => 2 PC LC
+                            [Defaults]: SPP - Pseudorange      => 1 C1C
+                            [Defaults]: SPP - Carrierphase     => 2 C1C L1P
+    -filter:fixedweight <n> <val>         Apply the specified standard deviation to the measurement 'n', to be used as weight in the filter.
+                            <n>    = Measurement number
+                            <val>  = Standard deviation of the measurement (m)
+                            In particular, the filter shall apply as weight = 1/(<val>^2)
+                            Sample: '-filter:fixedweight 1 2'    Set 2 meters of standard deviation to measurement 1 in filter
+                                    '-filter:fixedweight 2 0.01' Set 1 centimetre of standard deviation to measurement 2 in filter
+                            Defaults: PPP:         Pseudorange->1m  Carrierphase->0.01m
+                                      SPP:         Pseudorange->5m  Carrierphase->0.10m
+    -filter:elevweight <n> <a> <b> <c>    Apply the specified values to compute the standard deviation of the measurement 'n'
+                            std = a + b * e^(-elevation/c)
+                            <n>    = Measurement number
+                            <a>    = Minimum standard deviation of the measurement [weight at elevation 90º] (m)
+                            <b>    = Multiplier to e [standard deviation at elevation 0º] (m)
+                            <c>    = Elevation constant (degrees)
+                            Again, the filter shall apply as weight = 1/(std^2)
+                            Sample: '-filter:elevweight 1 0.3 8 10'   Apply the standard deviation: 0.3+8*e^(-elevation/10)
+                            Note: '-filter:elevweight 1 x 0 y' equals to '-filter:fixedweight 1 x'
+    -filter:phi:dr <val>    Specify the Phi value for position unknowns [defaults static:1 kinematic:0]
+    -filter:phi:clk <val>   Specify the Phi value for clock unknown [default 0]
+    -filter:phi:trop <val>  Specify the Phi value for troposphere unknown [default 1]
+    -filter:phi:amb <val>   Specify the Phi value for ambiguity unknowns [default 1]
+    -filter:q:dr <val>      Specify the Q noise value for position unknowns [defaults static:0 kinematic:1e8] (m^2)
+    -filter:q:clk <val>     Specify the Q noise value for clock unknown [default 9e10] (m^2)
+    -filter:q:trop <val>    Specify the Q noise variation value for troposphere unknown [default 1e-4] (m^2/h)
+    -filter:q:amb <val>     Specify the Q noise value for ambiguity unknowns [default 0] (m^2)
+    -filter:p0:dr <val>     Specify the P0 initial value for position unknowns [default 1e8] (m^2)
+    -filter:p0:clk <val>    Specify the P0 initial value for clock unknown [default 9e10] (m^2)
+    -filter:p0:trop <val>   Specify the P0 initial value for troposphere unknown [default 0.5^2] (m^2)
+    -filter:p0:amb <val>    Specify the P0 initial value for ambiguity unknowns (for prealigned carrier phases) [default 20^2] (m^2)
+    -filter:backward        Specify that the filter does a backward processing after the forward one is finished. This meas that it
+                            process the data backwards. The "turn point" is defined as the latest point where orbits and clocks
+                            are available or when the observation RINEX ends (whatever is first) ('--filter:backward' to disable it)
+                            [default disabled]
+
+  OUTPUT OPTIONS
+    -output:file <file>     Sets the output file [default stdout]
+    --output:file           Sets the output to stdout [default]
+    -output:satvel <val>    <val> = inertial  Prints the inertial velocity in the messages where satellite velocity is given
+                            <val> = ITRF (ECEF)  Prints the ECEF velocity in the messages where satellite velocity is given [default]
+
+  VERBOSE OPTIONS   (use -print:... to activate, --print:... to deactivate)
+    -print:info             Print INFO messages [default on]
+    -print:cycleslips       Print CS messages [default on]
+    -print:input            Print INPUT messages [default on]
+    -print:meas             Print MEAS messages [default off]
+    -print:model            Print MODEL messages [default on]
+    -print:satellites       Print EPOCHSAT messages [default on]
+    -print:prefit           Print PREFIT messages [default on]
+    -print:postfit          Print POSTFIT messages [default on]
+    -print:filter           Print FILTER messages [default on]
+    -print:output           Print OUTPUT messages [default on]
+    -print:satdiff          Print SATDIFF messages in comparison mode (see below) [default on]
+    -print:satstat          Print SATSTAT messages in comparison mode (see below) [default on]
+    -print:satstattot       Print SATSTATTOT messages in comparison mode (see below) [default on]
+    -print:satpvt           Print SATPVT messages in show product mode (see below) [default on]
+    -print:satsel           Print satellite selection information [default off]
+    -print:all              Print all messages
+    -print:none             Do not print anything
+                            More information on print messages can be seen with the '-messages' option
+
+  WORK MODES
+    gLAB can work in four different modes:
+        - Positioning Mode: 'Standard' mode, where all the processing is done, and a solution for a
+                       receiver is provided as OUTPUT messages. The minimum parameters required for this
+                       mode are an input observation file ('-input:obs') and orbit and clock products
+                       ('-input:nav', '-input:SP3' or '-input:orb'/'-input:clk'). Using precise products
+                       will also require the use of an ANTEX file ('-input:ant')
+        - Show Input Mode: This mode only reads an input RINEX observation file and print its measurements.
+                       The parameter required for this mode is '-input:obs', and specifically, no orbit and
+                       clock products should be provided (if provided, gLAB will switch to Positioning Mode)
+        - Product Comparison Mode: This mode reads and compares two different sources of orbit and clock products.
+                       In order to use this mode, '-input:obs' must be avoided, and two different orbit and clock
+                       products should be provided. This mode outputs the SATDIFF, SATSTAT and STASTATTOT messages
+        - Show Product Mode: This mode reads a single source of orbit and clock products.
+                       In order to use this mode, '-input:obs' must be avoided, and a single orbit and clock
+                       product should be provided. This mode output SAT messages
