@@ -23,14 +23,13 @@ def delete_files(folder):
             print e
 
 def glab_parse(fname):
-    # parse the FILTER data fields from gLAB outuput
+    """
+        parse the FILTER data fields from gLAB outuput
+    """
     data=[]
-    n=0
-    nmax = 20
     with open(fname) as f:
         for line in f:
             if line.startswith("FILTER"):
-                n+=1
                 fields = line.split()
                 assert( fields[0] == "FILTER" )
                 year = int(fields[1])
@@ -42,20 +41,22 @@ def glab_parse(fname):
                 t = float(fields[7])   # Receiver clock [m]
                 ztd = float(fields[8]) # Zenith Tropospheric Delay [m]
                 amb = float(fields[9]) # Carrierphase ambiguities [m]
-                #print line
-                #print fields
                 row = (year,doy,secs,x,y,z,t,ztd,amb)
                 data.append(row)
-            #if n==nmax:
-            #    break
     return data
 
 def result_write(outfile, data):
+    """
+        write gLAB output results to a neatly formatted file
+        
+        TODO: same format for rtkpost/gpsppp/gipsy ?
+    """
     # TODO: preamble with metadata
     with open(outfile,'wb') as f:
         for row in data:
             f.write( "%04d %03d %05.03f %f %f %f %f %f %f \n" % (row[0], row[1], row[2], row[3], row[4],  row[5], row[6], row[7], row[8] ) )
-            
+    print "gLAB parsed output: ", outfile
+    
 def glab_run(station, dt, rapid=True, prefixdir=""):
     dt_start = datetime.datetime.now()
     
@@ -66,7 +67,7 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     (server, igs_directory, igs_files, localdir) = igs_ftp.CODE_rapid_files(dt, prefixdir=prefixdir)
     files = igs_ftp.CODE_download(server, igs_directory, igs_files, localdir)
     (clk, eph, erp) = (files[0], files[1], files[2])
-    print files # rapid products are unzipped
+
     print "ppp_run start: ", dt_start
     print "      Station: ", station.name
     print "          DOY: ", doy
@@ -88,7 +89,7 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
         shutil.copy2( f, tempdir )
         (tmp,fn ) = os.path.split(f)
         moved_files.append( tempdir + fn )
-    print moved_files
+    #print moved_files
     
     # unzip zipped files
     for f in moved_files:
@@ -99,7 +100,8 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
             p = subprocess.Popen(cmd, shell=True)
             p.communicate()
     
-    # if the RINEX file is hatanaka-compressed, uncompress it
+    # TODO: if the RINEX file is hatanaka-compressed, uncompress it
+    # this requires the CRX2RNX binary
     """
     if rinexfile[-3] == "d" or rinexfile[-3] == "D":
         hata_file = moved_files[0]
@@ -111,28 +113,24 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     
     # figure out the rinex file name
     (tmp,rinexfile ) = os.path.split(rinex)
-    inputfile = rinexfile[:-2]
-    #return
+    inputfile = rinexfile[:-2] # strip off ".Z"
     
     # now ppp itself:
-    #if not os.path.exists( result_file ):
     os.chdir( tempdir )
-    glab = "gLAB_linux"
+    glab = "gLAB_linux" # must have this executable in path
     
-    # -input:ant or -input:con
     antfile = prefixdir + "/common/igs08.atx"
-    outfile = tempdir + "/out.txt"
-    # -pre:dec #
+    outfile = tempdir + "out.txt"
     
     cmd = glab  
     options = [ " -input:obs %s" % inputfile,
                 " -input:clk %s" % clk,
                 " -input:orb %s" % eph,
                 " -input:ant %s" % antfile,
-                " -model:recphasecenter no",
+                " -model:recphasecenter no", # USNO receiver antenna is not in igs08.atx (?should it be?)
                 " -output:file %s" % outfile,
                 " -pre:dec 30", # rinex data is at 30s intervals, don't decimate
-                " --print:input",
+                " --print:input", # discard unnecessary output
                 " --print:model",
                 " --print:prefit",
                 " --print:postfit",
@@ -142,15 +140,13 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
         cmd += opt 
     p = subprocess.Popen(cmd, shell=True, cwd = tempdir )
     p.communicate() # wait for processing to finish
-    
-    # read pos-file and archive result.
-    #products = [clk1, clk2, eph1, eph2, erp_file ]
-    #archive_result( rinex, products, pos_file, result_file )
 
     dt_end = datetime.datetime.now()
     print "ppp_run Done: ", dt_end
     print "    elapsed : ", dt_end-dt_start
+    print "gLAB raw output: ", outfile
     
+    # here we may parse the output and store it to file somewhere
     data = glab_parse(outfile)
     result_write( "glab.txt", data)
     
@@ -159,4 +155,5 @@ if __name__ == "__main__":
     dt = datetime.datetime.now()-datetime.timedelta(days=3)
     current_dir = os.getcwd()
     
+    # run PPP for given station, day
     glab_run(st, dt, prefixdir=current_dir)
