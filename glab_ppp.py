@@ -49,8 +49,8 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     doy = dt.timetuple().tm_yday
     rinex = station.get_rinex( dt )
     
-    (server, igs_directory, igs_files, localdir) = igs_ftp.CODE_rapid_files(dt, prefixdir=prefixdir)
-    files = igs_ftp.CODE_download(server, igs_directory, igs_files, localdir)
+    (server, username, password, igs_directory, igs_files, localdir) = igs_ftp.CODE_rapid_files(dt, prefixdir=prefixdir)
+    files = igs_ftp.CODE_download(server, username, password, igs_directory, igs_files, localdir)
     (clk, eph, erp) = (files[0], files[1], files[2])
 
     print "ppp_run start: ", dt_start
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     # example processing:
     station = UTCStation.usno
-    dt = datetime.datetime.now()-datetime.timedelta(days=4)
+    dt = datetime.datetime.now()-datetime.timedelta(days=5)
     current_dir = os.getcwd()
     
     # run gLAB PPP for given station, day

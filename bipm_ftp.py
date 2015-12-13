@@ -10,7 +10,7 @@
     This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
     GPL license.
 """
-import ftplib
+# import ftplib
 import datetime
 import pytz
 import os 
