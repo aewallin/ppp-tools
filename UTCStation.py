@@ -3,24 +3,30 @@ import datetime
 
 import bipm_ftp
 
+"""
+    This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
+    GPL license.
+"""
+
 class UTCStation():
     """
     Class to represent a GPS station producing RINEX files.
     
     May be modified later to include 'local' stations where we find the RINEX
     on disk rather than via FTP.
-    """
-    def __init__(self, name= "", utctag="", ftp_server="", ftp_dir="", lz=False, rinexname="", refdelay=0, prefixdir=""):
-        self.name = name      # e.g. "USNO
-        self.utctag = utctag  # when name is more than 4 characters, BIPM abbreviates with 4 chars, e.g. "MIKE"
-        self.ftp_server = ftp_server 
-        self.ftp_dir = ftp_dir  # the directory for RINEX files on the ftp server
+    """  
+    def __init__(self):
+        self.name = ""      # station name e.g. "USNO"
+        self.utctag = ""  # when name is more than 4 characters, BIPM abbreviates with 4 chars, e.g. "MIKE"
+        self.ftp_server = ""  # e.g. "my.ftp-server.com"
+        self.ftp_dir = ""  # the directory/ for RINEX files on the ftp server
+        self.ftp_username = ""
+        self.ftp_password = ""
         self.lz = lz # do we need an LZ file or not?
-        self.rinexname = rinexname # the name of the rinex file
         self.refdelay = float(refdelay) # reference delay, in nanoseconds
-        self.receiver=""
+        self.receiver=""  # receiver name, e.g. "MI02", used in the RINEX filename
         self.rinex_filename = self.rinex1
-        self.hatanaka = False # some stations use Hatanaka compressed RINEX
+        self.hatanaka = False # flag is True for Hatanaka compressed RINEX
         
     # the RINEX naming convention is that there is no convention...
     # we define rinex_filename() in the constructor, which calls one of rinex1(), rinex2(), etc.
@@ -174,7 +180,7 @@ ptb.rinex_filename = ptb.rinex4
 if __name__ == "__main__":
     
     # an example of how to retrieve a RINEX file
-    dt = datetime.datetime.now() - datetime.timedelta(days=4) # 5 days back from now
+    dt = datetime.datetime.utcnow() - datetime.timedelta(days=4) # some days back from now
     
     print usno.get_rinex(dt)
     print nist.get_rinex(dt)
