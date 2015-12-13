@@ -1,30 +1,36 @@
 # ppp-tools
 
-Progress:
-2015-06-01: simple gLAB run works
-2015-05-25: initial commits, nothing works yet.
+This is a collection of python scripts for GPS-Precise Point Positioning 
+post-processing of RINEX files. 
+GPS-PPP solutions can be found with the following software packages: 
+* rtklib, http://www.rtklib.com/
+* ESA gLab, http://gage.upc.edu/gLAB
+* NRCan gpsppp
 
-
-This is a collection of python scripts for GPS-Precise Point Positioning post-processing of RINEX files based on open-source tools. I know of two open-source packages that can perform PPP calculations: rtklib and ESA gLab. Eventually both could be supported.
+In addition to the GPS-PPP software some utilities may be required:
+* Teqc, for concatenating many 1-day RINEX files into multi-day files,  https://www.unavco.org/software/data-processing/teqc/teqc.html
+* RNXCMP, for decompressing Hatanaka compressed RINEX files, http://terras.gsi.go.jp/ja/crx2rnx.html
 
 The steps for PPP-processing are roughly:
 
 1. Download RINEX files (from e.g. BIPM or other ftp-server)
-2. Download SP3 orbit and CLK clock files (from e.g. CODE or other IGS datacenter)
-3. Run PPP-algorthm (this is a call to either rktpost or gLab)
-4. Post-process and visualize the results
+2. Optionally pre-process RINEX files (i.e. decompress Hatanaka-files, and/or assemble daily files into longer batch)
+3. Download SP3 orbit and CLK clock files (from e.g. CODE or other IGS datacenter)
+4. Run PPP-algorthm
+5. Post-process and visualize the results
 
-Step 4 may include:
-* For time-transfer purposes one further wants to calculate double-differences, e.g.  (StationA - IGS) - (StationB - IGS) = StationA - StationB. 
-* Some UTC-laboratories (e.g. OP) submit both a RINEX file and an "LZ" file with the offset between the RINEX receiver clock and the UTC-realization. The PPP receiver-clock result should be modified using the LZ file.
+Post-processing may include:
+* Calculation of double-differences for time-transfer purposes, e.g.  (StationA - IGS) - (StationB - IGS) = StationA - StationB. 
+* Some UTC-laboratories submit both a RINEX file and an "LZ" file with the offset between the RINEX receiver clock and the UTC-realization. The PPP receiver-clock result should be modified using the LZ file.
 * Plotting using matplotlib
 * Calculation of Allan deviations or other statistics (using e.g. allantools)
-* Comparison to UTC(k)-UTC numbers published by BIPM monthly in Circular-T, or to Rapid-UTC published daily.
+* Comparison to UTC(k)-UTC numbers published by BIPM monthly in Circular-T, or to Rapid-UTC published weekly.
 
 The scripts store input and output files under the main folder:
-* 'stations' stores RINEX and LZ files for receiver stations
+* 'stations' stores RINEX and LZ files from receiver stations
 * 'products' stores clock, ephemeris/orbit, and ERP files from IGS datacenters
 * 'common' has common files
 * 'results' stores the output results of PPP processing
 * 'UTC' has Circular-T data from the BIPM ftp site.
 * 'UTCr' has rapid-UTC data from the BIPM ftp site.
+* 'doc' has documentation
