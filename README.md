@@ -34,3 +34,4 @@ The scripts store input and output files under the main folder:
 * 'UTC' has Circular-T data from the BIPM ftp site.
 * 'UTCr' has rapid-UTC data from the BIPM ftp site.
 * 'doc' has documentation
+* 'temp' is used as a temporary directory for gps-ppp calculations

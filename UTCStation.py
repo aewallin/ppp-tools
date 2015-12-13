@@ -22,8 +22,8 @@ class UTCStation():
         self.ftp_dir = ""  # the directory/ for RINEX files on the ftp server
         self.ftp_username = ""
         self.ftp_password = ""
-        self.lz = lz # do we need an LZ file or not?
-        self.refdelay = float(refdelay) # reference delay, in nanoseconds
+        self.lz = False # do we need an LZ file or not?
+        self.refdelay = 0.0 # reference delay, in nanoseconds
         self.receiver=""  # receiver name, e.g. "MI02", used in the RINEX filename
         self.rinex_filename = self.rinex1
         self.hatanaka = False # flag is True for Hatanaka compressed RINEX

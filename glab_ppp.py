@@ -3,6 +3,7 @@ import datetime
 import shutil
 import subprocess
 
+import UTCStation
 import bipm_ftp
 import igs_ftp
 
@@ -49,7 +50,6 @@ def result_write(outfile, data):
     """
         write gLAB output results to a neatly formatted file
         
-        TODO: same format for rtkpost/gpsppp/gipsy ?
     """
     # TODO: preamble with metadata
     with open(outfile,'wb') as f:
@@ -62,7 +62,7 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     
     year = dt.timetuple().tm_year
     doy = dt.timetuple().tm_yday
-    rinex = station.rinex_download( dt )
+    rinex = station.get_rinex( dt )
     
     (server, igs_directory, igs_files, localdir) = igs_ftp.CODE_rapid_files(dt, prefixdir=prefixdir)
     files = igs_ftp.CODE_download(server, igs_directory, igs_files, localdir)
@@ -151,9 +151,11 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     result_write( "glab.txt", data)
     
 if __name__ == "__main__":
-    st = bipm_ftp.usno
-    dt = datetime.datetime.now()-datetime.timedelta(days=3)
+
+    # example processing:
+    station = UTCStation.usno
+    dt = datetime.datetime.now()-datetime.timedelta(days=4)
     current_dir = os.getcwd()
     
-    # run PPP for given station, day
-    glab_run(st, dt, prefixdir=current_dir)
+    # run gLAB PPP for given station, day
+    glab_run(station, dt, prefixdir=current_dir)
