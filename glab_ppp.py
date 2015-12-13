@@ -4,24 +4,9 @@ import shutil
 import subprocess
 
 import UTCStation
+import ftp_tools
 import bipm_ftp
 import igs_ftp
-
-def check_dir(target_dir):
-    # check that directory exsits, create if not
-    if not os.path.isdir(target_dir):
-        print "creating target directory ", target_dir
-        os.mkdir(target_dir)
-
-def delete_files(folder):
-    # delete all files in given folder
-    for the_file in os.listdir(folder):
-        file_path = os.path.join(folder, the_file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception, e:
-            print e
 
 def glab_parse(fname):
     """
@@ -78,9 +63,9 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     print "          ERP: ", erp
     # we do processing in a temp directory
     tempdir = prefixdir + "/temp/"
-    check_dir( tempdir )
+    ftp_tools.check_dir( tempdir )
     # empty the temp directory
-    delete_files(tempdir)
+    ftp_tools.delete_files(tempdir)
     
     # move files to tempdir
     files_to_move = [ rinex, clk, eph, eph, erp ]

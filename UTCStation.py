@@ -2,6 +2,7 @@ import os
 import datetime
 
 import bipm_ftp
+import ftp_tools
 
 """
     This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
@@ -55,7 +56,7 @@ class UTCStation():
         """
         current_dir = os.getcwd()
         localdir = current_dir + '/stations/' + self.name + '/'
-        return bipm_ftp.ftp_download( self.ftp_server, self.ftp_username, self.ftp_password,
+        return ftp_tools.ftp_download( self.ftp_server, self.ftp_username, self.ftp_password,
                          self.ftp_dir, self.rinex_filename(dt), localdir)
         
 ########################################################################
@@ -180,7 +181,7 @@ ptb.rinex_filename = ptb.rinex4
 if __name__ == "__main__":
     
     # an example of how to retrieve a RINEX file
-    dt = datetime.datetime.utcnow() - datetime.timedelta(days=4) # some days back from now
+    dt = datetime.datetime.utcnow() - datetime.timedelta(days=5) # some days back from now
     
     print usno.get_rinex(dt)
     print nist.get_rinex(dt)

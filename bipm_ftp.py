@@ -13,18 +13,15 @@
 import ftplib
 import datetime
 import pytz
-import sys
 import os 
+import sys
 import math
 import numpy
 
 import jdutil  # mjd-functions
+import ftp_tools # downloads files using ftp
 
-def check_dir(target_dir):
-    # check that local target directory exists, create it if not
-    if not os.path.isdir(target_dir):
-        print "creating target directory ", target_dir
-        os.mkdir(target_dir)
+
 
 def bipm_utcr_download():
     """
@@ -50,7 +47,7 @@ def bipm_utcr_download():
                    ["pub/tai/publication/utcrlab/","utcr-mike"] ]
     
     for (remotedir, remotefile) in utcr_files:
-        ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=True)
+        ftp_tools.ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=True)
 
     print "bipm_utcR_download Done ", datetime.datetime.utcnow()
           
@@ -79,7 +76,7 @@ def bipm_utc_download(prefixdir=""):
                  ["pub/tai/publication/utclab/","utc-npl"] ]
 
     for (remotedir, remotefile) in utc_files:
-        ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=True)
+        ftp_tools.ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=True)
 
     
     print "bipm_utc_download Done ", datetime.datetime.utcnow()
@@ -116,32 +113,6 @@ def read_UTC(prefixdir, station, rapid=False):
     return (t,x)
 
 
-def ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=False):
-    """
-    Generic function to download a file using ftp.
-    Place it in the local_directory.
-    If it already exists, don't download.
-    Return the full local filename.
-    """
-    check_dir( localdir )  # check that target dir exists, if not create it
-    local_fullname = localdir + remotefile 
-    print "ftp_download start at ", datetime.datetime.utcnow()
-    if not os.path.exists( local_fullname ) or overwrite:
-        print 'Remote: ', remotedir + remotefile
-        print 'Local : ', local_fullname
-        sys.stdout.flush()
-        ftp = ftplib.FTP(server)  # Establish the connection
-        ftp.login(username, password)
-        ftp.cwd(remotedir) # Change to the proper directory
-        fhandle = open(local_fullname, 'wb')
-        ftp.retrbinary('RETR ' + remotefile, fhandle.write)
-        fhandle.close()
-        ftp.close()
-    else:
-        print remotefile," already exists locally, not downloading."
-    print "ftp_download Done ", datetime.datetime.utcnow()
-    sys.stdout.flush()
-    return local_fullname
 
 if __name__ == "__main__":
     
