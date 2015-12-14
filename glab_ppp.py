@@ -45,7 +45,7 @@ def glab_result_write(outfile, data, preamble=""):
     print "gLAB parsed output: ", outfile
     
 def glab_run(station, dt, rapid=True, prefixdir=""):
-    dt_start = datetime.datetime.now()
+    dt_start = datetime.datetime.utcnow()
     
     year = dt.timetuple().tm_year
     doy = dt.timetuple().tm_yday
@@ -133,7 +133,7 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     p = subprocess.Popen(cmd, shell=True, cwd = tempdir )
     p.communicate() # wait for processing to finish
 
-    dt_end = datetime.datetime.now()
+    dt_end = datetime.datetime.utcnow()
     run_log2=""
     run_log2 += "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     delta = dt_end-dt_start
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     # example processing:
     station = UTCStation.usno
-    dt = datetime.datetime.now()-datetime.timedelta(days=5)
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=5)
     current_dir = os.getcwd()
     
     # run gLAB PPP for given station, day
