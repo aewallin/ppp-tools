@@ -31,13 +31,15 @@ def glab_parse(fname):
                 data.append(row)
     return data
 
-def result_write(outfile, data):
+def glab_result_write(outfile, data, preamble=""):
     """
         write gLAB output results to a neatly formatted file
         
     """
-    # TODO: preamble with metadata
     with open(outfile,'wb') as f:
+        for line in preamble.split('\n'):
+            f.write( "# %s\n" % line)
+        f.write( "# year doy secs x y z t ztd ambig.\n")
         for row in data:
             f.write( "%04d %03d %05.03f %f %f %f %f %f %f \n" % (row[0], row[1], row[2], row[3], row[4],  row[5], row[6], row[7], row[8] ) )
     print "gLAB parsed output: ", outfile
@@ -53,14 +55,18 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     files = igs_ftp.CODE_download(server, username, password, igs_directory, igs_files, localdir)
     (clk, eph, erp) = (files[0], files[1], files[2])
 
-    print "ppp_run start: ", dt_start
-    print "      Station: ", station.name
-    print "          DOY: ", doy
-    print "         Year: ", year
-    print "        RINEX: ", rinex
-    print "          CLK: ", clk
-    print "          EPH: ", eph
-    print "          ERP: ", erp
+    run_log = ""
+    run_log += " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
+    run_log += "   Station: %s\n" % station.name
+    run_log += "      Year: %d\n" % year
+    run_log += "       DOY: %03d\n" % doy
+    run_log += "      date:  %d-%02d-%02d\n" % (dt.year, dt.month, dt.day)
+    run_log += "     RINEX: %s\n" % rinex
+    run_log += "       CLK: %s\n" % clk  # allow for multiple clk-files!?
+    run_log += "       EPH: %s\n" % eph
+    run_log += "       ERP: %s\n" % erp
+    print run_log
+
     # we do processing in a temp directory
     tempdir = prefixdir + "/temp/"
     ftp_tools.check_dir( tempdir )
@@ -108,6 +114,7 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     outfile = tempdir + "out.txt"
     
     cmd = glab  
+    # see doc/glab_options.txt
     options = [ " -input:obs %s" % inputfile,
                 " -input:clk %s" % clk,
                 " -input:orb %s" % eph,
@@ -127,13 +134,15 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     p.communicate() # wait for processing to finish
 
     dt_end = datetime.datetime.now()
-    print "ppp_run Done: ", dt_end
-    print "    elapsed : ", dt_end-dt_start
-    print "gLAB raw output: ", outfile
+    run_log2=""
+    run_log2 += "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
+    delta = dt_end-dt_start
+    run_log2+=  "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
+    print run_log2
     
     # here we may parse the output and store it to file somewhere
     data = glab_parse(outfile)
-    result_write( "glab.txt", data)
+    glab_result_write( "glab.txt", data, preamble=run_log+run_log2)
     
 if __name__ == "__main__":
 
