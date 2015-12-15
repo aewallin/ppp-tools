@@ -12,6 +12,7 @@ def glab_parse(fname):
     """
         parse the FILTER data fields from gLAB outuput
     """
+    # fixme xyz2lla.lla2ecef( lat, lon, height ) to get lat lon
     data=[]
     with open(fname) as f:
         for line in f:
