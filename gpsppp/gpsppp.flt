@@ -1,0 +1,17 @@
+HDR Filter configuration file
+HDR FLTDNL: Dual-frequency filter delta narrowlane tolerance for cycle slip detection
+HDR FLTDWL: Dual-frequency filter delta widelane tolerance for cycle slip detection
+HDR FLTDAM: Dual-frequency filter ambiguity tolerance for filter 
+HDR FLTDPL: Single-frequency delta code-carrier tolerance for cycle slip detection    
+HDR FLTDTT: Filter delta time tolerance for gap detection
+HDR IPC   : Printout control (1=short,2=long,3=xlong)
+HDR IFLTON: Filter ON/OFF switch (0=OFF, 1=ON)
+HDR IC1USE: L1 code to use (0=P1,1=C1,2=P1|C1)
+HDR IDCBUSE: Use P1-C1 satellite DCBs (0=NO, 1=YES)
+HDR VFACTOR: Variance factor used to scale parameter variances from phase solution 
+HDR ADEV(1s): Allan deviation of station clock @ 1 second (10^-15)
+HDR IC2USE: L2 code to use (0=P2,1=C2,2=P2|C2)
+HDR
+HDR FLTDNL FLTDWL FLTDAM FLTDPL FLTDTT  IPC   IFLTON  IC1USE  IDCBUSE VFACTOR ADEV  IC2USE
+HDR   (cm)   (cm)   (cm)   (cm)  (sec) (1-3)  (0-1)   (0-2)   (0-1)   (1-100) (s)   (0-2)
+FLT     20    150    150   5000    300  0     1        2        1        1     0       2
