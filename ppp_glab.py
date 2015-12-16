@@ -7,13 +7,16 @@ import UTCStation
 import ftp_tools
 import bipm_ftp
 import igs_ftp
+import ppp_common
 
-def glab_parse(fname):
+glab_tag = "glab"
+
+def glab_parse_result(fname, station):
     """
         parse the FILTER data fields from gLAB outuput
     """
-    # fixme xyz2lla.lla2ecef( lat, lon, height ) to get lat lon
-    data=[]
+    ppp_result = ppp_common.PPP_Result()
+    ppp_result.station=station
     with open(fname) as f:
         for line in f:
             if line.startswith("FILTER"):
@@ -22,15 +25,16 @@ def glab_parse(fname):
                 year = int(fields[1])
                 doy = int(fields[2])
                 secs = float(fields[3]) # seconds from start of day. GPS or UTC time??
+                dt = datetime.datetime(year,1,1) + datetime.timedelta( days = doy-1, seconds=secs )
                 x = float(fields[4])  
                 y = float(fields[5])
                 z = float(fields[6])
-                t = float(fields[7])   # Receiver clock [m]
+                (lat, lon, height ) = ppp_common.xyz2lla( x, y, z )
+                clk = float(fields[7]) * (1.0e9 / 299792458.0)   # Receiver clock [ns]
                 ztd = float(fields[8]) # Zenith Tropospheric Delay [m]
-                amb = float(fields[9]) # Carrierphase ambiguities [m]
-                row = (year,doy,secs,x,y,z,t,ztd,amb)
-                data.append(row)
-    return data
+                p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
+                ppp_result.append(p)
+    return ppp_result
 
 def glab_result_write(outfile, data, preamble=""):
     """
@@ -48,22 +52,18 @@ def glab_result_write(outfile, data, preamble=""):
 def glab_run(station, dt, rapid=True, prefixdir=""):
     dt_start = datetime.datetime.utcnow()
     
-    year = dt.timetuple().tm_year
     doy = dt.timetuple().tm_yday
     rinex = station.get_rinex( dt )
     
-    (server, username, password, igs_directory, igs_files, localdir) = igs_ftp.CODE_rapid_files(dt, prefixdir=prefixdir)
-    files = igs_ftp.CODE_download(server, username, password, igs_directory, igs_files, localdir)
-    (clk, eph, erp) = (files[0], files[1], files[2])
+    (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
 
-    run_log = ""
-    run_log += " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
+    run_log  = " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
     run_log += "   Station: %s\n" % station.name
-    run_log += "      Year: %d\n" % year
+    run_log += "      Year: %d\n" % dt.year
     run_log += "       DOY: %03d\n" % doy
     run_log += "      date:  %d-%02d-%02d\n" % (dt.year, dt.month, dt.day)
     run_log += "     RINEX: %s\n" % rinex
-    run_log += "       CLK: %s\n" % clk  # allow for multiple clk-files!?
+    run_log += "       CLK: %s\n" % clk
     run_log += "       EPH: %s\n" % eph
     run_log += "       ERP: %s\n" % erp
     print run_log
@@ -71,20 +71,18 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     # we do processing in a temp directory
     tempdir = prefixdir + "/temp/"
     ftp_tools.check_dir( tempdir )
-    # empty the temp directory
-    ftp_tools.delete_files(tempdir)
+    ftp_tools.delete_files(tempdir) # empty the temp directory
     
-    # move files to tempdir
-    files_to_move = [ rinex, clk, eph, eph, erp ]
-    moved_files = []
-    for f in files_to_move:
+    # copy files to tempdir
+    files_to_copy = [ rinex, clk, eph, eph, erp ]
+    copied_files = []
+    for f in files_to_copy:
         shutil.copy2( f, tempdir )
         (tmp,fn ) = os.path.split(f)
-        moved_files.append( tempdir + fn )
-    #print moved_files
+        copied_files.append( tempdir + fn )
     
-    # unzip zipped files
-    for f in moved_files:
+    # unzip zipped files, if needed
+    for f in copied_files:
         if f[-1] == "Z" or f[-1] == "z": # compressed .z or .Z file
             cmd ='/bin/gunzip'
             cmd = cmd + " -f " + f # -f overwrites existing file
@@ -109,12 +107,11 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     
     # now ppp itself:
     os.chdir( tempdir )
-    glab = "gLAB_linux" # must have this executable in path
     
     antfile = prefixdir + "/common/igs08.atx"
     outfile = tempdir + "out.txt"
     
-    cmd = glab  
+    cmd = "gLAB_linux" # must have this executable in path
     # see doc/glab_options.txt
     options = [ " -input:obs %s" % inputfile,
                 " -input:clk %s" % clk,
@@ -123,6 +120,7 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
                 " -model:recphasecenter no", # USNO receiver antenna is not in igs08.atx (?should it be?)
                 " -output:file %s" % outfile,
                 " -pre:dec 30", # rinex data is at 30s intervals, don't decimate
+                " -pre:elevation 10", # elevation mask
                 " --print:input", # discard unnecessary output
                 " --print:model",
                 " --print:prefit",
@@ -135,21 +133,20 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     p.communicate() # wait for processing to finish
 
     dt_end = datetime.datetime.utcnow()
-    run_log2=""
-    run_log2 += "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     delta = dt_end-dt_start
-    run_log2+=  "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
+    run_log2  = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
+    run_log2 += "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
     print run_log2
     
     # here we may parse the output and store it to file somewhere
-    data = glab_parse(outfile)
-    glab_result_write( "glab.txt", data, preamble=run_log+run_log2)
+    ppp_result = glab_parse_result(outfile, station)
+    ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=glab_tag, prefixdir=prefixdir )
     
 if __name__ == "__main__":
 
     # example processing:
     station = UTCStation.usno
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=5)
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=4)
     current_dir = os.getcwd()
     
     # run gLAB PPP for given station, day

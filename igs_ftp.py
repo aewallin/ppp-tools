@@ -15,6 +15,15 @@ import os
 import ftp_tools
 import gpstime
 
+def get_CODE_final(dt, prefixdir=""):
+    (server, username, password, directory, files, localdir) = CODE_final_files(dt, prefixdir)
+    (clk1, eph1, erp1) =  CODE_download(server, username, password, directory, files, localdir)
+    return (clk1, eph1, erp1)
+
+def get_CODE_rapid(dt, prefixdir=""):
+    (server, username, password, directory, files, localdir) = CODE_rapid_files(dt, prefixdir)
+    (clk1, eph1, erp1) =  CODE_download(server, username, password, directory, files, localdir)
+    return (clk1, eph1, erp1)
 
 def CODE_rapid_files(dt, prefixdir=""):
     """
@@ -106,7 +115,7 @@ def example_igs_ftp():
     """
     
 if __name__ == "__main__":
-    example_igs_ftp()
+    #example_igs_ftp()
     pass
     
 

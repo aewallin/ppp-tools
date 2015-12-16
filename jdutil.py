@@ -30,6 +30,9 @@ def dt2mjd( dtlist ):
         mjdlist.append( jd_to_mjd( datetime_to_jd( dt ) ) )
     return mjdlist
 
+def datetime_to_mjd( dt ):
+    return jd_to_mjd( datetime_to_jd( dt ) ) 
+
 def stamp2dt( stamplist ):
     """
     convert list of time-stamps to list of datetimes
