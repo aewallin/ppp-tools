@@ -215,5 +215,7 @@ if __name__=="__main__":
     print "read ",len(r), " points"
     station1 = UTCStation.usno
     station2 = UTCStation.ptb
-    (t,d) = diff_stations(prefixdir, station1, station2, dt, products, program)
+    (t,d) = diff_stations(prefixdir, station1, station2, dt, products, "nrcan")
+    (t2,d2) = diff_stations(prefixdir, station1, station2, dt, products, "glab")
+
     print d

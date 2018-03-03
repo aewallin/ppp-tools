@@ -12,7 +12,7 @@ import ppp_common
 glab_tag = "glab" # used in the results-file filename
 glab_binary = "gLAB_linux" # must have this executable in path
 
-def glab_parse_result(fname, station):
+def glab_parse_result(fname, station, backward=True):
     """
         parse the FILTER data fields from gLAB outuput
         to a format defined by PPP_Result
@@ -37,6 +37,24 @@ def glab_parse_result(fname, station):
                 ztd = float(fields[8]) # Zenith Tropospheric Delay [m]
                 p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
                 ppp_result.append(p)
+                
+    if backward: # we retain data from the FILTER run backwards
+        maxepoch=datetime.datetime(1900,1,1)
+        bwd_obs = []
+        #found = False
+        for p in ppp_result.observations:
+            if p.epoch > maxepoch:
+                maxepoch = p.epoch
+                maxpt = p
+            else: # we are now in the backwards data
+                #if not found:
+                #    print "max epoch ", maxepoch
+                #    bwd_obs.append(maxpt)
+                #    found = True
+                bwd_obs.append(p)
+        bwd_obs.reverse() # back to chronological order
+        ppp_result.observations = bwd_obs 
+    print len(ppp_result)
     return ppp_result
 
 def glab_result_write(outfile, data, preamble=""):
@@ -100,19 +118,25 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
 
     # TODO: if the RINEX file is hatanaka-compressed, uncompress it
     # this requires the CRX2RNX binary
-    """
-    if rinexfile[-3] == "d" or rinexfile[-3] == "D":
-        hata_file = moved_files[0]
-        cmd = "CRX2RNX " + hata_file[:-2]
+    
+    #rinexfile = copied_files[0] # the first file is the unzipped RINEX, in the temp dir
+    if rinex[-3] == "d" or rinex[-3] == "D":
+        hata_file = copied_files[0]
+        hata_file = hata_file[:-2] # strip off ".Z"
+        #print "hata ", hata_file
+        cmd = "CRX2RNX " + hata_file
         print "Hatanaka uncompress: ", cmd
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
-    """
+    
 
     # figure out the rinex file name
     (tmp,rinexfile ) = os.path.split(rinex)
     inputfile = rinexfile[:-2] # strip off ".Z"
-
+    if inputfile[-1] == "d" or rinex[-3] == "D":
+        # if hatanaka compressed, we already uncompressed, so change to "O"
+        inputfile = inputfile[:-1]+"O"
+        
     # now ppp itself:
     os.chdir( tempdir )
 
@@ -121,16 +145,21 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     
     cmd =  glab_binary # must have this executable in path
     # see doc/glab_options.txt
-    options = [ " -input:obs %s" % inputfile,
-                " -input:clk %s" % clk,
-                " -input:orb %s" % eph,
+    options = [ " -input:obs %s" % inputfile,               # RINEX observation file
+                " -input:clk %s" % clk,                     
+                " -input:orb %s" % eph,                     # SP3 Orbits
                 " -input:ant %s" % antfile,
                 # " -model:recphasecenter ANTEX", 
-                " -model:recphasecenter no",# USNO receiver antenna is not in igs08.atx (?should it be?)
+                " -model:recphasecenter no",                # USNO receiver antenna is not in igs08.atx (?should it be?)
+                " -model:trop",                             # correct for troposphere
+                #" -model:iono FPPP",
                 " -output:file %s" % outfile,
-                " -pre:dec 30", # rinex data is at 30s intervals, don't decimate
-                " -pre:elevation 10", # elevation mask
-                " --print:input", # discard unnecessary output
+                " -pre:dec 30",                             # rinex data is at 30s intervals, don't decimate
+                " -pre:elevation 10",                       # elevation mask
+                " -pre:availf G12"                          # GPS frequencies L1 and L2
+                " -filter:trop",
+                " -filter:backward",                        # runs filter both FWD and BWD
+                " --print:input",                           # discard unnecessary output
                 " --print:model",
                 " --print:prefit",
                 " --print:postfit",
@@ -154,9 +183,11 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
 if __name__ == "__main__":
 
     # example processing:
-    station = UTCStation.usno
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=4)
+    station1 = UTCStation.ptb
+    #station2 = UTCStation.ptb
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=5)
     current_dir = os.getcwd()
 
     # run gLAB PPP for given station, day
-    glab_run(station, dt, prefixdir=current_dir)
+    glab_run(station1, dt, prefixdir=current_dir)
+    #glab_run(station2, dt, prefixdir=current_dir)
