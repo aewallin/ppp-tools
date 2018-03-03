@@ -14,6 +14,77 @@ import UTCStation
 import ftp_tools
 import jdutil 
 
+def diff_stations(prefixdir, station1, station2, dt, products, program):
+    """
+    calculate clock difference between two stations
+    Station1 PPP result is receive_clock_offset = IGST(rapid/final) - Station1
+    Station2 PPP result is receive_clock_offset = IGST(rapid/final) - Station2
+    
+    Double difference Station1-Station2 gives:
+    (IGST(rapid/final) - Station1) - (IGST(rapid/final) - Station2)
+    =
+    Station2 - Station1
+    """
+    year = dt.timetuple().tm_year
+    doy = dt.timetuple().tm_yday
+    mjd = jdutil.datetime_to_mjd(dt)
+    # output filename
+    diff_dir = prefixdir + "/results/diff/"
+    ftp_tools.check_dir(diff_dir)
+    fname = diff_dir + "%s.diff.%s.%d.%s.%s.txt" % ( station1.receiver , station2.receiver, mjd, products, program )
+    if os.path.exists(fname):
+        print fname," already exists - nothing to do."
+        return # result already exists, nothing to do
+    
+    r1 = read_result_file(station1, dt, products, program, prefixdir)
+    r2 = read_result_file(station2, dt, products, program, prefixdir)
+    print "diff station1 ", len(r1)
+    print "diff station2 ", len(r2)
+    #read_result_file( )
+    #2,x2) = bipm_ftp.COD_read_day(prefixdir, station2, year, doy, rapid)
+    #print len(t1), len(t2)
+    
+    
+    (t_diff, clock_diff) = diff(r1, r2)
+    #print len(td), len(d)
+    #print d
+    #print numpy.median(d)
+    #(td2,d2) = mad.remove_timeseries_outliers(td,d)
+    # write_diff_file(prefixdir, station1, station2, year, doy, td2, d2)
+    # print len(td2)
+    return (t_diff, clock_diff)
+
+def diff(result1, result2):
+    """
+    calculate receiver clock double-difference of two PPP_Result objects
+    
+    """
+    # choose the longer t-vector for the outer loop!
+    td=[]
+    d=[]
+    t1 = [x.epoch for x in result1.observations]
+    ns1 = [x.clock for x in result1.observations]
+    t2 = [x.epoch for x in result2.observations]
+    ns2 = [x.clock for x in result2.observations]
+    if (len(t1)>=len(t2)):
+        for t in t1:
+            if t in t2:
+                idx1 = t1.index(t)
+                idx2 = t2.index(t)
+                d.append( ns1[idx1] - ns2[idx2] )
+                td.append(t)
+    else:
+        for t in t2: # t2 is longer than t1
+            if t in t1:
+                idx1 = t1.index(t)
+                idx2 = t2.index(t)
+                if idx1<0 or idx1>len(ns1)-1: # an error!
+                    print t, idx1, len(ns1), t1.index(t), t in t1
+                    print t, idx2, len(ns2), t2.index(t), t in t2
+                d.append( ns1[idx1]-ns2[idx2] )
+                td.append(t)
+    assert( len(td) == len(d) )
+    return (td,d)
 
 def write_result_file( ppp_result ,  preamble="" , rapid=True, tag="ppp", prefixdir=""):
     """ 
@@ -41,7 +112,7 @@ def write_result_file( ppp_result ,  preamble="" , rapid=True, tag="ppp", prefix
 
     print " wrote results to ", outfile
 
-def read_result_file(station, dt, producits, program, prefixdir):
+def read_result_file(station, dt, products, program, prefixdir):
     """
     read text-file and return PPP_Result
     """
@@ -141,4 +212,8 @@ if __name__=="__main__":
     products="rapid"
     program="nrcan"
     r = read_result_file(station, dt, products, program, prefixdir)
-    print len(r)
+    print "read ",len(r), " points"
+    station1 = UTCStation.usno
+    station2 = UTCStation.ptb
+    (t,d) = diff_stations(prefixdir, station1, station2, dt, products, program)
+    print d
