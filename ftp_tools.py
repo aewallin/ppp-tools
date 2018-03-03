@@ -31,7 +31,7 @@ def ftp_download( server, username, password, remotedir, remotefile, localdir, o
     local_fullname = localdir + remotefile 
     print "ftp_download start at ", datetime.datetime.utcnow()
     if not os.path.exists( local_fullname ) or overwrite:
-        print 'Remote: ', remotedir + remotefile
+        print 'Remote: ', remotedir + " " + remotefile
         print 'Local : ', local_fullname
         sys.stdout.flush()
         ftp = ftplib.FTP(server)  # Establish the connection

@@ -15,6 +15,20 @@ import os
 import ftp_tools
 import gpstime
 
+# ftp://cddis.gsfc.nasa.gov/gnss/data/daily/
+# YYYY/DDD/YYn/brdcDDD0.YYn.Z   (merged GPS broadcast ephemeris file)
+def cddis_brdc_file(dt, prefixdir=""):
+  server =   "cddis.gsfc.nasa.gov"
+  remotedir = "gnss/data/daily/%d/brdc" % dt.year
+  doy = dt.timetuple().tm_yday
+  f = "brdc%03d0.%dn.Z" % (doy, dt.year-2000)
+  #YYYY/brdc/brdcDDD0.YYn.Z
+  localdir = prefixdir + "/stations/brdc/"
+  ftp_tools.check_dir(localdir)
+  
+  ftp_tools.ftp_download( server, username="anonymous", password="", remotedir=remotedir, remotefile=f, localdir=localdir)
+  return localdir+f
+
 def get_CODE_final(dt, prefixdir=""):
     (server, username, password, directory, files, localdir) = CODE_final_files(dt, prefixdir)
     (clk1, eph1, erp1) =  CODE_download(server, username, password, directory, files, localdir)

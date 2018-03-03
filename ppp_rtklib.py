@@ -2,6 +2,7 @@ import os
 import datetime
 import shutil
 import subprocess
+import numpy
 
 import UTCStation
 import ftp_tools
@@ -9,35 +10,52 @@ import bipm_ftp
 import igs_ftp
 import ppp_common
 
-glab_tag = "glab" # used in the results-file filename
-glab_binary = "gLAB_linux" # must have this executable in path
+rtklib_tag = "rtklib" # used in the results-file filename
+rtklib_binary = "rnx2rtkp" # must have this executable in path
 
-def glab_parse_result(fname, station, backward=True):
+def parse_result(fname, station):
     """
-        parse the FILTER data fields from gLAB outuput
+        parse the RTKLib output
         to a format defined by PPP_Result
-        
     """
     ppp_result = ppp_common.PPP_Result()
     ppp_result.station=station
     with open(fname) as f:
         for line in f:
-            if line.startswith("FILTER"):
+            if line.startswith("%"):
+                pass # comments
+            else:
                 fields = line.split()
-                assert( fields[0] == "FILTER" )
-                year = int(fields[1])
-                doy = int(fields[2])
-                secs = float(fields[3]) # seconds from start of day. GPS or UTC time??
-                dt = datetime.datetime(year,1,1) + datetime.timedelta( days = doy-1, seconds=secs )
-                x = float(fields[4])
-                y = float(fields[5])
-                z = float(fields[6])
-                (lat, lon, height ) = ppp_common.xyz2lla( x, y, z )
-                clk = float(fields[7]) * (1.0e9 / 299792458.0)   # Receiver clock [ns]
-                ztd = float(fields[8]) # Zenith Tropospheric Delay [m]
+                #print fields
+                ymd = fields[0]
+                ymd = ymd.split("/")
+                
+                year = int(ymd[0])
+                month = int(ymd[1])
+                day = int(ymd[2])
+                
+                
+                hms = fields[1]
+                hms = hms.split(":")
+                hour = int(hms[0])
+                minute = int(hms[1])
+                second = int( numpy.round( float(hms[2]) ) )
+                
+                clk = (second - float(hms[2]))*1.0e9
+                #print year, month, day, hour, minute, second, clk
+                
+                #secs = float(ymd[2])
+                
+                dt = datetime.datetime(year, month, day, hour, minute, 0) + datetime.timedelta(seconds=second)
+                #print dt
+                (lat, lon, height ) = float(fields[2]), float(fields[3]), float(fields[4])
+                #ppp_common.xyz2lla( x, y, z )
+                #clk = float(fields[7]) * (1.0e9 / 299792458.0)   # Receiver clock [ns]
+                ztd = 0 #??
+                float(fields[8]) # Zenith Tropospheric Delay [m]
                 p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
                 ppp_result.append(p)
-                
+    """
     if backward: # we retain data from the FILTER run backwards
         maxepoch=datetime.datetime(1900,1,1)
         bwd_obs = []
@@ -54,13 +72,15 @@ def glab_parse_result(fname, station, backward=True):
                 bwd_obs.append(p)
         bwd_obs.reverse() # back to chronological order
         ppp_result.observations = bwd_obs 
+    """
     print len(ppp_result)
     return ppp_result
 
+"""
 def glab_result_write(outfile, data, preamble=""):
-    """
+    
         write gLAB output results to a neatly formatted file
-    """
+    
     with open(outfile,'wb') as f:
         for line in preamble.split('\n'):
             f.write( "# %s\n" % line)
@@ -68,17 +88,22 @@ def glab_result_write(outfile, data, preamble=""):
         for row in data:
             f.write( "%04d %03d %05.03f %f %f %f %f %f %f \n" % (row[0], row[1], row[2], row[3], row[4],  row[5], row[6], row[7], row[8] ) )
     print "gLAB parsed output: ", outfile
+"""
 
-def glab_run(station, dt, rapid=True, prefixdir=""):
+
+def rtklib_run(station, dt, rapid=True, prefixdir=""):
     """
-    PPP run using ESA gLAB
+    PPP run using RTKLib rnx2rtkp
     
     """
     dt_start = datetime.datetime.utcnow()
 
     doy = dt.timetuple().tm_yday
     rinex = station.get_rinex( dt ) # doenload rinex file
-
+    
+    # GET NAV file
+    navfile = igs_ftp.cddis_brdc_file(dt, prefixdir)
+    
     # download IGS products 
     (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
 
@@ -100,7 +125,8 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     ftp_tools.delete_files(tempdir) # empty the temp directory
 
     # copy files to tempdir
-    files_to_copy = [ rinex, clk, eph, eph, erp ]
+    
+    files_to_copy = [ rinex, clk, eph, eph, erp, navfile ]
     copied_files = []
     for f in files_to_copy:
         shutil.copy2( f, tempdir )
@@ -141,27 +167,56 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     antfile = prefixdir + "/common/igs08.atx"
     outfile = tempdir + "out.txt"
     
-    cmd =  glab_binary # must have this executable in path
-    # see doc/glab_options.txt
-    options = [ " -input:obs %s" % inputfile,               # RINEX observation file
-                " -input:clk %s" % clk,                     
-                " -input:orb %s" % eph,                     # SP3 Orbits
-                " -input:ant %s" % antfile,
-                # " -model:recphasecenter ANTEX", 
-                " -model:recphasecenter no",                # USNO receiver antenna is not in igs08.atx (?should it be?)
-                " -model:trop",                             # correct for troposphere
-                #" -model:iono FPPP",
-                " -output:file %s" % outfile,
-                " -pre:dec 30",                             # rinex data is at 30s intervals, don't decimate
-                " -pre:elevation 10",                       # elevation mask
-                " -pre:availf G12"                          # GPS frequencies L1 and L2
-                " -filter:trop",
-                " -filter:backward",                        # runs filter both FWD and BWD
-                " --print:input",                           # discard unnecessary output
-                " --print:model",
-                " --print:prefit",
-                " --print:postfit",
-                " --print:satellites" ]
+    clk = copied_files[1]
+    # RKLib wants eph files to be named sp3
+    # from CODE they end .CLK_R
+    clk_new = clk[:-6]+".clk"
+    cmd = "cp "+clk + " " + clk_new
+    #print cmd
+    p = subprocess.Popen(cmd, shell=True)
+    p.communicate()
+    clk = clk_new
+    print clk
+    # RKLib wants eph files to be named sp3
+    # from CODE they end .CLK_R
+    eph = copied_files[2]
+    eph_new = eph[:-6]+".sp3"
+    cmd = "cp "+eph + " " + eph_new
+    #print cmd
+    p = subprocess.Popen(cmd, shell=True)
+    p.communicate()
+    eph = eph_new
+    print eph
+    
+    navfile = copied_files[5]
+    navfile = navfile[:-2] # strip off ".Z"
+    
+    inputfile = tempdir+inputfile
+    print "input ", inputfile
+    print "nav ", navfile
+    print "clk ", clk
+    print "eph ", eph
+    cmd =  rtklib_binary # must have this executable in path
+    
+    conf_file = prefixdir + "/common/rtklib_opts1.conf"
+    options = [ " -k %s"%conf_file,
+                #" -p 7",               # mode 7:ppp-static
+                #" -t", # lat/lon/height time output
+                #" -u", # UTC time Don't use it, we get epochs of min:11 and min:41 instead of min:00 and min:00
+                #" -d %d" % 12, # number of decimals in time output
+                " -o %s" % outfile,
+                #" -m 10",                       # elevation mask
+                #" -c", # combined forward/backward solutions
+                #" -y 1", # state output
+                #" -h", # fix and hold for integer ambiguity resolution [off]
+                #" -f 2", # 2:L1+L2
+                " -x 2", # debug level
+                " %s" % inputfile, # RINEX file
+                " %s" % navfile,   # brdc NAV file
+                " %s" % clk,
+                " %s" % eph,
+                " %s" % (prefixdir + "/common/igs08.atx")
+                ]
 
     for opt in options:
         cmd += opt
@@ -175,17 +230,17 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     print run_log2
 
     # here we may parse the output and store it to file somewhere
-    ppp_result = glab_parse_result(outfile, station)
-    ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=glab_tag, prefixdir=prefixdir )
+    ppp_result = parse_result(outfile, station)
+    ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=rtklib_tag, prefixdir=prefixdir )
 
 if __name__ == "__main__":
 
     # example processing:
     station1 = UTCStation.ptb
     #station2 = UTCStation.ptb
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=5)
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=4)
     current_dir = os.getcwd()
 
     # run gLAB PPP for given station, day
-    glab_run(station1, dt, prefixdir=current_dir)
+    rtklib_run(station1, dt, prefixdir=current_dir)
     #glab_run(station2, dt, prefixdir=current_dir)
