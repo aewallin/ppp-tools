@@ -1,0 +1,851 @@
+gLAB version v5.1.3, built on Mar  3 2018 15:47:27
+GNSS LABORATORY. Tool to analyse GNSS data
+
+Supervisor:
+    Jaume Sanz Subirana     group of Astronomy and GEomatics (gAGE/UPC)
+
+Author:
+    Pere Ramos-Bosch        group of Astronomy and GEomatics (gAGE/UPC)
+
+Maintainer:
+    Adria Rovira-Garcia     group of Astronomy and GEomatics (gAGE/UPC)
+
+Developers:
+    Deimos Ibanez Segura    group of Astronomy and GEomatics (gAGE/UPC)
+
+    Jesus Romero Sanchez    group of Astronomy and GEomatics (gAGE/UPC)
+
+                            Please send any bugs/comments to:  glab.gage @ upc.edu   
+
+Website:
+    www.gage.es/gLAB
+
+Usage:
+    gLAB [options]
+
+Options (all options are case insensitive):
+    -help                   Shows this help
+    -messages               Shows the fields of each output message (see below, 'VERBOSE OPTIONS')
+    -examples               Shows some examples to call the program
+    -config                 Shows some info on the configuration file
+    -usererrorfile          Shows an example of user-defined error configuration file
+    -sigmamultipathfile     Shows an example of user multipath model configuration file
+    -rtcmv2conversioninfo   Shows detailed information of the text files generated from a RTCM v2.x conversion
+    -referenceposfile       Shows an example of reference position file
+
+  INPUT OPTIONS
+    -input:cfg <file>       Sets the input configuration file
+    -input:obs <file>       Sets the input RINEX observation file
+    -input:nav <file>       Sets the input RINEX navigation message file
+    -input:sp3 <file>       Sets the input SP3 orbits and clocks file
+    -input:orb <file>       Sets the input SP3 orbits
+    -input:clk <file>       Sets the input clock file
+    -input:con <file>       Sets the input constellation status file (default GPSConstellationStatus.txt)
+    -input:ant <file>       Sets the input ANTEX satellite/receiver antenna data file
+    -input:klb <file>       Sets the input RINEX navigation file for Klobuchar corrections, if this parameter
+                             is avoided, it is used the -input:nav file
+    -input:bds <file>       Sets the input RINEX navigation file for BeiDou corrections, if this parameter
+                             is avoided, it is used the -input:nav file
+    -input:inx  <file>      Sets the input IONEX file for ionospheric corrections
+    -input:fppp <file>      Sets the input FPPP file for ionospheric corrections
+    -input:sbasiono <file>  Sets the input RINEX-B or EMS SBAS file for ionospheric corrections
+    -input:dcb <file>       Sets the input DCB source as a .DCB file, a RINEX navigation file, a IONEX file or a FPPP file.
+                             If more than one file is given for the same model, the last one will be used 
+    -input:rec <file>       Sets the input GPS receiver types file (default GPS_Receiver_Types) for DCB usage
+    -input:snx <file>       Sets the input SINEX file for receiver position
+    -input:sbas <file>      Sets the SBAS data file (RINEX-B v2.11 or EMS). Activates SBAS processing mode
+    -input:dgnss <file>     Sets the input RINEX observation file of the Reference Station for DGNSS
+    -input:rtcm <file>      Sets the input RTCM binary file, gLAB will automatically detect the RTCM version
+    -input:rtcm2 <file>     Sets the input RTCM v2.x binary file
+    -input:rtcm3 <file>     Sets the input RTCM v3.x binary file
+    -input:rtcm:initdate <date>     Sets the date when the record of the binary file RTCM began (YYYYMMDD), required only when processing or converting RTCM v2.x and RTCM v3.x
+    -input:rtcm:inithour <hour>     Sets the hour in GPST, when the record of the binary file RTCM began (HH 24-hour format), required when processing or converting RTCM v2.x
+    -input:sigmpath  <file> Sets the data file for user sigma multipath model for SBAS (execute 'gLAB -sigmamultipathfile' for details)
+    -input:usererror <file> Sets the data file for adding user defined error signal to raw measurements (execute 'gLAB -usererrorfile' for details)
+    -input:refpos    <file> Sets the reference position file. It can be a SP3 or a columnar text file (execute 'gLAB -referencefile' for details)
+                             This option will set receiver positioning mode to 'calculate' if non set. See '-pre:setrecpos' option below for details
+    The use of '-input:nav' file will preconfigure the parameters to work in the Standard Point Positioning (SPP).
+    The use of '-input:sp3'/'-input:orb'/'-input:clk' will preconfigure the parameters to work in the Precise Point
+      Positioning (PPP) approach. All the values can be overridden by specifying the parameters. See below for more details
+      on which are the defaults for each mode.
+    The use of '-input:sbas' will preconfigure the parameters to work in SBAS mode.
+    The use of any '-input:rtcm' without a '-input:obs' will result into converting the input RTCM to its corresponding output.
+
+  PREPROCESSING OPTIONS   (use -pre:... to activate, --pre:... to deactivate, when applicable)
+
+    -pre:starttime <date>   Set the start time for processing data. The following date formats are accepted:
+                              YYYYMMDD HH:MM:SS (HH in 24 hour format)
+                              YYYY/MM/DD HH:MM:SS (HH in 24 hour format)
+                              YYYY/DoY SoD
+                              GPSWeek SoW
+    -pre:endtime <date>     Set the end time for processing data. See '-pre:starttime' option above for date formats
+    -pre:dec #              # = number              Decimate input data by # seconds [default 300 for SPP/PPP, 1 for SBAS, 0 for DGNSS]
+                            In product comparison mode (see below, in 'WORK MODES'), it sets the time step of the
+                            comparisons
+    -pre:sat g#             Exclude satellite from processing
+                            g = character determining GNSS system (G->GPS)
+                            # = PRN number (If #=0, all satellites of the selected GNSS system will be unselected)
+    -pre:geoexclude #       Exclude GEO satellite from SBAS. Data from this GEO will be ignored for SBAS corrections
+                            # = PRN number
+    -pre:geosel #           Select GEO satellite for SBAS corrections
+                            # = 0 => Use data from all GEO (all GEO mixed) [default in NPA if mixing GEO data is enabled]
+                            # = 1 => Use GEO from the first line of SBAS data read [default in PA]
+                            # = 2 => Use the GEO with highest elevation
+                            120 <= # <= 210 => Use the GEO with the given PRN
+    -pre:snr                Enable SNR (Signal to Noise Ratio) deselection. The SNR is read from the observation file. [default on only in SBAS and DGNSS]
+                            If no SNR is present in the observation file, no deselection is done. The default threshold is 33 dBHz
+    -pre:snrsel g# <val>    Set a SNR threshold for a given satellite. If this option is given, SNR deselection will be activated
+                            g = character determining GNSS system (G->GPS)
+                            # = PRN number. If #=0, then the threshold will be applied to all satellites of the selected GNSS system
+                            <val> Value for SNR threshold in dBHz. This value is compared to the SNR obtained from the RINEX file in all
+                              code and carrier phase measurements. If no SNR value is present in the RINEX file, this value will be omitted.
+    -pre:elevation <val>    Elevation mask. Satellites below this threshold will be discarded (in degrees) [default 5]
+    -pre:eclipse            Discard satellites under Earth eclipse [default: enabled for PPP, disabled for SPP]
+    -pre:availf g#          Mark frequencies available [default all]
+                            g = character determining GNSS system (G->GPS)
+                            # = frequencies available
+                            Sample: '-pre:availf G12' Frequencies 1 and 2 of GPS available
+                                    '-pre:availf G1'  Frequency 1 of GPS available, 2 unavailable
+    -pre:smooth <val>       Number of epochs of smoothing [default 0 (disabled) for non SBAS processing, default 100 for SBAS processing]
+    -pre:smoothMeas <n> <meas>         Smooth measurement in filter <n> with measurement type <meas>
+                            In general, <n> is a pseudorange and <meas> a carrier phase, see option '-filter:select' for more
+                            information in the selection of measurements to be used in the filter
+                   type <meas> for carrier phase smoothing are: L1P, L2P, IF (Iono-free) and DF (divergence-free)
+    -pre:smoothmin <val>    Number of epochs of continuous code smoothing before steady-state operation [default 0 for non SBAS processing, 360 for SBAS processing]
+                            Satellites will be excluded until reaching this steady-state
+    -pre:dgnss:excludeSmoothingConvergenceUser      Exclude satellites during the smoothing convergence in the User Station [default off]
+    --pre:dgnss:excludeSmoothingConvergenceUser     Do not exclude satellites during the smoothing convergence in the User Station
+    -pre:dgnss:excludeSmoothingConvergenceRef       Exclude satellites during the smoothing convergence in the Reference Station,
+                                                     it will be effective if at least one cycle-slip detector is activated [default on]
+    --pre:dgnss:excludeSmoothingConvergenceRef      Do not exclude satellites during the smoothing convergence in the Reference Station
+    -pre:dgnss:smoothmin <val>                      Number of seconds of continuous code smoothing before steady-state operation [default 360]
+    -pre:refpos:deg <val>   Set the interpolation degree for the reference position values [default 0]
+    -pre:setrecpos <val>    <val> = RINEX           Set the user receiver a priori position as the one specified in the RINEX observation file [default]
+                                                     RINEX position will be used for modelling and for NEU error.
+                            <val> = SINEX           Set the user receiver a priori position to be read from a SINEX file (to be
+                                                     specified by the '-input:snx' parameter)
+                                                     SINEX position will be used for modelling and for NEU error.
+                            <val> = <x> <y> <z>      
+                            <val> = Set <x> <y> <z>  Specify the receiver a priori position in metres
+                                                     Sample: '-pre:setrecpos 4789032.7143 176594.9690 4195013.2268'
+                                                     Specified position will be used for modelling and for NEU error.
+                            <val> = SetGeod <Lon> <Lat> <Height> Same as 'SetGeod', but the initial coordinates are given in
+                                                                 geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                                 [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = SetRef          Read reference position for each epoch from reference position file
+                                                     Specified position will be used for modelling and for NEU error.
+                                                     See parameters '-referenceposfile', '-input:refpos' and '-pre:refpos:deg' for help on the reference file
+                            <val> = calculate       The user receiver a priori position will be calculated by the program and used for modelling,
+                                                     starting from (6378137,0,0).
+                                                     This is especially useful when processing moving receivers (trajectories)
+                                                     or when the approximate receiver position is not known. With this option
+                                                     activated, the differential fields of the OUTPUT message will be zero
+                            <val> = calculateRef    Same as 'calculate', but instead of printing (0,0,0) in the output NEU error,
+                                                     it will compute the NEU error using the coordinates from the reference file.
+                                                     See parameters '-referenceposfile', '-input:refpos' and '-pre:refpos:deg' for help on the reference file
+                            <val> = calculateRINEX  Same as calculate, but the initial coordinates will be the one read in the RINEX observation header.
+                                                     If RINEX coordinates are are (0,0,0), then Earth's surface will be used as initial coordinates
+                            <val> = calculateRINEXRef Same as 'calculateRINEX', but instead of printing (0,0,0) in the output NEU error,
+                                                        it will compute the NEU error using the coordinates from the reference file.
+                                                        See parameters '-referenceposfile', '-input:refpos' and '-pre:refpos:deg' for help on the reference file
+                            <val> = calculateUSER <x> <y> <z>  Same as 'calculate', but the initial coordinates will be the one
+                                                                given by the user in this parameter (in metres)
+                            <val> = calculateUSERGeod <Lon> <Lat> <Height>  Same as 'calculateUser', but the initial coordinates are given in
+                                                                geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                                [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = calculateUSERRef <x> <y> <z> Same as 'calculateUSER', but instead of printing (0,0,0) in the output NEU error,
+                                                                 it will compute the NEU error using the coordinates from the reference file.
+                                                                 See parameters '-referenceposfile', '-input:refpos' and '-pre:refpos:deg' for help on the reference file
+                            <val> = calculateUSERGeodRef <Lon> <Lat> <Height>  Same as 'calculateUSERRef', but the initial coordinates are given in
+                                                                geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                                [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = DGNSSbaseline    The user receiver (rover) a priori position will be calculated by the program as in option 'calculate', but the
+                                                     differential fields in the OUTPUT message will computed against the reference antenna position, (baseline vector from user
+                                                     to reference station), and the reference station coordinates will be read from RINEX or RTCM input file.
+                            <val> = DGNSSRinexRover  Same as 'DGNSSbaseline', but instead of comparing with the reference station, it will compare the user receiver (rover)
+                                                     coordinates with the coordinates read from the rover RINEX observation file
+                            <val> = DGNSSRoverUSER <RoverX> <RoverY> <RoverZ>
+                                                     	  Same as 'DGNSSbaseline', but instead of comparing with the reference station, it will compare the user receiver
+                                                           (rover) with the position given in this parameter
+                            <val> = DGNSSRoverUSERGeod <RoverLon> <RoverLat> <RoverHeight>
+                                                          Same as 'DGNSSRoverUSER', but the rover coordinates are given in
+                                                          geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                          [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = DGNSSRoverUSERRef     Same as 'DGNSSbaseline', but instead of comparing with the reference station, it will compare the user receiver
+                                                           (rover) solution with the position given by the reference file.
+                                                           See parameters '-referenceposfile', '-input:refpos' and '-pre:refpos:deg' for help on the reference file
+                            <val> = DGNSSUserRoverRef <RefX> <RefY> <RefZ>
+                                                          Same as 'DGNSSRoverUSERRef', but the reference station coordinates will be provided in this parameter
+                                                           (this mode only works when computing DGNSS with a RINEX file)
+                            <val> = DGNSSUserGeodRoverRef <RefLon> <RefLat> <RefHeight>
+                                                          Same as 'DGNSSUserRoverRef', but the reference station coordinates are given in
+                                                          geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                          [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = DGNSSUserbaseline <RefX> <RefY> <RefZ>
+                                                          Same as 'DGNSSbaseline', but the reference station coordinates will be provided in this parameter
+                                                           (this mode only works when computing DGNSS with a RINEX file)
+                            <val> = DGNSSUserGeodbaseline <RefLon> <RefLat> <RefHeight>
+                                                          Same as 'DGNSSUserbaseline', but the reference station coordinates are given in
+                                                          geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                          [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = DGNSSUserRinexRover <RefX> <RefY> <RefZ>
+                                                          Same as 'DGNSSRinexRover', but the reference station coordinates will be provided in this parameter
+                                                           (this mode only works when computing DGNSS with a RINEX file)
+                            <val> = DGNSSUserGeodRinexRover <RefLon> <RefLat> <RefHeight>
+                                                          Same as 'DGNSSUserRinexRover', but the reference station coordinates are given in
+                                                          geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                          [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = DGNSSRefRoverUSER <RefX> <RefY> <RefZ> <RoverX> <RoverY> <RoverZ>
+                                                          Same as 'DGNSSRoverUSER', but the reference station coordinates will be provided in this parameter
+                                                           (this mode only works when computing DGNSS with a RINEX file)
+                            <val> = DGNSSRefGeodRoverUSERGeod <RefLon> <RefLat> <RefHeight> <RoverLon> <RoverLat> <RoverHeight>
+                                                          Same as 'DGNSSRefRoverUSER', but the rover and reference station coordinates are given in
+                                                          geodetic coordinates. Longitude and latitude are given in degrees, within the ranges
+                                                          [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = DGNSSRefCarRoverUSERGeod <RefX> <RefY> <RefX> <RoverLon> <RoverLat> <RoverHeight>
+                                                          Same as 'DGNSSRefRoverUSER', but the rover coordinates are given in
+                                                          geodetic coordinates and the reference station in cartesian coordinates.
+                                                          Longitude and latitude are given in degrees, within the ranges
+                                                          [-180..180] and [-90..90] respectively. The height is given in metres
+                            <val> = DGNSSRefGeodRoverUSERCar <RefLon> <RefLat> <RefHeight> <RoverX> <RoverY> <RoverZ>
+                                                          Same as 'DGNSSRefRoverUSER', but the reference station coordinates are given in
+                                                          geodetic coordinates and the rover in cartesian coordinates.
+                                                          Longitude and latitude are given in degrees, within the ranges
+                                                          [-180..180] and [-90..90] respectively. The height is given in metres
+    -pre:setrectype <val>   <val> = gpsrt           Set the receiver type as the one specified in the GPS_Receiver_Types
+                                                     file (provided by '-input:rec') [default if '-input:rec' provided]
+                            <val> = 0               Set the receiver type as 'Unknown' [default]
+                            <val> = 1               Set the receiver type as 'Cross-correlated'
+                                                     In this mode, P2 will be corrected with the DCB of P1-C1
+                            <val> = 2               Set the receiver type as 'No P1'
+                                                     In this mode, C1 will be used instead of P1
+                            <val> = 3               Set the receiver type as 'Consistent measurements'
+    -pre:prealign           Prealign carrier phase measurements with its corresponding pseudorange [default on]
+    -pre:checkcodejumps     Check for pseudorange jumps and adjust the phase accordingly. See 'Notes for preprocessing' below [default on]
+    --pre:checkcodejumps    Do not check for pseudorange jumps
+    -pre:cs:datagap <val>   Data gap. Maximum period of time, without measurements, allowed before declaring cycle-slip (in seconds)
+                            	[default 40 in SPP/PPP, 10 in SBAS and DGNSS]
+                            NOTE: If <val> is shorter than the sampling rate, all measurements will be discarded
+    -pre:cs:lli             Use Loss of Lock Indicator for cycle-slip detection [default off]
+    --pre:cs:lli            Do not use Loss of Lock Indicator for cycle-slip detection [default off]
+    -pre:cs:ncon            Use N-consecutive epochs for cycle-slip detection [default on in SPP and PPP]
+    --pre:cs:ncon           Do not use N-consecutive epochs for cycle-slip detection [default off in SBAS and DGNSS}
+    -pre:cs:ncon:min <val>  After a short data gap (i.e., shorter than the value set in '-pre:cs:datagap' with default of 40 seconds)
+                             discard the first <val> epochs. NOTE: If sampling interval is greater than 15 seconds, gLAB will
+                             automatically disable this option [default 2]
+    -pre:cs:li              Use the carrier phase geometry-free combination (LI) for cycle-slip detection (2 frequencies) [default in PPP]
+    --pre:cs:li             Do not use carrier phase geometry-free combination (LI) for cycle-slip detection (2 frequencies) [default in SPP]
+                            Li combination is a slow varying function which only has ambiguity and ionosphere
+                            Each epoch and satellite an expected LI value is computed and compared against the
+                            measured one, if this difference is above a certain threshold, a cycle-slip is marked.
+                            This threshold is (max + (min-max)*exp(-dt/t)), being dt the time between epochs
+    -pre:cs:li:maxjump <val> Maximum jump threshold between two consecutive measured LI values [default 1]
+    -pre:cs:li:max <val>     Maximum threshold between estimated and measured LI values [default 0.08]
+    -pre:cs:li:t0 <val>      Time constant to set the threshold between maximum and minimum [default 60]
+    -pre:cs:li:samples <val> Minimum number of epochs needed to fit the second-degree polynomial [default 7]
+    -pre:cs:bw               Use Melbourne-Wubbena (BW) for cycle-slip detection (2 frequencies) [default in PPP]
+    --pre:cs:bw              Do not use Melbourne-Wubbenna (BW) for cycle-slip detection (2 frequencies) [default in SPP]
+                             BW combination is a mixed combination between carrier phase and pseudoranges.
+                             This combination is free of ionosphere and geometry, thence constant, but
+                             has a high noise (due to the pseudorange measurements used). If this noise is
+                             low enough, it is straightforward to detect cycle-slips, but in noisy environments
+                             BW is not able to detect cycle-slips. The algorithm using BW computes the mean and
+                             the standard deviation of the last epochs in order to obtain an estimated value
+                             and the noise level of the combination. The estimated value is compared against the
+                             measured value, and the noise level is used for the threshold of this difference.
+                             Difference must be lower than standard deviation multiplied by a number (k-factor).
+                             This threshold has minimum (min) and maximum (max) saturation values.
+    -pre:cs:bw:siginit <val>     Initial standard deviation (in metres) to use in BW after a cycle-slip [default 2]
+    -pre:cs:bw:sigmin <val>      Minimum threshold (in metres) between estimated and measured BW values in relation to its standard deviation [default 0.8]
+    -pre:cs:bw:timewindow <val>  Number of epochs to compute the mobile mean over the Hatch filter [default 300]
+    -pre:cs:bw:kfactor <val>     Relation between estimated and measured BW values in relation to its standard deviation [default 5]
+    -pre:cs:bw:samples <val>     Minimum number of epochs needed to stabilize the mean and sigma in the BW cycle-slip detector [default 2]
+    -pre:cs:l1c1                 Use the L1-C1 combination for cycle-slip detection (1 frequency) [default in PPP]
+    --pre:cs:l1c1                Do not use the L1-C1 combination for cycle-slip detection (1 frequency) [default in SPP]
+    -pre:cs:l1c1:unconcheck      Use the unconsistency check in L1-C1 cycle-slip detection (1 frequency) [default]
+    --pre:cs:l1c1:unconcheck     Do not use the unconsistency check in L1-C1 cycle-slip detection (1 frequency)
+    -pre:cs:l1c1:unconcheck:th  <val> Threshold (in metres) for the unconsistency check in L1-C1 cycle-slip detection (1 frequency) [default 20]
+                             The L1-C1 averages the difference between carrier phase and pseudorange measurements in F1 for several epochs.
+                             This cycle-slip detection method is very useful for single-frequency receivers, as it only requires
+                             measurements from one frequency. As a counterpart, the ionospheric term is different for C1 and L1
+                             thence, this combination will tend to diverge. It becomes necessary to set a smoothing window
+                             to limit this divergence (-pre:cs:l1c1:timewindow). This makes that this method becomes a bit limited
+                             with data rates too low. Ideally this method should be used with rates of 1 Hz
+    -pre:cs:l1c1:kfactor <val>     Relation between estimated and measured L1-C1 values in relation to its standard deviation [default 5]
+    -pre:cs:l1c1:timewindow <val>  Number of epochs to limit the L1-C1 ionosphere divergence [default 300]
+    -pre:cs:l1c1:samples <val>     Minimum number of epochs needed to stabilize the mean and sigma in the L1C1 cycle-slip detector [default 2]
+    -pre:cs:l1c1:init <val>        Initial standard deviation for the threshold calculation in the L1-C1 [default 3] (m) 
+    -pre:usererrorafter     Add user defined error after prealigning, checking cycle-slips and smoothing [default off]
+
+  MODELLING OPTIONS   (use -model:... to activate, --model:... to deactivate)
+    -model:iono <val>       <val> = no              Do not correct ionosphere [default in PPP] (equivalent to '--model:iono')
+                                  = Klobuchar       Correct measurements with Klobuchar model [default in SPP]
+                                  = BeiDou          Correct measurements with BeiDou model
+                                  = IONEX           Correct measurements with IONEX file data
+                                  = FPPP            Correct measurements with FPPP file data
+                                  = NeQuick         Correct measurements with NeQuick model
+                                  = SBAS            Correct measurements with SBAS iono corrections (but do not apply any other SBAS correction)
+                            If more than one iono model option is given, the last one will be used
+    -model:trop             Correct troposphere delay [default on] 
+    --model:trop            Do not correct troposphere delay 
+    -model:trop:nominal <val>   <val> = Simple     Compute a simple tropospheric nominal depending on receiver's height over the sea level. [default in PPP]
+                                <val> = UNB3       Troposphere nominals are calculated from the receiver's height and estimates of five meteorological
+                                                   parameters: pressure, temperature, water vapour pressure, temperature lapse rate and water vapour lapse rate.
+                                                   It is adopted by SBAS systems (see RTCA-MOPS, 2006). [default in SPP]
+                                <val> = TropoGal   Use Galileo's tropospheric model
+    -model:trop:mapping <val>   <val> = Simple     Compute the mapping as the obliquity factor described in Black and Eisner, 1984. This mapping
+                                                   only depends on satellite elevation and it is common for wet and dry components.  [default in SPP]
+                                <val> = Niell      Compute the mapping described in  A.E. Niell, 1996. This mapping  considers different obliquity
+                                                   factors for the wet and dry components [default in PPP]
+    -model:satclocks        Correct the measurements with the satellite clock offsets estimations [default on]
+    -model:relclock         Correct the measurements with the relativistic clock model [default on]
+    -model:satmovinflight   Consider satellite movement during signal flight time [default on]
+    -model:earthrotinflight Consider Earth rotation during signal flight time [default on]
+    -model:satphasecenter   Correct satellite phase centre to mass centre corrections [default on in PPP, off in SPP]
+    -model:satphasevar      Correct satellite phase centre to mass centre corrections variations with zenital angle [default off for SPP, on for PPP]
+    -model:recphasecenter <val>    <val> = no                Do not correct antenna receiver phase centre [default in SPP]
+                            <val> = ANTEX                    Use the ANTEX file to correct the antenna phase center [default in PPP]
+                            <val> = <nfreq> <dN> <dE> <dU>   Set dN, dE, dU as the antenna phase centre for the frequency <nfreq>
+                                       <nfreq> = Frequency number (typical for GPS, 1 and 2)
+                                       <dN>    = North correction [in metres]
+                                       <dE>    = East correction [in metres]
+                                       <dU>    = Up correction [in metres]
+                            Sample: '-model:recphasecenter 1 0 0 0.11 -model:recphasecenter 2 0 0 0.128'
+                                    Typical AOAD/M_T antenna phase centre correction, 11 cm and 12.8 cm in the
+                                    Up component for frequencies 1 and 2
+    -model:recphasevar      Correct antenna receiver phase centre variations [default off in SPP, on in PPP]
+    -model:strictradome     When using ANTEX to correct the receiver phase centre, this option will force a perfect match between
+                            the antenna name and radome reported in the receiver RINEX file and the ones in the ANTEX file. If this option
+                            is disabled, and the radome is not found, the corrections will be used considering the radome "NONE" [default off]
+    -model:arp <val>        <val> = no              Do not apply any Antenna Reference Point (ARP) correction [default in SPP] (equivalent to '--model:arp')
+                            <val> = RINEX           Use as ARP the information on the RINEX file (field 'ANTENNA: DELTA H/E/N') [default in SBAS, DGNSS and PPP]
+                            <val> = <dN> <dE> <dU>  Set dN, dE, dU as the ARP
+                                       <dN>    = North correction [in metres]
+                                       <dE>    = East correction [in metres]
+                                       <dU>    = Up correction [in metres]
+                                NOTE: In DGNSS mode, if ARP correction is enabled, reference station coordinates will be always be read from reference
+                                       RINEX or RTCM file, while rover ARP will be read from RINEX or set from user values.
+    -model:dcb:p1c1 <val>   <val> = no        Do not correct Differential Code Biases between P1 and C1 codes (equivalent to '--model:dcb:p1c1')
+                                              Do not identify C1 and P1 never
+                            <val> = flexible  Do not correct Differential Code Biases between P1 and C1 codes [default on]
+                                              Identify C1 and P1 when one of them is missing
+                            <val> = strict    Correct  Differential Code Biases between P1 and C1 codes
+                                              Identify C1 and P1 when applicable (defined by the receiver type)
+    -model:dcb:p1p2 <val>   <val> = no        Do not correct Differential Code Biases between codes P1 and P2 (equivalent to '--model:dcb:p1p2')
+                            <val> = RINEX     Correct Differential Code Biases between codes P1 and P2 using TGDs from the RINEX navigation file [default in SPP, off in PPP]
+                            <val> = DCB       Correct Differential Code Biases between codes P1 and P2 from a precise DCB file
+                                              Identify C1 and P1 when applicable (defined by the receiver type)
+                            <val> = IONEX     Correct Differential Code Biases between codes P1 and P2 using DCB from IONEX file
+                            <val> = FPPP      Correct Differential Code Biases between codes P1 and P2 using DCB from FPPP file
+    -model:windup           Correct the wind up term for carrier phase measurements [default]
+    -model:solidtides       Correct the Earth surface deformation due to solid tides [default in PPP, off in SPP]
+    -model:relpath          Correct the path range delay term due to the gravitational gradient between receiver and transmitter
+                            [default on in PPP, off in SPP]
+    -model:satellitehealth  Only valid when using broadcast products. Use the healthy flag of the navigation message [default on]
+    -model:brdctranstime    Only valid when using broadcast products. Check that transmission time of message is equal or before the current epoch
+                              of current time [default on for non SBAS processing, off for SBAS processing]
+    -model:orbit:deg <val>  Precise orbit interpolation degree [default 10]
+    -model:clock:deg <val>  Precise clock interpolation degree [default 0 - no interpolation]
+    -model:orbmaxgaps <val> Set maximum number of gaps between samples used for precise orbit interpolation [default 8]
+    -model:clkmaxgaps <val> Set maximum number of gaps between samples used for precise clock interpolation [default 2]
+    -model:orbtotmaxgaps <val> Set the maximum number of gaps between all samples used for precise orbit interpolation [default 16]
+    -model:clktotmaxgaps <val> Set the maximum number of gaps between all samples used for precise clock interpolation [default 4]
+    -model:orbprevsample    When a concatenated SP3 file is read for orbit data, if the last epoch of the previous day is the same as the first epoch
+                              of the current day, use the last orbit sample of the previous day instead of the first sample of the current day [default off]
+                              This typically occurs with samples at epoch 0h 0m. This option will only have effect if both repeated samples have valid values.
+    -model:clkprevsample    When a concatenated SP3/Clock file is read for clock data, if the last epoch of the previous day is the same as the first epoch
+                              of the current day, use the last orbit sample of the previous day instead of the first sample of the current day [default off]
+                              This typically occurs with samples at epoch 0h 0m. This option will only have effect if both repeated samples have valid values.
+    -model:sbasmaritime     Configure SBAS parameters for SBAS maritime mode (see notes on SBAS maritime below) [default off]
+    -model:alarmmsgtype2    When reading an SBAS message type 0, parse it as type 2 (except if all bits are 0) [default off]
+    -model:ignoretype0      Ignore all SBAS messages type 0 [default off]
+    -model:sbasmode <val>   Select navigation mode for SBAS processing:
+                            <val> = PA    Precision Approach [default]
+                            <val> = NPA   Non Precision Approach
+    -model:geoswitch        Enable GEO switch for SBAS processing. See 'Mode and GEO switch notes' below [default off]
+    -model:maintaingeo      If GEO switch for SBAS is enabled, maintain current GEO while possible independently if it is the GEO
+                              selected by the user or it has been selected due to a GEO switch [default on]
+    -model:geofallback      If GEO switch for SBAS is enabled, always try to return to the initial selected GEO [default off]
+    -model:sbasmodeswitch   Enable navigation mode switching for SBAS processing [default off]
+    -model:mixedgeo         Enable the usage of mixed GEO data (messages from all GEO are treated as if there were from an unique GEO) [default off]
+    -model:initcoordnpa     In SBAS mode, if receiver coordinates are to be calculated without giving any initial condition (parameter
+                            -pre:setrecpos calculate), compute the first epochs using Klobuchar until the receiver coordinates have converged.
+                            This is useful due to the initial gLAB coordinate may do that the IPPs (Ionospheric Pierce Point) fall outside the
+                            SBAS region, making all satellites unavailable due to the lack of ionosphere. This option only has effect if SBAS
+                            mode switch is disabled and receiver coordinates are set to 'calculate' [default on]
+    -model:sbasreceiver #   Set receiver class type for SBAS (for computing variance of the airborne receiver)
+                            # = 0 User defined receiver model (defined with parameters '-model:sigmpath', '-model:sigdiv', '-model:signoise' and '-input:sigmpath').
+                                  The receiver sigmas not defined by the user (with the previous parameters) will use the default values for class 2 receiver
+                            # = 1 Class 1 equipment
+                            # = 2,3,4 Class 2,3,4 equipment (all equivalent) [default 2]
+    -model:geoacqtime #     Set the minimum time (in seconds) to consider that gLAB has received enough SBAS corrections from a GEO
+                              counting from the first message received [default 300]
+                              This timer is set to ensure that we have received enough corrections from the GEO we want to switch to.
+                              If this timer is set too low (few seconds), it may happen that we switch to a GEO with not enough data (due to
+                              we are in initialization or the GEO has received an alarm message
+                              gLAB will not switch to any GEO before this time, except for when an alarm message is received and there is no other GEO available
+    -model:switchtime #     Set the minimum time (in seconds) between a GEO or mode switch and the following one [default 20]
+                              This timer is set to avoid continuous switching in the same epoch when all GEO do not have enough data.
+                              If this timer is set to zero, a maximum of 50 switches per epoch (for both mode and GEO) will be done
+    -model:sbastmout    <n> <val> Set time out value for SBAS messages (except for fast and range rate corrections) in both modes, PA and NPA
+                            <n> is the message type number
+                            <val> is the time out value (in seconds)
+    -model:sbastmoutpa  <n> <val> Set time out value for SBAS messages (except for fast and range rate corrections) in PA mode
+                            <n> is the message type number
+                            <val> is the time out value (in seconds)
+    -model:sbastmoutnpa <n> <val> Set time out value for SBAS messages (except for fast and range rate corrections) in NPA mode
+                            <n> is the message type number
+                            <val> is the time out value (in seconds)
+    -model:sbastmoutfc      <val>  Set time out value for fast corrections in both modes, PA and NPA
+                              <val> is the time out value (in seconds)
+    -model:sbastmoutfcpa    <val>  Set time out value for fast corrections in PA mode
+                              <val> is the time out value (in seconds)
+    -model:sbastmoutfcnpa   <val>  Set time out value for fast corrections in NPA mode
+                              <val> is the time out value (in seconds)
+    -model:sbastmoutrrc     <val>  Set time out value for range rate corrections in both modes, PA and NPA
+                              <val> is the time out value (in seconds)
+    -model:sbastmoutrrcpa   <val>  Set time out value for range rate corrections in PA mode
+                              <val> is the time out value (in seconds)
+    -model:sbastmoutrrcnpa  <val>  Set time out value for range rate corrections in NPA mode
+                              <val> is the time out value (in seconds)
+    -model:sigmpath <val1> <val2>  Set parameters a,b for sigma multipath for SBAS airborne receiver, being sigma=a+b*e^(-satelevation/10) and satelevation in degrees.
+                              <val1> a value (in metres)
+                              <val1> b value (in metres)
+    -model:sigdiv   <val>   Set a fixed value (in metres) for sigma divergence for SBAS airborne receiver
+    -model:signoise <val>   Set a fixed value (in metres) for sigma noise for SBAS airborne receiver
+    -model:nofastcor        Set SBAS fast and RRC corrections values to 0 [default off]
+    -model:norrccor         Set SBAS RRC correction value to 0 [default off]
+    -model:noslowcor        Set SBAS slow corrections values to 0 [default off]
+    -model:noionocor        Set SBAS ionosphere correction value to 0 [default off]
+    -model:nofastsigma      Set SBAS fast and RRC sigmas (sigma UDRE and degradation terms) values to 0 [default off]
+    -model:nofastdeg        Set SBAS fast degradation term value to 0 [default off]
+    -model:norrcsigma       Set SBAS RRC degradation term value to 0 [default off]
+    -model:noslowsigma      Set SBAS slow correction degradation term to 0 [default off]
+    -model:noionosigma      Set SBAS ionosphere sigma to 0 [default off]
+    -model:notroposigma     Set SBAS troposphere sigma to 0 [default off]
+    -model:noenroutesigma   Set SBAS En Route Through NPA degradation term to 0 [default off]
+    -model:nodeltaudre      Set SBAS Delta UDRE factor to 1 [default off]
+    -model:nomt10           Disable use of message type 10 in all modes [default off]
+    -model:nomt2728         Disable use of messages type 27 and 28 in all modes (this is equivalent to parameter '-model:nodeltaudre') [default off]
+    -model:dgnss:sigmainflation   The sigma is inflated during the smoother convergence (see DGNSS notes at the end) [default on]
+    --model:dgnss:sigmainflation  Do not use the sigma inflation during the smoother convergence
+    -model:dgnss:maxage <val>     Set the maximum age value (in seconds) to stop applying DGNSS corrections [default 31]
+    -model:dgnss:maxcorrval <val> Set the maximum value for a DGNSS correction to be considered valid (in metres) [default 500]
+     NOTE: When setting any fast, slow, ionosphere correction or their sigmas to 0, gLAB will still check all the conditions
+             for the current mode. For example, if gLAB is in PA mode and the '-model:nofastcor' parameter is set, then it
+             will search for a fast correction, and if it is available, it will set the value to 0 instead of the one
+             given in the SBAS message. If there is no SBAS fast correction available, the satellite will not be used.
+     NOTE: The SBAS timeouts given by the user will override the defaults stated in MOPS-D.
+
+  FILTERING OPTIONS
+    -filter:sigmaiono       Use standard deviation data from IONEX or FPPP or SBAS if these iono models are used [default on] ('--filter:sigmaiono' to disable it)
+    -filter:stepdetector    Check for jumps in measurements using the prefits residuals (only for C1C measurement) [default off]
+                             Use '--filter:stepdetector' to disable it
+    -filter:prefitoutliers:median  <val> Check for outliers in the prefits residuals using the median, with <val> (in metres) as the threshold [default off]
+                             Use '--filter:prefitoutliers:median' or '-filter:prefitoutliers:median 0' to disable it. See notes on prefit outlier detectors below
+    -filter:prefitoutliers:abs  <val> Check for outliers in the prefits residuals comparing absolute values, with  <val> (in metres) as the threshold [default off]
+                             Use '--filter:prefitoutliers:abs' or '-filter:prefitoutliers:abs 0' to disable it. See notes on prefit outlier detectors below
+    -filter:trop            Estimate the troposphere of the station [default in PPP with carrier phase] ('--filter:trop' to disable it)
+    -filter:nav <nav>       <nav> = static          Process supposing a static receiver [default in PPP]
+                                  = kinematic       Process supposing a moving receiver [default in SPP]
+    -filter:meas <meas>     <meas> = pseudorange    Use only pseudorange for positioning
+                                   = carrierphase   Use pseudorange and carrier phase for positioning [default]
+    -filter:select <num> <meas1> <meas2> ...        Select the measurements or combinations to include in the filtering
+                            <num> = Number of measurements/combinations
+                            <measN> = List of measurements/combinations
+                            [Defaults]: PPP - Pseudorange      => 1 PC
+                            [Defaults]: PPP - Carrierphase     => 2 PC LC
+                            [Defaults]: SPP - Pseudorange      => 1 C1C
+                            [Defaults]: SPP - Carrierphase     => 2 C1C L1P
+    -filter:fixedweight <n> <val>         Apply the specified standard deviation to the measurement 'n', to be used as weight in the filter.
+                            <n>    = Measurement number
+                            <val>  = Standard deviation of the measurement (m)
+                            In particular, the filter shall apply as weight = 1/(<val>^2)
+                            Sample: '-filter:fixedweight 1 2'    Set 2 metres of standard deviation to measurement 1 in filter
+                                    '-filter:fixedweight 2 0.01' Set 1 centimetre of standard deviation to measurement 2 in filter
+                            Defaults: PPP:         Pseudorange->1m  Carrierphase->0.01m
+                                      SPP:         Pseudorange->5m  Carrierphase->0.10m
+    -filter:elevweight <n> <a> <b> <c>    Apply the specified values to compute the standard deviation of the measurement 'n'
+                            std = a + b * e^(-elevation/c)
+                            <n>    = Measurement number
+                            <a>    = Minimum standard deviation of the measurement [weight at elevation 90 degrees] (m)
+                            <b>    = Multiplier to e [standard deviation at elevation 0 degrees] (m)
+                            <c>    = Elevation constant (degrees)
+                            Again, the filter shall apply as weight = 1/(std^2)
+                            Sample: '-filter:elevweight 1 0.3 8 10'   Apply the standard deviation: 0.3+8*e^(-elevation/10)
+                            Note: '-filter:elevweight 1 x 0 y' equals to '-filter:fixedweight 1 x'
+    -filter:phi:dr <val>    Specify the Phi value for position unknowns [defaults static:1 kinematic:0]
+    -filter:phi:clk <val>   Specify the Phi value for clock unknown [default 0]
+    -filter:phi:trop <val>  Specify the Phi value for troposphere unknown [default 1]
+    -filter:phi:amb <val>   Specify the Phi value for ambiguity unknowns [default 1]
+    -filter:q:dr <val>      Specify the Q noise value for position unknowns [defaults static:0 kinematic:1e8] (m^2)
+    -filter:q:clk <val>     Specify the Q noise value for clock unknown [default 9e10] (m^2)
+    -filter:q:trop <val>    Specify the Q noise variation value for troposphere unknown [default 1e-4] (m^2/h)
+    -filter:q:amb <val>     Specify the Q noise value for ambiguity unknowns [default 0] (m^2)
+    -filter:p0:dr <val>     Specify the P0 initial value for position unknowns [default 1e8] (m^2)
+    -filter:p0:clk <val>    Specify the P0 initial value for clock unknown [default 9e10] (m^2)
+    -filter:p0:trop <val>   Specify the P0 initial value for troposphere unknown [default 0.5^2] (m^2)
+    -filter:p0:amb <val>    Specify the P0 initial value for ambiguity unknowns (for prealigned carrier phases) [default 20^2] (m^2)
+    -filter:backward        Specify that the filter does a backward processing after the forward one is finished. This meas that it
+                            process the data backwards. The "turn point" is defined as the latest point where orbits and clocks
+                            are available or when the observation RINEX ends (whatever is first) ('--filter:backward' to disable it)
+                            [default disabled]
+    -filter:maxgdop <val>   Set the GDOP threshold (in metres) which will make gLAB do the following when the threshold is exceeded:
+                              In SPP:   Skip the epoch [default disabled]
+                              In PPP:   Skip the epoch [default 30.0]
+                              In SBAS:	It will try to switch mode or GEO (if allowed), otherwise it will skip the epoch [default disabled]
+                              In DGNSS: Switch from DGNSS to SPP [default 30.0]
+                              Use '--filter:maxgdop' to disable it
+    -filter:stfdesa         Compute values for Stanford-ESA plot (only for SPP, SBAS and DGNSS) [default disabled]
+                              The output data is written in a separate file (which has to be processed with graph.py). See parameter '-output:stfdesa'
+    -filter:stfdesaloi      If Stanford-ESA computation is enabled, write to file all geometries which produce an integrity ratio equal or higher
+                              than the horizontal or vertical thresholds (any of them). See parameters '-output:stfdesaloi' [default enabled]
+    -filter:stfdesa:xmax <val>  Set the maximum value for the horizontal axis (error axis, in metres) for Stanford-ESA plot [default 50]
+    -filter:stfdesa:ymax <val>  Set the maximum value for the vertical axis (protection level axis, in metres) for Stanford-ESA plot [default 50]
+    -filter:stfdesa:xres <val>  Set the horizontal resolution (error axis,in metres) for Stanford-ESA plot [default 0.1]
+    -filter:stfdesa:yres <val>  Set the vertical resolution (protection level axis, in metres) for Stanford-ESA plot [default 0.1]
+    -filter:stfdesa:hwir <val>  Set the horizontal integrity ratio threshold for which the geometry info will be written to file [default 0.7]
+                                  See parameters '-filter:stfdesaloi' and '-output:stfdesaloi' for more details.
+    -filter:stfdesa:vwir <val>  Set the vertical integrity ratio threshold for which the geometry info will be written to file [default 0.7]
+                                  See parameters '-filter:stfdesaloi' and '-output:stfdesaloi' for more details.
+
+  OUTPUT OPTIONS
+    -output:file <file>     Sets the output file [default stdout]
+    --output:file           Sets the output to stdout [default]
+    -output:kml  <file>     Generate a KML file to be opened with Google Earth [default off]
+    -output:kml0 <file>     Generate a KML file with all height set to 0 (ground projection) to be opened with Google Earth [default off]
+    -output:kml:refsta      Add reference stations in KML file (in DGNSS mode only). Use '--output:kml:refsta' to disable it. [default on]
+    -output:kml:tstamp      Add time stamp in KML file [default off]
+    -output:kml:tstampdec   Decimation (in seconds) for time stamps in KML files [default 30]
+    -output:kml:tstamprange <val1> <val2>  Set a time range for time stamps. Only during this time range KML timestamps will be written [default off]
+                              <val1>  Start epoch (in seconds of day). If "-" is given, it will be intepreted as the beginning of the file.
+                              <val2>  Start epoch (in seconds of day). If "-" is given, it will be intepreted as the end of the file.
+                                 If the observation file spans for more than one day, add an offset of 86400 seconds to the start or end epoch.
+                                 To set multiple ranges, set this parameters an number of ranges needed.
+                                 This parameter is combinable with '-output:kml:tstampdec' option
+    -output:sp3  <file>     Generate a SP3 file with the computed coordinates [default off]
+    -output:sp3:letter <val> Constellation letter to be written in the SP3 [default 'L']
+    -output:sp3:prn  <val>  PRN number to be written in the SP3 [default '9']
+    -output:sp3:dgnssonly    In DGNSS mode, do not write SPP solutions in the output SP3 file [default on]
+    --output:sp3:dgnssonly   In DGNSS mode, write SPP solutions in the output SP3 file [default off]
+    -output:refpos  <file>  Generate a columnar text file with the computed coordinates [default off]
+    -output:refpos:doy      Write timestamp as 'Year DoY SoD' in the output reference position text file [default on]
+    -output:refpos:gpsweek  Write timestamp as 'GPSWeek SoW' in the output reference position text file [default off]
+    -output:refpos:caltime  Write timestamp as 'Year/Month/Day HH:MM:SS.zzz' in the output reference position text file [default off]
+    -output:refpos:geodetic Write solution in WGS84 geodetic coordinates (Lon, Lat, Height), instead of WGS84 cartesian coordinates (X, Y, Z) [default off]
+    -output:refpos:dgnssonly  In DGNSS mode, do not write SPP solutions in the output reference position text file [default on]
+    --output:refpos:dgnssonly In DGNSS mode, write SPP solutions in the output reference position text file [default off]
+    -output:rinex <file>    Sets the RINEX observation output file name. In conversion mode, if this option is not specified, the default output filename
+                              will be <ssssddd0.YYo>, where 'ssss' are the first 4 characters of the filename, 'ddd' is the day of year with three digits
+                              and 'YY' is the last two digits of the year (from the RTCM file)
+                              In Add user error to RINEX mode, if this option is not specified, the default output filename will be <obsfilename>_usererror>
+    -output:rinexversion <val>      <val> = 2  Generates a RINEX v2.11 from the binary file RTCM v3.x
+                                    <val> = 3  Generates a RINEX v3.00 from the binary file RTCM v3.x [default]
+    -output:corrections <file>    Sets the ASCII Plain Text output file name for the corrections
+    -output:antenna <file>        Sets the ASCII Plain Text output file name for the antenna information
+    -output:satvel <val>    <val> = inertial  Prints the inertial velocity in the messages where satellite velocity is given
+                            <val> = ITRF (ECEF)  Prints the ECEF velocity in the messages where satellite velocity is given [default]
+    -output:rinexb          Generate a RINEX-B file from the SBAS data (only for SBAS) [default off]
+    -output:ems             Generate a EMS file from the SBAS data (only for SBAS) [default off]
+    -output:pegasus         Generate Pegasus file format from the SBAS data (only for SBAS). See notes on Pegasus format below. [default off]
+    -output:pegstrictrinex  When generating a RINEX-H file for Pegasus, follow the RINEX 2.11 rules for transmission time,
+                            health flag and URA (only active if -output:pegasus has been set) [default off]
+    -output:pegspace        Set the field separator in Pegasus files to space character (' ') instead of a semicolon (';') [default off]
+    -output:pegfilealign    Print Pegasus files with all columns aligned [default off]
+    -output:sbasdir <name>  Set the directory where to write the output SBAS files ('.' for current directory) [default "SBAS"]
+    -output:stfdesa <file>  Set the filename where to write the output data for Stanford-ESA plots [default "observationfilename_stdESA.txt"]
+                            The output file is a columnar text file to be processed with graph program (with '--sf' parameter) for generating the Stanford-ESA plots
+                            The first line of the output file contains, in this order the resolution in X axis (error), resolution in Y axis (protection level),
+                              maximum value in X axis and maximum value in Y axis. All the values are in metres.
+                            From the second line until then end, each line contains, in this order, the X coordinate, Y coordinate (both in metres), the number of
+                              points in the horizontal component in that coordinate and the number of points in the vertical component in that coordinate.
+                            See an example of the generated figures with graph program in the SBAS manual (file gLAB_SBAS_SUM.pdf)
+                            Setting this option enables Stanford-ESA computation.
+    -output:stfdesaloi <file> Set the filename where to write the geometries of Stanford-ESA whose integrity ratio are over the horizontal or vertical
+                                integrity ratio (any of them). [default "observationfilename_stdESA_LOI.txt"]
+                                This option sets enables the following parameter automatically: '-filter:stfdesaloi'.
+    -onlyconvert            Convert EMS or RINEX-B file to RINEX-B, EMS or Pegasus and exit without processing any GNSS data [default off]
+    Incorrect messages from RINEX-B or EMS files are messages which grant any of these conditions:
+      CRC mismatch, invalid header, unknown message type, invalid time of applicability (time is over 86400 seconds)
+    In case of not setting '-output:rinex', '-output:corrections' and/or '-output:antenna' gLAB will set automatically a name for the output file[s].
+      These previous options are effective only if an RTCM file is converted. Therefore, there will be no RTCM converted files if the input RTCM file is processed
+    NOTE: A KML with a 1 second rate data and 1 second timestamp rate may be too big for Google Earth
+
+  VERBOSE OPTIONS   (use -print:... to activate, --print:... to deactivate)
+    -print:info             Print INFO messages [default on]
+    -print:cycleslips       Print CS messages [default on]
+    -print:cs               Equivalent to parameter '-print:cycleslips'
+    -print:input            Print INPUT messages [default on for non SBAS processing, off for SBAS processing]
+    -print:meas             Print MEAS messages [default off]
+    -print:model            Print MODEL messages [default on for non SBAS processing, off for SBAS processing]
+    -print:satellites       Print EPOCHSAT messages [default on for non SBAS processing, off for SBAS processing]
+    -print:epochsat         Equivalent to parameter '-print:satellites'
+    -print:sat              Equivalent to parameter '-print:satellites'
+    -print:prefit           Print PREFIT messages [default on for non SBAS processing, off for SBAS processing]
+    -print:postfit          Print POSTFIT messages [default on for non SBAS processing, off for SBAS processing]
+    -print:filter           Print FILTER messages [default on for non SBAS processing, off for SBAS processing]
+    -print:output           Print OUTPUT messages [default on]
+    -print:satdiff          Print SATDIFF messages in comparison mode (see below) [default on]
+    -print:satstat          Print SATSTAT messages in comparison mode (see below) [default on]
+    -print:satstattot       Print SATSTATTOT messages in comparison mode (see below) [default on]
+    -print:satpvt           Print SATPVT messages in show product mode (see below) [default on]
+    -print:satsel           Print satellite selection information [default off for non SBAS processing, on for SBAS processing]
+    -print:sbascor          Print SBASCORR messages (only for SBAS) [default off]
+    -print:sbascorr         Equivalent to parameter '-print:sbascor'
+    -print:sbasvar          Print SBASVAR messages (only for SBAS) [default off]
+    -print:sbasiono         Print SBASIONO messages (only for SBAS) [default off]
+    -print:sbasout          Print SBASOUT messages (only for SBAS) [default on]
+    -print:sbasunsel        Print SBASUNSEL messages (only for SBAS) [default off]
+    -print:sbasunused       Print messages from discarded satellites due to SBAS GEO switch (only for SBAS) [default off]
+                                  The discarded messages are MODEL, SBASCORR, SBASVAR, SBASIONO and SBASUNSEL, but only the ones
+                                  selected from user parameters will be printed. Also, an asterisk '*' will be added at the end
+                                  of the first field to indicate that it is a discarded measurement
+    -print:usererror        Print user added error to raw measurements [default on]
+    -print:dgnss            Print DGNSS global information (only for DGNSS) [default on]
+    -print:dgnssunused      Print messages from discarded satellites due to GDOP switch (from DGNSS to SPP) [default off]
+                                  An asterisk '*' will be added at the end of the first field to indicate that it is a discarded measurement
+    -print:progress         Print to terminal the current epoch being processed [default on]
+    -print:all              Print all messages
+    -print:none             Do not print anything ('--print:none' is also accepted)
+                            More information on print messages can be seen with the '-messages' option
+
+  SBAS SUMMARY OPTIONS
+      When processing with SBAS corrections, if INFO messages are enabled and receiver position is fixed, a statistical summary will be
+        printed at the end of the output file. See 'NOTES FOR SBAS PROCESSING' below for details of the message.
+        The options for generating this summary are:
+    -sbassummary:hal        <val>  Sets the Horizontal Alarm Limit (in metres) for computing availability and continuity risk [default 40]
+    -sbassummary:val        <val>  Sets the Vertical Alarm Limit (in metres) for computing availability and continuity risk [default 50]
+    -sbassummary:percentile <val>  Sets the value for computing the error and protection level percentile [default 95]
+    -sbassummary:windowsize <val>  Sets the sliding window size (in epochs) for computing the continuity risk [default 15]
+    -sbassummary:waitfordaystart   If the observation file starts at 22 hours or later, gLAB will assume that from the first epoch
+                                     until epoch 23 hours 59 minutes 59 seconds are given just to fill the SBAS message buffer and wait for
+                                     the smoothing and filter converge, and the following epochs from the next day are the ones of interest.
+                                     During this convergence period, Stanford-ESA values will not be computed and they will not be taken into
+                                     account for the SBAS summary. This option is useful to avoid false MIs or high error epoch in the summary
+                                     during the convergence time. [default on]
+                                    This option can be disabled with '--sbassummary:waitfordaystart'
+                                    If option will have no effect is '-sbassummary:starttime' is set
+    -sbassummary:starttime <date>  Set the first epoch to be used in the SBAS summary. See parameter '-pre:starttime' for details on date format
+      NOTE: The computation of the continuity risk takes into account the sampling rate and data gaps in the observation file.
+      NOTE: The last line of the SBAS summary contains all the values of the previous lines along with the station coordinates.
+            	This line is useful for plotting world maps with data from each station.
+      NOTE: An example of a SBAS summary can be seen executing gLAB with '-messages' parameter
+
+  SBAS PLOTS OPTIONS
+      This mode is activated when only a navigation file and a SBAS file are given (see description below in WORK MODES).
+      The following options are specific for this mode:
+    -sbasplots:minlat    <val> Sets the minimum latitude (in degrees) for the SBAS plots. The minimum resolution is 0.01 [default 25.0]
+    -sbasplots:maxlat    <val> Sets the maximum latitude (in degrees) for the SBAS plots. The minimum resolution is 0.01 [default 70.0]
+    -sbasplots:minlon    <val> Sets the minimum longitude (in degrees) for the SBAS plots. The minimum resolution is 0.01 [default -30.0]
+    -sbasplots:maxlon    <val> Sets the maximum longitude (in degrees) for the SBAS plots. The minimum resolution is 0.01 [default 40.0]
+    -sbasplots:plotarea  <minlon> <maxlon> <minlat> <maxlat>
+                               This parameter is a shorter way to provide the same values as in '-sbasplots:minlon' '-sbasplots:maxlon', '-sbasplots:minlat'
+                                 and '-sbasplots:maxlat' parameters.
+    -sbasplots:recheight <val> Sets the receiver height (in metres) [default 0 (at sea level)]
+    -sbasplots:hal       <val> Sets the Horizontal Alarm Limit (in metres) for computing the Availability plots [default 40]
+    -sbasplots:val       <val> Sets the Vertical Alarm Limit (in metres) for computing the Availability plots [default 50]
+    -sbasplots:availstep <val> Sets the resolution (in degrees) for both longitude and latitude for Availability
+                                 and Continuity Risk maps. The minimum resolution is 0.01 [default 1.0]
+    -sbasplots:ionostep  <val> Sets the resolution (in degrees) for both longitude and latitude for Ionosphere
+                                 Corrections Availability map. The minimum resolution is 0.01 [default 0.3]
+    -sbasplots:ionotimestep <val>  Sets the time step (in seconds) for ionosphere availability plot [default 300]
+    -sbasplots:windowsize   <val>  Sets the sliding window size (in seconds) for computing the continuity risk [default 15]
+    -output:sbasavailplots  <file> Sets the output file for the SBAS Availability plots data. The output file is a
+                                 columnar text file to be processed by graph program (with '--sbas' parameter) [default "SBASAvailPlots_sbasfilename.txt"]
+    -output:sbasriskplots   <file> Sets the output file for the SBAS Continuity Risk plot data. The output file is a
+                                 columnar text file to be processed by graph program (with '--sbas' parameter) [default "SBASRiskPlots_sbasfilename.txt"]
+    -output:sbasionoplots   <file> Sets the output file for the SBAS Ionosphere availability plot data. The output file is a
+                                 columnar text file to be processed by graph program (with '--sbas' parameter) [default "SBASIonoPlots_sbasfilename.txt"]
+    -output:sbasriskdisc    <file> Sets the output file for the list of SBAS solution discontinuities found during the computation of SBAS Continuity Risk plot.
+                                 The output file is a columnar text file [default "SBASRiskDisc_sbasfilename.txt"]
+    -sbasplots:hourlymaps      Print the hourly availability maps. The files will have the same name as the daily maps, but with '_HHh' added
+                                 before the file extension (being HH the hour with two digits)
+    -sbasplots:noavailplot     Do not compute the SBAS Availability and Continuity Risk plots [default off]
+    -sbasplots:noriskplot      Do not compute the SBAS Continuity Risk plot [default off]
+    -sbasplots:noionoplot      Do not compute the SBAS Ionosphere corrections availability plot [default off]
+    -sbasplots:noionomodel     Do not use SBAS ionosphere during the computation of Availability and Continuity Risk plot [default off]
+                                 This parameter is equivalent to '-model:iono no'
+    -sbasplots:exclusionarea <minlon> <maxlon> <minlat> <maxlat>
+                               Set a square area where SBAS availability and SBAS iono availability will be set to 0 (the area is skipped during computation)
+                                 This is useful when processing large areas (e.g. areas with multiple SBAS and want to exclude the sea between them)
+                                 The user can set any number of exclusion area by providing this parameter as many times as necessary
+                                 The area must be given with these four values (in this order): minimum longitude, maximum longitude,
+                                 minimum latitude, maximum latitude. The four values must be in degrees, with the longitude between -180
+                                 and 180 degrees, and the latitude between -90 and 90 degrees
+    -sbasplots:inclusionarea <minlon> <maxlon> <minlat> <maxlat>
+                               Set a square area where SBAS availability and SBAS iono availability will be computed (the rest is skipped). This area must be
+                                 inside the region defined by parameters '-sbasplots:minlon', '-sbasplots:maxlon', '-sbasplots:minlat' and '-sbasplots:maxlat'.
+                                 The user can set any number of inclusion area by providing this parameter as many times as necessary
+                                 The area must be given with these four values (in this order): minimum longitude, maximum longitude,
+                                 minimum latitude, maximum latitude. The four values must be in degrees, with the longitude between -180
+                                 and 180 degrees, and the latitude between -90 and 90 degrees
+
+   If both inclusion and exclusion areas are provided, then an area which is processed must be inside of any inclusion area and outside of any exclusion area.
+   The default region defined in gLAB corresponds to EGNOS coverage area.
+   The available output messages in this mode are INFO [default on], SBASIONO [default off] and SBASUNSEL [default off]
+   Most of the options applied for normal SBAS processing can also be applied for this mode, except for those which apply to measurement corrections (due to
+     there are none in this mode) and the option to use Klobuchar while solution converges ('-model:initcoordNPA') as we consider we are always in strict PA mode.
+   An example of the generated figures with graph program is in the SBAS manual (file gLAB_SBAS_SUM.pdf)
+
+  DATE CONVERSION OPTIONS
+      This mode is for converting a date format to all other GNSS date formats and exit.
+      The accepted date formats are: YYYY/MM/DD HH:MM:SS.zzz ('zzz' are milliseconds), Year/DoY/SoD, GPSWeek/SoW, MJDN/SoD (MJDN is Modified Julian Day Number)
+      Minimum accepted date is 1980/01/06 (YYYY/MM/DD) or 1980/006 (Year/DoY) or 0/0 (GPSWeek/SoW) or 44244/0 (MJDN/SoD)
+      This mode is activated when any of the following parameter is provided:
+    -dateconv:calendar <year> <month_number> <day> <hour> <minute> <seconds>
+               <year> has to be equal or greater than 1980, <hour> is in 24 hour format and <seconds> can have decimal values.
+    -dateconv:doy <year> <DoY> <SoD>
+               <year> has to be equal or greater than 1980, <DoY> is in range 1 to 366.
+    -dateconv:gpsweek <GPSWeek> <SoW>
+    -dateconv:mjdn <MJDN> <SoD>
+               <MJDN> must be equal or greater than 44244.
+
+  COORDINATE CONVERSION OPTIONS
+      This mode is for converting a coordinate system to all supported coordinate systems (cartesian, geodetic -or ellipsoidal- and spherical) and exit.
+      This mode is activated when any of the following parameter is provided:
+    -coordconv:cartesian <x> <y> <z>
+               X, Y and Z coordinates unit is metres.
+    -coordconv:geodetic <lon> <lat> <height>
+               Longitude is in degrees (range [-180..180]), latitude is in degrees (range [-90..90]) and height is in metres.
+    -coordconv:spherical <lon> <lat> <radius>
+               Longitude is in degrees (range [-180..180]), latitude is in degrees (range [-90..90]) and radius is in metres.
+
+  WORK MODES
+    gLAB can work in nine different modes:
+        - Positioning Mode: 'Standard' mode, where all the processing is done, and a solution for a
+                       receiver is provided as OUTPUT messages. The minimum parameters required for this
+                       mode are an input observation file ('-input:obs') and orbit and clock products
+                       ('-input:nav', '-input:sp3' or '-input:orb'/'-input:clk'). Using precise products
+                       will also require the use of an ANTEX file ('-input:ant'). For SBAS processing, an
+                       additional input SBAS file ('-input:sbas') is needed. For DGNSS processing, an
+                       additional input file ('-input:dgnss' or '-input:rtcm') is needed
+
+        - Show Input Mode: This mode only reads an input RINEX observation file and print its measurements.
+                       The parameter required for this mode is '-input:obs', and specifically, no orbit and
+                       clock products should be provided (if provided, gLAB will switch to Positioning Mode)
+
+        - Product Comparison Mode: This mode reads and compares two different sources of orbit and clock products.
+                       In order to use this mode, '-input:obs' must be avoided, and two different orbit and clock
+                       products should be provided. This mode outputs the SATDIFF, SATSTAT and STASTATTOT messages
+
+        - Show Product Mode: This mode reads a single source of orbit and clock products.
+                       In order to use this mode, '-input:obs' must be avoided, and a single orbit and clock
+                       product should be provided. This mode output SAT messages
+
+        - Convert mode: Only for SBAS. If the parameter '-onlyconvert' is given, gLAB will just generate a RINEX-B 2.11 or EMS
+                       or Pegasus files (depending on the parameters) and it will not process any GNSS data.
+                       The minimum parameters for this mode are an SBAS file ('-input:sbas'), the '-onlyconvert' parameter
+                       and an output file format ('-output:rinexb', '-output:ems', '-output:pegasus')
+
+        - SBAS Plots Mode: This mode is activated when only a navigation file and a SBAS file are given. In this mode,
+                       three plots are computed: SBAS Availability, SBAS Continuity Risk and SBAS Ionosphere Corrections Availability.
+                       The three plots are computed in PA mode in the delimited (squared) region and resolution during one day (the Availability and
+                       Continuity Risk are computed at a one second rate, while the Ionosphere Corrections Availability is computed at a 300 seconds rate by default).
+                       For the three plots the values are computed for a Fault-Free receiver (no data gaps, no cycle-slips).
+                       For SBAS Availability plot, an epoch at a given latitude and longitude and height (by default is is sea level -0 metres-)
+                         is consired to be available when both the Horizontal and Vertical Protection Levels are below their respective thresholds.
+                       For SBAS Continuity Risk plot, it is computed the probability of having a discontinuity (i.e. no SBAS PA solution) during the
+                         next 15 seconds (i.e. using a sliding window of 15 seconds).
+                       For SBAS Ionosphere Corrections Availability plot, each coordinate in the map is considered as a pierce point at 350 km height,
+                         and it is considered as available when a SBAS ionosphere can be computed at the given pierce point.
+                       The minimum parameters to activate this mode are the input navigation file ('-input:nav') and the input SBAS message file ('-input:sbas').
+                       The output files have to be processed with graph program (with '--sbas' parameter) in order to generate the plots.
+                       The available output messages in this mode are INFO [default on], SBASIONO [default off] and SBASUNSEL [default off].
+                       NOTE: With the default configuration, the computation time is around 2 hours. Increasing resolution or map size will significantly increase computation time.
+
+        - Add User Error to RINEX: This mode reads a RINEX observation file, a user added error file and creates a new RINEX observation file, with the same header, version
+                       and number of measurements, but the measurements have the user error added into them.
+        - Date Conversion: When '-dateconv:calendar' or '-dateconv:doy' or '-dateconv:gpsweek' or '-dateconv:mjdn' are provided, gLAB will read the date
+                       from user input and convert it to all other date formats, print them in screen and exit.
+
+        - Coordinate Conversion: When '-coordconv:cartesian' or '-coordconv:geodetic' or '-coordconv:spherical' are provided, gLAB will read the coordinates
+                       from user input and convert it to all other coordinate systems, print them in screen and exit.
+
+  NOTES FOR PEGASUS OUTPUT FORMAT
+     Pegasus is GNSS data processing from Eurocontrol. Pegasus does not read the RINEX-B or EMS SBAS files, it converts them to columnar text files
+       and later processes with these text files. Each text file contains one message type -except for fast correction messages, which are all grouped
+       in the same file; and the GEO navigation data, which is RINEX 2 format-.
+       Each columnar text file has a header line with the name of each value, and the values are printed in decimal format.
+       A full explanation of the Pegasus format can be found in appendixes I.5-I.16 in their ICD at http://www.icao.int/Meetings/AMC/MA/2004/GNSS/icd.pdf
+
+  NOTES FOR PREPROCESSING
+     Pseudorange Jumps:
+       Some receivers, after updating the clock, they adjust the code but not the carrier phase measurement, producing a jump in the code
+         but not in the carrier phase. Therefore, code and carrier phase are not consistent (the difference between code and
+         carrier phase is not continuous). If the carrier phase is not adjusted, it will detected as a cycle-slip.
+
+  NOTES FOR SBAS PROCESSING
+    When processing with SBAS corrections, gLAB will use MOPS-D standard values and configuration by default.
+    Most of these parameters and configuration can be modified by the user, regardless if these parameters are MOPS compliant or not.
+    The specific SBAS parameters that can be modified by the user are:
+        Smoothing:       Can be disabled or changed the number of epochs [default 100 epochs]
+        Steady-state:    Can be disabled or changed the number of epochs [default 360 epochs]
+        Ionosphere:      Any ionosphere model available in gLAB (e.g. IONEX) can be applied instead of the SBAS ionosphere model.
+        Time outs:       Time outs for all corrections can be user defined
+        Mode switch:     Switching from PA to NPA can be enabled or disabled [default disabled]
+        GEO switch:      GEO switching can be enabled or disabled [default disabled]. Furthermore, after a GEO switch,
+                         the user can decide if to stay in the new GEO or try to fallback to the initial GEO when possible.
+        Decimation:      gLAB can process at any data rate. In order to keep integrity of results with 1Hz SBAS data rate,
+                            messages will be read every second, and special events will be handled every second.
+                            The special events are: receive an alarm message or an UDREI>=14, miss 4 consecutive messages
+                            or receive 4 consecutive messages with wrong CRC. Decimation is useful for studying slow
+                            varying corrections, such as long term corrections or ionosphere.
+        Navigation:      Both kinematic and static navigation mode can be selected. Default is kinematic.
+
+    Mode and GEO switch notes:
+      If both mode and GEO switch are enabled, GEO switch is tried first always, as switching GEO keeps PA mode.
+      If option '-model:geofallback' is enabled, gLAB will try to switch to the first GEO used in processing after
+        the time between switches (defined by parameter '-model:switchtime') after a GEO switch occurs.
+      If option '-model:maintaingeo' is enabled gLAB will maintain the current GEO (independently if it was selected
+        by the user or by a GEO switch) during all the processing while it can provide a PA solution.
+      If both options '-model:maintaingeo' and '-model:geofallback' are enabled, '-model:geofallback' option behaviour will prevail.
+      If both options '-model:maintaingeo' and '-model:geofallback' are disabled, after a GEO switch, gLAB will try to switch
+        to the previous GEO independently if it was the first one used or not. If there are only two GEOs available (and the use of mixed GEO
+        data is disabled), this behaviour is equivalent as in the '-model:geofallback' option, due to the previous GEO will be always the first GEO used.
+
+    SBAS Maritime mode:
+      Maritime mode is a special configuration for SBAS. In this configuration, message type 10 (degradation parameters), type 27 (service message)
+        and type 28 (clock ephemeris covariance matrix) are not used. Therefore, the sigma of fast and long term corrections is computed with the
+        following formula:
+                      Sigmaflt = SigmaUDRE + 8 [metres]
+      Maritime mode is configured with parameter '-model:sbasmaritime', which is a shortcut for providing these parameters: '-model:nomt10'
+        and '-model:nomt2728'.
+
+  Furthermore, if the receiver position is fixed and INFO messages are enabled, INFO messages at the end will be printed with
+      a statistical summary of the processing. Execute 'gLAB -sbassummaryexample' for an example of the summary.
+
+  NOTES FOR PREFIT OUTLIER DETECTION
+      There are two prefit outlier detectors in gLAB:
+       - Prefit outlier detector comparing against the median (by default disabled):
+          The procedure for this detector is:
+           Compute the median of all prefits
+           For each satellite:
+              Compute absolute value of the difference between the prefit and the median
+              If the difference is higher than the threshold, unselect the satellite
+
+       - Prefit outlier detector comparing the absolute values (by default disabled):
+          The procedure for this detector is:
+           For each satellite available:
+             Compute the absolute value of its prefit (ReferencePrefit)
+             Set a range for all other satellite prefits defined as:
+                Range=[abs(ReferencePrefit)-threshold,abs(ReferencePrefit)+threshold]
+                For each satellite (except the reference one):
+                  Check if prefits are inside the range
+                If half or more of the satellites are unvalid, then the current satellite is an outlier
+                Else discard the satellites with prefits outside the range.
+       If receiver position is fixed, gLAB will allow the outlier detector to discard all satellites in the current epoch
+       If receiver position is not fixed, if more than half of the available satellites are discarded, then, the prefit outlier detector
+          will not discard any satellite, as it will assume that the solution still has to converge
+       A recommended value for the thresholds of the prefit outlier detectors is 30 metres
+
+  NOTES FOR DGNSS PROCESSING
+    Sigma inflation: During the transient period until the smoother converges, the measurement noise sigma is inflated according
+                     to the next equation:
+                       Sigma_inflat= f(n)/f(Nstdy) * sigma
+                            n<N    f(n)=sqrt(1/n)
+                            n>=N   f(n)=sqrt(1/(2*N-1)*(1+((N-1)/N)^(2*(n-N)+1)))
+                          where:
+                            n:     number of processed samples
+                            N:     number of samples of the smoothing window
+	                        Nstdy: number of samples when reaching the steady state: In gLAB, Nstdy=(int)(3.6*N)
+	                  For instance, with 1 second sampling rate and N=100, the stationary state (Nstdy) is assumed to be reached after 360 seconds
