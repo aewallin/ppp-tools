@@ -18,9 +18,20 @@ def parse_result(fname, station):
         parse the RTKLib output
         to a format defined by PPP_Result
     """
+    
+    # tropo results are in the stats file
+    stat_fname = fname+".stat"
+    tropo=[]
+    with open(stat_fname) as f:
+        for line in f:
+            if line.startswith("$TROP"):
+                line = line.split(",")
+                tropo.append( float(line[5]))
+            
     ppp_result = ppp_common.PPP_Result()
     ppp_result.station=station
     with open(fname) as f:
+        n=0 # line count
         for line in f:
             if line.startswith("%"):
                 pass # comments
@@ -51,10 +62,11 @@ def parse_result(fname, station):
                 (lat, lon, height ) = float(fields[2]), float(fields[3]), float(fields[4])
                 #ppp_common.xyz2lla( x, y, z )
                 #clk = float(fields[7]) * (1.0e9 / 299792458.0)   # Receiver clock [ns]
-                ztd = 0 #??
+                ztd = tropo[n] #??
                 float(fields[8]) # Zenith Tropospheric Delay [m]
                 p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
                 ppp_result.append(p)
+                n=n+1
     """
     if backward: # we retain data from the FILTER run backwards
         maxepoch=datetime.datetime(1900,1,1)
@@ -211,10 +223,10 @@ def rtklib_run(station, dt, rapid=True, prefixdir=""):
                 #" -h", # fix and hold for integer ambiguity resolution [off]
                 #" -f 2", # 2:L1+L2
                 #" -x 2", # debug level
-                " %s" % inputfile, # RINEX file
-                " %s" % navfile,   # brdc NAV file
                 " %s" % clk,
                 " %s" % eph,
+                " %s" % navfile,   # brdc NAV file
+                " %s" % inputfile, # RINEX file
                 " %s" % (prefixdir + "/common/igs08.atx")
                 ]
 
@@ -236,7 +248,7 @@ def rtklib_run(station, dt, rapid=True, prefixdir=""):
 if __name__ == "__main__":
 
     # example processing:
-    station1 = UTCStation.ptb
+    station1 = UTCStation.usno
     #station2 = UTCStation.ptb
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=4)
     current_dir = os.getcwd()

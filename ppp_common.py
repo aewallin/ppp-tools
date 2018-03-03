@@ -136,7 +136,14 @@ def read_result_file(station, dt, products, program, prefixdir):
                 ztd = float(line[10])
                 r.append(PPP_Point(epoch, lat, lon, height, clock, ztd))
     return r
-    
+
+def read_time(station, dt, products, program, prefixdir):
+    r = read_result_file(station, dt, products, program, prefixdir)
+    t = [x.epoch for x in r.observations]
+    ns = [x.clock for x in r.observations]
+    ztd = [x.ztd for x in r.observations]
+    return (t, ns, ztd)
+
 class PPP_Result():
     """ 
     this class stores the result of a ppp run 
