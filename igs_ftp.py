@@ -1,9 +1,9 @@
 """
+    This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
+    GPLv2 license.
+    
     Library for downloading GPS products (orbits & clocks) from
     an IGS datacenter.
-    
-    This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
-    GPL license.
     
     Anders Wallin, 2013-2015
 """
@@ -35,8 +35,8 @@ def CODE_rapid_files(dt, prefixdir=""):
         ftp://ftp.unibe.ch/aiub/CODE/COD17840.CLK_R    clk, clocks
 
     """
-    server = "ftp.unibe.ch"
-    remotedir = "aiub/CODE/"
+    server = "ftp.aiub.unibe.ch"
+    remotedir = "CODE/"
     week = gpstime.gpsWeek( dt.year, dt.month, dt.day )
     dow  =  gpstime.dayOfWeek( dt.year, dt.month, dt.day )
     clk = "COD%s%s.CLK_R" % ( week,  dow )

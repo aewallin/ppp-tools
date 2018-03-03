@@ -1,3 +1,7 @@
+# this file is part of PPP-Tools
+# https://github.com/aewallin/ppp-tools
+# Licensed under GPLv2
+
 import os
 import datetime
 import shutil
@@ -14,22 +18,25 @@ gpsppp_binary = "gpsppp"
 gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
 gpsppp_tag = "nrcan" # used in the result file names
 
-# write an inp-file for gpsppp. 
-# this corresponds to the keyboard-input we would type if we would
-# run gpsppp manually.
-#
-# example:
-# ---------------
-# usn30730.14o
-# 1day.cmd
-# 0 0
-# 0 0
-# igr17835.sp3
-# igr17836.sp3
-# igr17835.clk
-# igr17836.clk
-# ----------------
+
 def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
+    """
+    write an inp-file for gpsppp. 
+    this corresponds to the keyboard-input we would type if we would
+    run gpsppp manually.
+    
+    example:
+    ---------------
+    usn30730.14o       # the RINEX file
+    1day.cmd           # CMD-file
+    0 0
+    0 0
+    igr17835.sp3       # orbit file
+    igr17836.sp3       # orbit file
+    igr17835.clk       # clock file
+    igr17836.clk       # clock file
+    ----------------
+    """
     with open(inpfile, 'w') as f:
         (tmp, rinexfile) = os.path.split( rinex[:-2] ) # strip off ".Z" from end of filename
 
@@ -58,31 +65,34 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
     print "INP= ", inpfile
     return inpfile
 
-# create a gpsppp.def file
-#
-# GSD/DLG-lines are headers in English/French, included in the header of the output .pos file
-#
-# example:
-# ---------
-# 'LNG' 'ENGLISH' 
-# 'TRF' '/home/anders/gpsppp/gpsppp.trf'
-# 'SVB' '/home/anders/gpsppp/gpsppp.svb_gnss_yrly'
-# 'PCV' '/home/anders/gpsppp/igs08.atx'
-# 'FLT' '/home/anders/gpsppp/gpsppp.flt'
-# 'OLC' '/home/anders/gpsppp/gpsppp_with_mike_kaja.olc'
-# 'MET' '/home/anders/gpsppp/gpsppp.met'
-# 'ERP' '/home/anders/BIPM/temp/gpsppp.ERP'
-# 'GSD' 'Natural Resources Canada, Geodetic Survey Division, Geomatics Canada'
-# 'GSD' '615 Booth Street, room 440, Ottawa, Ontario, Canada, K1A 0E9'
-# 'GSD' 'Phone: (613) 995-4410, fax: (613) 995-3215'
-# 'GSD' 'Email: information@geod.nrcan.gc.ca'
-# 'DLG' 'Ressources naturelles Canada, Division des leves geodesiques, Geomatique Canada'
-# 'DLG' '615 rue Booth, piece 440, Ottawa, Ontario, Canada, K1A 0E9'
-# 'DLG' 'Telephone: (613) 995-4410, telecopieur: (613) 995-3215'
-# 'DLG' 'Courriel: information@geod.nrcan.gc.ca '
-# ---------
+
 def nrcan_def_file(prefixdir, def_file):
-    
+    """
+    create a gpsppp.def file
+    the file defines locations of helper files
+
+    GSD/DLG-lines are headers in English/French, included in the header of the output .pos file
+
+    example gpsppp.def file:
+    ---------
+    'LNG' 'ENGLISH' 
+    'TRF' '/home/anders/gpsppp/gpsppp.trf'
+    'SVB' '/home/anders/gpsppp/gpsppp.svb_gnss_yrly'
+    'PCV' '/home/anders/gpsppp/igs08.atx'
+    'FLT' '/home/anders/gpsppp/gpsppp.flt'
+    'OLC' '/home/anders/gpsppp/gpsppp_with_mike_kaja.olc'
+    'MET' '/home/anders/gpsppp/gpsppp.met'
+    'ERP' '/home/anders/BIPM/temp/gpsppp.ERP'
+    'GSD' 'Natural Resources Canada, Geodetic Survey Division, Geomatics Canada'
+    'GSD' '615 Booth Street, room 440, Ottawa, Ontario, Canada, K1A 0E9'
+    'GSD' 'Phone: (613) 995-4410, fax: (613) 995-3215'
+    'GSD' 'Email: information@geod.nrcan.gc.ca'
+    'DLG' 'Ressources naturelles Canada, Division des leves geodesiques, Geomatique Canada'
+    'DLG' '615 rue Booth, piece 440, Ottawa, Ontario, Canada, K1A 0E9'
+    'DLG' 'Telephone: (613) 995-4410, telecopieur: (613) 995-3215'
+    'DLG' 'Courriel: information@geod.nrcan.gc.ca '
+    ---------
+    """
     # these are fixed files for now. in principle they could vary from run to run.
     trf = "'%s/gpsppp/gpsppp.trf'" % prefixdir
     svb = "'%s/gpsppp/gpsppp.svb_gnss_yrly'" % prefixdir
@@ -105,6 +115,7 @@ def nrcan_def_file(prefixdir, def_file):
         # this might include a version-string for ppp-tools also?
         f.write("'GSD' 'ppp-tools, from https://github.com/aewallin/ppp-tools'\n")
 
+def nrcan_parse_result(filename, station, inputfile, bwd=False):
 # This function reads and parses the .pos file
 #
 # This is an older format:
@@ -117,7 +128,6 @@ def nrcan_def_file(prefixdir, def_file):
 # 0   1             2          3   4          5              6   7       8      9           19             11            12              13       14       15       16       17         18       19     20     21      22      23      24      25        26     27    28    29    30    31       32        33           34     35     36        37        38            39            40             41
 # DIR FRAME        STN         DOY YEAR-MM-DD HR:MN:SS.SSS NSV GDOP    SDC    SDP       DLAT(m)       DLON(m)       DHGT(m)         CLK(ns)   TZD(m)   SLAT(m)  SLON(m)  SHGT(m)   SCLK(ns)  STZD(m) LAT(d) LAT(m)    LAT(s) LON(d) LON(m)    LON(s)   HGT(m)   AM GRAD1 GRAD2 SGRD1 SGRD2 WETZD(m) GLNCLK(ns) SGLNCLK(ns)  MAXNL  MAXWL  AVGNL(m)  AVGWL(m)  VTEC(.1TECU)  GPS_DP1P2(ns) GLN_DP1P2(ns)
 # FWD ITRF(IGb08) usn6 344.0000000 2015-12-10 00:00:00.000  14  2.3   0.69 0.0000         0.532        -0.960        -2.344          -4.054   2.3456    1.286    1.217     2.935     7.468   0.0999     38     55 14.05525    -77      3 58.63558        56.579 14   0.0   0.0   0.0   0.0   0.0542     33.576       8.911 0.2000 1.5000   0.0000     0.0000         100.0            0.0           0.0
-def nrcan_parse_result(filename, station, inputfile, bwd=False):
     nrcan_result = ppp_common.PPP_Result()
     nrcan_result.station = station
     if not os.path.exists(filename):
@@ -150,9 +160,15 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
         nrcan_result.reverse()
     return nrcan_result
 
-# PPP-processing with NRCan ppp
+
 def nrcan_run(station, dt, rapid=True, prefixdir=""):
-    dt_start = datetime.datetime.utcnow()
+    """
+    PPP-processing with NRCan ppp.
+    
+    requires "gpsppp" binary
+    
+    """
+    dt_start = datetime.datetime.utcnow() # for timing how long processing takes
     
     year = dt.timetuple().tm_year
     doy = dt.timetuple().tm_yday
@@ -269,7 +285,8 @@ def nrcan_run(station, dt, rapid=True, prefixdir=""):
 if __name__ == "__main__":
     # example processing:
     station = UTCStation.usno
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=4)
+    #station = UTCStation.ptb
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=4) # 4 days ago
     current_dir = os.getcwd()
     
     # run NRCAN PPP for given station and datetime dt

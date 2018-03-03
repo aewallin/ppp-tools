@@ -1,13 +1,12 @@
+"""
+    This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
+    GPLv2 license.
+"""
 import os
 import datetime
 
 import bipm_ftp
 import ftp_tools
-
-"""
-    This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
-    GPL license.
-"""
 
 class UTCStation():
     """
@@ -17,17 +16,17 @@ class UTCStation():
     on disk rather than via FTP.
     """  
     def __init__(self):
-        self.name = ""      # station name e.g. "USNO"
-        self.utctag = ""  # when name is more than 4 characters, BIPM abbreviates with 4 chars, e.g. "MIKE"
-        self.ftp_server = ""  # e.g. "my.ftp-server.com"
-        self.ftp_dir = ""  # the directory/ for RINEX files on the ftp server
+        self.name = ""          # station name e.g. "USNO"
+        self.utctag = ""        # when name is more than 4 characters, BIPM abbreviates with 4 chars, e.g. "MIKE"
+        self.ftp_server = ""    # e.g. "my.ftp-server.com"
+        self.ftp_dir = ""       #the directory/ for RINEX files on the ftp server
         self.ftp_username = ""
         self.ftp_password = ""
-        self.lz = False # do we need an LZ file or not?
-        self.refdelay = 0.0 # reference delay, in nanoseconds
-        self.receiver=""  # receiver name, e.g. "MI02", used in the RINEX filename
+        self.lz = False         # do we need an LZ file or not?
+        self.refdelay = 0.0     # reference delay, in nanoseconds
+        self.receiver=""        # receiver name, e.g. "MI02", used in the RINEX filename
         self.rinex_filename = self.rinex1
-        self.hatanaka = False # flag is True for Hatanaka compressed RINEX
+        self.hatanaka = False   # flag is True for Hatanaka compressed RINEX
         
     # the RINEX naming convention is that there is no convention...
     # we define rinex_filename() in the constructor, which calls one of rinex1(), rinex2(), etc.
@@ -56,6 +55,7 @@ class UTCStation():
         """
         current_dir = os.getcwd()
         localdir = current_dir + '/stations/' + self.name + '/'
+        ftp_tools.check_dir(localdir) # create directory if it doesn't exist
         return ftp_tools.ftp_download( self.ftp_server, self.ftp_username, self.ftp_password,
                          self.ftp_dir, self.rinex_filename(dt), localdir)
         
