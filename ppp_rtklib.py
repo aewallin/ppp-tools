@@ -22,12 +22,19 @@ def parse_result(fname, station):
     # tropo results are in the stats file
     stat_fname = fname+".stat"
     tropo=[]
+    clock=[]
     with open(stat_fname) as f:
         for line in f:
             if line.startswith("$TROP"):
-                line = line.split(",")
-                tropo.append( float(line[5]))
-            
+                line2 = line.split(",")
+                tropo.append( float(line2[5]))
+            if line.startswith("$CLK"):
+                line2=line.split(",")
+                clock.append( float(line2[5]))
+    # has bot fwd and bwd
+    #clock.reverse()
+    #tropo.reverse()
+    
     ppp_result = ppp_common.PPP_Result()
     ppp_result.station=station
     with open(fname) as f:
@@ -52,7 +59,8 @@ def parse_result(fname, station):
                 minute = int(hms[1])
                 second = int( numpy.round( float(hms[2]) ) )
                 
-                clk = (second - float(hms[2]))*1.0e9
+                clk = clock[n]
+                #(second - float(hms[2]))*1.0e9
                 #print year, month, day, hour, minute, second, clk
                 
                 #secs = float(ymd[2])
@@ -67,6 +75,8 @@ def parse_result(fname, station):
                 p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
                 ppp_result.append(p)
                 n=n+1
+    print "clk len=",len(clock)
+    print "pos len=",len(ppp_result.observations)
     """
     if backward: # we retain data from the FILTER run backwards
         maxepoch=datetime.datetime(1900,1,1)
@@ -223,11 +233,11 @@ def rtklib_run(station, dt, rapid=True, prefixdir=""):
                 #" -h", # fix and hold for integer ambiguity resolution [off]
                 #" -f 2", # 2:L1+L2
                 #" -x 2", # debug level
-                " %s" % clk,
                 " %s" % eph,
-                " %s" % navfile,   # brdc NAV file
+                " %s" % clk,
                 " %s" % inputfile, # RINEX file
-                " %s" % (prefixdir + "/common/igs08.atx")
+                " %s" % navfile,   # brdc NAV file
+                #" %s" % (prefixdir + "/common/igs08.atx")
                 ]
 
     for opt in options:
@@ -249,10 +259,12 @@ if __name__ == "__main__":
 
     # example processing:
     station1 = UTCStation.usno
-    #station2 = UTCStation.ptb
+    station2 = UTCStation.ptb
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=4)
     current_dir = os.getcwd()
 
     # run gLAB PPP for given station, day
     rtklib_run(station1, dt, prefixdir=current_dir)
+    os.chdir(current_dir)
+    rtklib_run(station2, dt, prefixdir=current_dir)
     #glab_run(station2, dt, prefixdir=current_dir)

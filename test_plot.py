@@ -1,6 +1,6 @@
 import os
 import datetime
-
+import numpy
 import matplotlib.pyplot as plt
 
 import ppp_common
@@ -36,7 +36,7 @@ lat1, lon1, h1, ztd1, ns1=parse(p1)
 lat2, lon2, h2, ztd2, ns2=parse(p2)
 lat3, lon3, h3, ztd3, ns3=parse(p3)
 print lat1[0], lat2[0], lat3[0]
-
+"""
 plt.figure()
 plt.plot( lat1)
 plt.plot( lat2)
@@ -66,15 +66,15 @@ plt.plot( ns1)
 plt.plot( ns2)
 plt.plot( ns3)
 plt.gca().ticklabel_format(useOffset=False)
+"""
+#plt.show()
 
-plt.show()
 
-
-plt.figure()
 (tt1, ns1, z1) = ppp_common.read_time(station1, dt, products, "nrcan", prefixdir)
 (tt2, ns2, z2) = ppp_common.read_time(station1, dt, products, "glab", prefixdir)
 (tt3, ns3, z3) = ppp_common.read_time(station1, dt, products, "rtklib", prefixdir)
-
+"""
+plt.figure()
 plt.plot(tt1,ns1,label="nrcan")
 plt.plot(tt2,ns2,label="glab")
 plt.plot(tt3,ns3,label="rtklib")
@@ -83,12 +83,14 @@ plt.figure()
 plt.plot(tt1,z1,label="nrcan")
 plt.plot(tt2,z2,label="glab")
 plt.plot(tt3,z3,label="rtklib")
+"""
 
-plt.figure()
 (tt1, ns1, z1) = ppp_common.read_time(station2, dt, products, "nrcan", prefixdir)
 (tt2, ns2, z2) = ppp_common.read_time(station2, dt, products, "glab", prefixdir)
 (tt3, ns3, z3) = ppp_common.read_time(station2, dt, products, "rtklib", prefixdir)
 
+"""
+plt.figure()
 plt.plot(tt1,ns1,label="nrcan")
 plt.plot(tt2,ns2,label="glab")
 plt.plot(tt3,ns3,label="rtklib")
@@ -97,12 +99,20 @@ plt.figure()
 plt.plot(tt1,z1,label="nrcan")
 plt.plot(tt2,z2,label="glab")
 plt.plot(tt3,z3,label="rtklib")
-
+"""
 
 plt.figure()
 plt.plot(t,d,label="nrcan")
 plt.plot(t2,d2,label="glab")
 plt.plot(t3,d3,label="rtklib")
+
+plt.grid()
+plt.legend()
+
+plt.figure()
+plt.plot(t,d-numpy.mean(d),label="nrcan")
+plt.plot(t2,d2-numpy.mean(d2),label="glab")
+plt.plot(t3,d3-numpy.mean(d3),label="rtklib")
 
 plt.grid()
 plt.legend()
