@@ -29,7 +29,7 @@ def CODE_rapid_files(dt, prefixdir=""):
     """
         retrieve rapid CODE products for the datetime dt
         
-        Examples of Rapid files:
+        Examples of Rapid files: (FIXME: old paths!)
         ftp://ftp.unibe.ch/aiub/CODE/COD17840.EPH_R    ephemeris aka orbits
         ftp://ftp.unibe.ch/aiub/CODE/COD17840.ERP_R    erp, earth rotation parameters
         ftp://ftp.unibe.ch/aiub/CODE/COD17840.CLK_R    clk, clocks
@@ -56,8 +56,8 @@ def CODE_rapid_files(dt, prefixdir=""):
     
 # retrieve final CODE products
 def CODE_final_files(dt, prefixdir=""):
-    server = "ftp.unibe.ch"
-    remotedir = "aiub/CODE/%s/" % (dt.year)
+    server = "ftp.aiub.unibe.ch"
+    remotedir = "CODE/%s/" % (dt.year)
     week = gpstime.gpsWeek(   dt.year, dt.month, dt.day )
     dow  = gpstime.dayOfWeek( dt.year, dt.month, dt.day )
     clk = "COD%s%s.CLK.Z" % ( week, dow ) # clock
@@ -115,7 +115,6 @@ def example_igs_ftp():
     """
     
 if __name__ == "__main__":
-    #example_igs_ftp()
-    pass
-    
+    example_igs_ftp()
+        
 

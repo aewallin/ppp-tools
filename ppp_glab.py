@@ -9,12 +9,14 @@ import bipm_ftp
 import igs_ftp
 import ppp_common
 
-glab_tag = "glab"
+glab_tag = "glab" # used in the results-file filename
 glab_binary = "gLAB_linux" # must have this executable in path
 
 def glab_parse_result(fname, station):
     """
         parse the FILTER data fields from gLAB outuput
+        to a format defined by PPP_Result
+        
     """
     ppp_result = ppp_common.PPP_Result()
     ppp_result.station=station
@@ -50,13 +52,19 @@ def glab_result_write(outfile, data, preamble=""):
     print "gLAB parsed output: ", outfile
 
 def glab_run(station, dt, rapid=True, prefixdir=""):
+    """
+    PPP run using ESA gLAB
+    
+    """
     dt_start = datetime.datetime.utcnow()
 
     doy = dt.timetuple().tm_yday
-    rinex = station.get_rinex( dt )
+    rinex = station.get_rinex( dt ) # doenload rinex file
 
+    # download IGS products 
     (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
 
+    # log input files, for writing to the result file
     run_log  = " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
     run_log += "   Station: %s\n" % station.name
     run_log += "      Year: %d\n" % dt.year
@@ -117,7 +125,8 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
                 " -input:clk %s" % clk,
                 " -input:orb %s" % eph,
                 " -input:ant %s" % antfile,
-                " -model:recphasecenter no", # USNO receiver antenna is not in igs08.atx (?should it be?)
+                # " -model:recphasecenter ANTEX", 
+                " -model:recphasecenter no",# USNO receiver antenna is not in igs08.atx (?should it be?)
                 " -output:file %s" % outfile,
                 " -pre:dec 30", # rinex data is at 30s intervals, don't decimate
                 " -pre:elevation 10", # elevation mask
