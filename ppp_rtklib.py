@@ -210,7 +210,7 @@ def rtklib_run(station, dt, rapid=True, prefixdir=""):
                 #" -y 1", # state output
                 #" -h", # fix and hold for integer ambiguity resolution [off]
                 #" -f 2", # 2:L1+L2
-                " -x 2", # debug level
+                #" -x 2", # debug level
                 " %s" % inputfile, # RINEX file
                 " %s" % navfile,   # brdc NAV file
                 " %s" % clk,
