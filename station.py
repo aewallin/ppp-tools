@@ -8,9 +8,9 @@ import datetime
 import bipm_ftp
 import ftp_tools
 
-class UTCStation():
+class Station():
     """
-    Class to represent a GPS station producing RINEX files.
+    Class to represent a GPS station/receiver producing RINEX files.
     
     May be modified later to include 'local' stations where we find the RINEX
     on disk rather than via FTP.
@@ -27,6 +27,7 @@ class UTCStation():
         self.receiver=""        # receiver name, e.g. "MI02", used in the RINEX filename
         self.rinex_filename = self.rinex1
         self.hatanaka = False   # flag is True for Hatanaka compressed RINEX
+        self.antex = True       # receiver antenna in ANTEX file?
         
     # the RINEX naming convention is that there is no convention...
     # we define rinex_filename() in the constructor, which calls one of rinex1(), rinex2(), etc.
@@ -48,6 +49,9 @@ class UTCStation():
         fname = "%s%03d0.%02dD.Z" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
         self.hatanaka = True
         return fname
+    
+    def antex(self):
+        return self.antex
     
     def get_rinex(self,dt):
         """
@@ -72,7 +76,7 @@ bipm_password = 'dataTAI'
 
 
 #### USNO 
-usno = UTCStation()
+usno = Station()
 usno.name="USNO"
 usno.utctag="usno"
 usno.ftp_server = bipm_server
@@ -84,7 +88,7 @@ usno.receiver= "usn6"
 usno.rinex_filename = usno.rinex2
 
 ### NIST
-nist = UTCStation()
+nist = Station()
 nist.name="NIST"
 nist.utctag="nist" 
 nist.ftp_server = bipm_server
@@ -97,7 +101,7 @@ nist.rinex_filename = nist.rinex1
 
 
 ### MIKES
-mikes = UTCStation()
+mikes = Station()
 mikes.name="MIKES"
 mikes.utctag="mike" 
 mikes.ftp_server = bipm_server
@@ -105,12 +109,13 @@ mikes.ftp_username = bipm_username
 mikes.ftp_password = bipm_password
 mikes.ftp_dir="data/UTC/MIKE/links/rinex/"
 mikes.refdelay = 2.9
-mikes.receiver = "MI02"
-mikes.rinex_filename = mikes.rinex1
+mikes.receiver = "MI04"
+mikes.rinex_filename = mikes.rinex4
+mikes.antex = False
 
 
 ### OP
-op = UTCStation()
+op = Station()
 op.name="OP"
 op.utctag="op"        
 op.ftp_server = bipm_server
@@ -123,7 +128,7 @@ op.rinex_filename = op.rinex3
 
 
 ### SP
-sp = UTCStation()
+sp = Station()
 sp.name="SP"
 sp.utctag="sp"        
 sp.ftp_server = bipm_server
@@ -138,7 +143,7 @@ sp.rinex_filename = sp.rinex3
 
 
 ### NICT
-nict = UTCStation()
+nict = Station()
 nict.name="NICT"
 nict.utctag="nict"
 nict.ftp_server = bipm_server
@@ -152,7 +157,7 @@ nict.rinex_filename = nict.rinex2
 
 
 ### NPL
-npl = UTCStation()
+npl = Station()
 npl.name="NPL"
 npl.utctag="npl"
 npl.ftp_server = bipm_server
@@ -165,7 +170,7 @@ npl.rinex_filename = npl.rinex1
 
 
 ### PTB
-ptb = UTCStation()
+ptb = Station()
 ptb.name="PTB"
 ptb.utctag="ptb"
 ptb.ftp_server = bipm_server

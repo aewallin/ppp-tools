@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import struct
 
-import UTCStation
+import station
 import ftp_tools
 import bipm_ftp
 import igs_ftp
@@ -161,13 +161,14 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
     return nrcan_result
 
 
-def nrcan_run(station, dt, rapid=True, prefixdir=""):
+def run(station, dt, rapid=True, prefixdir=""):
     """
     PPP-processing with NRCan ppp.
     
     requires "gpsppp" binary
     
     """
+    original_dir = prefixdir
     dt_start = datetime.datetime.utcnow() # for timing how long processing takes
     
     year = dt.timetuple().tm_year
@@ -279,15 +280,16 @@ def nrcan_run(station, dt, rapid=True, prefixdir=""):
     # we may now do postprocessing and store the results.
     # the result is named RINEX.pos, for example "usn63440.pos"
     ppp_result = nrcan_parse_result(nrcan_pos_file, station, inputfile, bwd=True)
-    ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir )
-
+    result_file = ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir )
+    os.chdir(original_dir) # change back to original directory
+    return result_file
 
 if __name__ == "__main__":
     # example processing:
-    station = UTCStation.usno
+    station1 = station.usno
     #station = UTCStation.ptb
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=4) # 4 days ago
     current_dir = os.getcwd()
     
     # run NRCAN PPP for given station and datetime dt
-    nrcan_run(station, dt, prefixdir=current_dir)
+    run(station1, dt, prefixdir=current_dir)

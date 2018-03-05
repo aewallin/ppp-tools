@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import numpy
 
-import UTCStation
+import station
 import ftp_tools
 import bipm_ftp
 import igs_ftp
@@ -32,8 +32,8 @@ def parse_result(fname, station):
                 line2=line.split(",")
                 clock.append( float(line2[5]))
     # has bot fwd and bwd
-    #clock.reverse()
-    #tropo.reverse()
+    clock.reverse()
+    tropo.reverse()
     
     ppp_result = ppp_common.PPP_Result()
     ppp_result.station=station
@@ -113,11 +113,12 @@ def glab_result_write(outfile, data, preamble=""):
 """
 
 
-def rtklib_run(station, dt, rapid=True, prefixdir=""):
+def run(station, dt, rapid=True, prefixdir=""):
     """
     PPP run using RTKLib rnx2rtkp
     
     """
+    original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()
 
     doy = dt.timetuple().tm_yday
@@ -253,18 +254,19 @@ def rtklib_run(station, dt, rapid=True, prefixdir=""):
 
     # here we may parse the output and store it to file somewhere
     ppp_result = parse_result(outfile, station)
-    ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=rtklib_tag, prefixdir=prefixdir )
-
+    result_file = ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=rtklib_tag, prefixdir=prefixdir )
+    os.chdir(original_dir) # change back to original directory
+    
 if __name__ == "__main__":
 
     # example processing:
-    station1 = UTCStation.usno
-    station2 = UTCStation.ptb
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=4)
+    station1 = station.usno
+    station2 = station.ptb
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=6)
     current_dir = os.getcwd()
 
     # run gLAB PPP for given station, day
-    rtklib_run(station1, dt, prefixdir=current_dir)
-    os.chdir(current_dir)
-    rtklib_run(station2, dt, prefixdir=current_dir)
+    run(station1, dt, prefixdir=current_dir)
+    #os.chdir(current_dir)
+    run(station2, dt, prefixdir=current_dir)
     #glab_run(station2, dt, prefixdir=current_dir)

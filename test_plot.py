@@ -2,6 +2,8 @@ import os
 import datetime
 import numpy
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams['axes.formatter.useoffset'] = False
 
 import ppp_common
 import UTCStation

@@ -9,7 +9,7 @@
 import math
 import os
 import datetime
-import UTCStation
+import station
 
 import ftp_tools
 import jdutil 
@@ -38,14 +38,15 @@ def diff_stations(prefixdir, station1, station2, dt, products, program):
     
     r1 = read_result_file(station1, dt, products, program, prefixdir)
     r2 = read_result_file(station2, dt, products, program, prefixdir)
-    print "diff station1 ", len(r1)
-    print "diff station2 ", len(r2)
+    print "diff ", station1.name, " - ", station2.name,
+    #print "diff station2 ", len(r2)
     #read_result_file( )
     #2,x2) = bipm_ftp.COD_read_day(prefixdir, station2, year, doy, rapid)
     #print len(t1), len(t2)
     
     
     (t_diff, clock_diff) = diff(r1, r2)
+    print len(t_diff), " points"
     #print len(td), len(d)
     #print d
     #print numpy.median(d)
@@ -111,6 +112,7 @@ def write_result_file( ppp_result ,  preamble="" , rapid=True, tag="ppp", prefix
             f.write(str(point) + "\n")
 
     print " wrote results to ", outfile
+    return outfile
 
 def read_result_file(station, dt, products, program, prefixdir):
     """
@@ -154,6 +156,16 @@ class PPP_Result():
     def __init__(self):
         self.observations=[]
         self.station=""
+    def epoch(self):
+        return [o.epoch for o in self.observations]
+    def lat(self):
+        return [o.lat for o in self.observations]
+    def lon(self):
+        return [o.lon for o in self.observations]
+    def height(self):
+        return [o.height for o in self.observations]
+    def clock(self):
+        return [o.clock for o in self.observations]
         
     def append(self,p):
         self.observations.append(p)
@@ -214,14 +226,14 @@ def xyz2lla(x,y,z):
 if __name__=="__main__":
     prefixdir = os.getcwd()
     #fname = "results/USNO/usn6.58176.rapid.glab.txt"
-    station = UTCStation.usno
+    station1 = station.usno
     dt = datetime.datetime.utcnow() - datetime.timedelta(days=4)
     products="rapid"
     program="nrcan"
-    r = read_result_file(station, dt, products, program, prefixdir)
+    r = read_result_file(station1, dt, products, program, prefixdir)
     print "read ",len(r), " points"
-    station1 = UTCStation.usno
-    station2 = UTCStation.ptb
+    station1 = station.usno
+    station2 = station.ptb
     (t,d) = diff_stations(prefixdir, station1, station2, dt, products, "nrcan")
     (t2,d2) = diff_stations(prefixdir, station1, station2, dt, products, "glab")
 

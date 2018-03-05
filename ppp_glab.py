@@ -3,7 +3,7 @@ import datetime
 import shutil
 import subprocess
 
-import UTCStation
+import station
 import ftp_tools
 import bipm_ftp
 import igs_ftp
@@ -69,11 +69,12 @@ def glab_result_write(outfile, data, preamble=""):
             f.write( "%04d %03d %05.03f %f %f %f %f %f %f \n" % (row[0], row[1], row[2], row[3], row[4],  row[5], row[6], row[7], row[8] ) )
     print "gLAB parsed output: ", outfile
 
-def glab_run(station, dt, rapid=True, prefixdir=""):
+def run(station, dt, rapid=True, prefixdir=""):
     """
     PPP run using ESA gLAB
     
     """
+    original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()
 
     doy = dt.timetuple().tm_yday
@@ -134,12 +135,18 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     if inputfile[-1] == "d" or rinex[-3] == "D":
         # if hatanaka compressed, we already uncompressed, so change to "O"
         inputfile = inputfile[:-1]+"O"
-        
+    
+    
     # now ppp itself:
     os.chdir( tempdir )
 
     antfile = prefixdir + "/common/igs08.atx"
     outfile = tempdir + "out.txt"
+    eph = copied_files[2]
+    clk = copied_files[1]
+    inputfile = tempdir + inputfile
+    
+    print "inputfile ",inputfile
     
     cmd =  glab_binary # must have this executable in path
     # see doc/glab_options.txt
@@ -148,7 +155,7 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
                 " -input:orb %s" % eph,                     # SP3 Orbits
                 " -input:ant %s" % antfile,
                 # " -model:recphasecenter ANTEX", 
-                " -model:recphasecenter no",                # USNO receiver antenna is not in igs08.atx (?should it be?)
+                # " -model:recphasecenter no",                
                 " -model:trop",                             # correct for troposphere
                 #" -model:iono FPPP",
                 " -output:file %s" % outfile,
@@ -162,6 +169,10 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
                 " --print:prefit",
                 " --print:postfit",
                 " --print:satellites" ]
+    if station.antex:
+        options.append(" -model:recphasecenter ANTEX")
+    else:
+        options.append(" -model:recphasecenter no") # USNO receiver antenna is not in igs08.atx (?should it be?)
 
     for opt in options:
         cmd += opt
@@ -177,15 +188,16 @@ def glab_run(station, dt, rapid=True, prefixdir=""):
     # here we may parse the output and store it to file somewhere
     ppp_result = glab_parse_result(outfile, station)
     ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=glab_tag, prefixdir=prefixdir )
+    os.chdir(original_dir)
 
 if __name__ == "__main__":
 
     # example processing:
-    station1 = UTCStation.ptb
+    station1 = station.ptb
     #station2 = UTCStation.ptb
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=5)
     current_dir = os.getcwd()
 
     # run gLAB PPP for given station, day
-    glab_run(station1, dt, prefixdir=current_dir)
+    run(station1, dt, prefixdir=current_dir)
     #glab_run(station2, dt, prefixdir=current_dir)
