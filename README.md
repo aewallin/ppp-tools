@@ -61,7 +61,7 @@ The resulting binary can be placed in e.g. /usr/local/bin
 
 ## RTKLib installation
 
-* clone from
+* clone from https://github.com/tomojitakasu/RTKLIB
 * run "make" in RTKLIB/app/rnx2rtkp/gcc
 * move the binary "rnx2rtkp" to e.g. /usr/local/bin
 * test with "rnx2rtkp -help"
