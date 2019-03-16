@@ -30,7 +30,7 @@ Post-processing may include:
 * Some UTC-laboratories submit both a RINEX file and an "LZ" file with the offset between the RINEX receiver clock and the UTC-realization. The PPP receiver-clock result should be modified using the LZ file.
 * Plotting using matplotlib
 * Calculation of Allan deviations or other statistics (using e.g. allantools)
-* Comparison to UTC(k)-UTC numbers published by BIPM monthly in Circular-T, or to Rapid-UTC published weekly.
+* Comparison to UTC-UTC(k) numbers published by BIPM monthly in Circular-T, or to Rapid-UTC published weekly.
 
 ## Folders
 
