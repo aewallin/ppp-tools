@@ -39,7 +39,9 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
     """
     with open(inpfile, 'w') as f:
         (tmp, rinexfile) = os.path.split( rinex[:-2] ) # strip off ".Z" from end of filename
-
+        if rinexfile[-1] == ".": # if ending was .gz
+            rinexfile = rinexfile[:-1]
+            
         if rinexfile[-1] == "d":  # hatanaka compressed
              rinexfile = rinexfile[:-1] + 'o'
         if rinexfile[-1] == "D":
@@ -132,6 +134,7 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
     nrcan_result.station = station
     if not os.path.exists(filename):
         print "No pos file to read!"
+        print "expexted to find ", filename
         assert(0)
         
     print " read results from ", filename
@@ -168,6 +171,10 @@ def run(station, dt, rapid=True, prefixdir=""):
     requires "gpsppp" binary
     
     """
+    print "------------------------------------"
+    
+    print "PPP-processing with NRCan ppp."
+    
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow() # for timing how long processing takes
     
@@ -209,8 +216,11 @@ def run(station, dt, rapid=True, prefixdir=""):
     nrcan_def_file( prefixdir, "gpsppp.def")
     
     # result will be stored in a POS file:
-    (rinexdir,fn ) = os.path.split(rinex)
-    nrcan_pos_file = tempdir + fn[:-5] + "pos"
+    (rinexdir, fn ) = os.path.split(rinex)
+    if fn[-3:] == ".gz":
+        nrcan_pos_file = tempdir + fn[:-6] + "pos"
+    else:
+        nrcan_pos_file = tempdir + fn[:-5] + "pos"
     
     run_log = ""
     run_log += " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
@@ -256,11 +266,17 @@ def run(station, dt, rapid=True, prefixdir=""):
     print "rinex= ", rinex
     (tmp,rinexfile ) = os.path.split(rinex)
     inputfile = rinexfile[:-2] # strip off ".Z"
+    if inputfile[-1] == ".": # ends in a dot
+        inputfile = inputfile[:-1] # strip off
     
     # if the RINEX file is hatanaka-compressed, uncompress it
-    if rinexfile[-3] == "d" or rinexfile[-3] == "D":
-        hatanaka_file = moved_files[0]
-        cmd = "CRX2RNX " + hatanaka_file[:-2]
+    if inputfile[-1] == "d" or inputfile[-1] == "D":
+        hata_file = moved_files[0]
+        hata_file = hata_file[:-2] # strip off ".Z"
+        if hata_file[-1] == ".":
+            hata_file = hata_file[:-1] # stip off more
+            
+        cmd = "CRX2RNX " + hata_file
         print "Hatanaka uncompress: ", cmd
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
@@ -276,6 +292,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     run_log2  = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     run_log2 += "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
     print run_log2
+    print "---------------------------------"
 
     # we may now do postprocessing and store the results.
     # the result is named RINEX.pos, for example "usn63440.pos"

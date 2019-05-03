@@ -74,14 +74,18 @@ def run(station, dt, rapid=True, prefixdir=""):
     PPP run using ESA gLAB
     
     """
+    print "ESA gLAB PPP-run"
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()
 
     doy = dt.timetuple().tm_yday
-    rinex = station.get_rinex( dt ) # doenload rinex file
+    rinex = station.get_rinex( dt ) # download rinex file
 
+    print "getting IGS products:"
     # download IGS products 
     (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
+    print "IGS products done."
+    print "-------------------"
 
     # log input files, for writing to the result file
     run_log  = " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
@@ -94,7 +98,8 @@ def run(station, dt, rapid=True, prefixdir=""):
     run_log += "       EPH: %s\n" % eph
     run_log += "       ERP: %s\n" % erp
     print run_log
-
+    print "-------------------"
+    
     # we do processing in a temp directory
     tempdir = prefixdir + "/temp/"
     ftp_tools.check_dir( tempdir )
@@ -119,9 +124,11 @@ def run(station, dt, rapid=True, prefixdir=""):
 
     # Hatanaka uncompress - if needed
     #rinexfile = copied_files[0] # the first file is the unzipped RINEX, in the temp dir
-    if rinex[-3] == "d" or rinex[-3] == "D":
+    if rinex[-3] == "d" or rinex[-3] == "D" or rinex[-4] == "D":  # can end .z, .Z, or .gz - so the "d" is in position -3 or -4
         hata_file = copied_files[0]
         hata_file = hata_file[:-2] # strip off ".Z"
+        if rinex[-4] == "D":
+            hata_file = hata_file[:-1] # stip off more
         #print "hata ", hata_file
         cmd = "CRX2RNX " + hata_file
         print "Hatanaka uncompress: ", cmd
@@ -132,7 +139,11 @@ def run(station, dt, rapid=True, prefixdir=""):
     # figure out the rinex file name
     (tmp,rinexfile ) = os.path.split(rinex)
     inputfile = rinexfile[:-2] # strip off ".Z"
-    if inputfile[-1] == "d" or rinex[-3] == "D":
+    
+    if inputfile[-1] == ".": # ends in a dot
+        inputfile = inputfile[:-1] # strip off
+        
+    if inputfile[-1] == "d" or inputfile[-1] == "D":
         # if hatanaka compressed, we already uncompressed, so change to "O"
         inputfile = inputfile[:-1]+"O"
     
@@ -146,7 +157,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     clk = copied_files[1]
     inputfile = tempdir + inputfile
     
-    print "inputfile ",inputfile
+    print "inputfile for gLAB is: ",inputfile
     
     cmd =  glab_binary # must have this executable in path
     # see doc/glab_options.txt
@@ -184,6 +195,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     run_log2  = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     run_log2 += "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
     print run_log2
+    print "-------------------"
 
     # here we may parse the output and store it to file somewhere
     ppp_result = glab_parse_result(outfile, station)

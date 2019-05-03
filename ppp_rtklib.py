@@ -118,6 +118,9 @@ def run(station, dt, rapid=True, prefixdir=""):
     PPP run using RTKLib rnx2rtkp
     
     """
+    print "------------------------------"
+    print "PPP run using RTKLib rnx2rtkp"
+
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()
 
@@ -167,9 +170,11 @@ def run(station, dt, rapid=True, prefixdir=""):
 
     # Hatanaka uncompress - if needed
     #rinexfile = copied_files[0] # the first file is the unzipped RINEX, in the temp dir
-    if rinex[-3] == "d" or rinex[-3] == "D":
+    if rinex[-3] == "d" or rinex[-3] == "D" or rinex[-4] == "D":
         hata_file = copied_files[0]
         hata_file = hata_file[:-2] # strip off ".Z"
+        if hata_file[-1] == ".":
+            hata_file = hata_file[:-1] # stip off more
         #print "hata ", hata_file
         cmd = "CRX2RNX " + hata_file
         print "Hatanaka uncompress: ", cmd
@@ -180,7 +185,10 @@ def run(station, dt, rapid=True, prefixdir=""):
     # figure out the rinex file name
     (tmp,rinexfile ) = os.path.split(rinex)
     inputfile = rinexfile[:-2] # strip off ".Z"
-    if inputfile[-1] == "d" or rinex[-3] == "D":
+    if inputfile[-1] == ".": # ends in a dot
+        inputfile = inputfile[:-1] # strip off
+        
+    if inputfile[-1] == "d" or inputfile[-1] == "D":
         # if hatanaka compressed, we already uncompressed, so change to "O"
         inputfile = inputfile[:-1]+"O"
         

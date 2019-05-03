@@ -49,7 +49,12 @@ class Station():
         fname = "%s%03d0.%02dD.Z" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
         self.hatanaka = True
         return fname
-    
+        
+    def rinex5(self,dt): # PTBG 2019 style name, compressed with "D", ending "gz"
+        fname = "%s%03d0.%02dD.gz" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
+        self.hatanaka = True
+        return fname
+            
     def antex(self):
         return self.antex
     
@@ -179,7 +184,7 @@ ptb.ftp_password = bipm_password
 ptb.ftp_dir = "data/UTC/PTB/links/rinex/PTBG/"
 ptb.refdelay = 335.6+132.0
 ptb.receiver = "PTBG"
-ptb.rinex_filename = ptb.rinex4
+ptb.rinex_filename = ptb.rinex5
 
 ########################################################################
 

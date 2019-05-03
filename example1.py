@@ -1,3 +1,7 @@
+#
+# example file for ppp-tools
+# https://github.com/aewallin/ppp-tools
+#
 import datetime
 import os
 import matplotlib.pyplot as plt
@@ -11,14 +15,35 @@ import ppp_nrcan
 import station
 import ppp_common
 
+import distutils.spawn  # to find executables for ppp-engines.
+
+print "checking for executables needed:"
+gLab_EXISTS = distutils.spawn.find_executable("gLAB_linux")
+rtklib_EXISTS = distutils.spawn.find_executable("rnx2rtkp")
+nrcan_EXISTS = distutils.spawn.find_executable("gpsppp")
+CRX2RNX_EXISTS = distutils.spawn.find_executable("CRX2RNX")
+
+print "gLab \t ",gLab_EXISTS
+print "rnx2rtkp \t ",rtklib_EXISTS
+print "nrcan \t ",nrcan_EXISTS
+print "CRX2RNX \t ",CRX2RNX_EXISTS
+print "-------------------------"
+
 # define stations
 station1 = station.ptb
 station2 = station.mikes
 products = "rapid" # IGS product type
 
 # define day for analysis:
-dt = datetime.datetime.utcnow()-datetime.timedelta(days=5)
+dt = datetime.datetime.utcnow()-datetime.timedelta(days=5) # 5 days back from now
 current_dir = os.getcwd()
+
+print "Example PPP-run between 2 stations for 1 day:"
+print "Station1: ", station1.name
+print "Station2: ", station2.name
+print "Day: ", dt
+print "Will now run ppp-engines."
+print "-------------------------"
 
 t0 = time.time()
 # run gLAB PPP
