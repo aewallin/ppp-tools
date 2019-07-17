@@ -5,7 +5,7 @@ post-processing of RINEX files.
 GPS-PPP solutions can be found with the following software packages: 
 * rtklib, http://www.rtklib.com/
 * ESA gLab, 5.1.3 released 2018-01 http://gage.upc.edu/gLAB
-* NRCan gpsppp (CSRS-PPP)
+* NRCan gpsppp (CSRS-PPP) (this fortran code is not publicly available, but can be obtained from NRCan/CSRS for academic/non-commercial use)
 
 In addition to the GPS-PPP software some utilities may be required:
 * Teqc, for concatenating many 1-day RINEX files into multi-day files,  https://www.unavco.org/software/data-processing/teqc/teqc.html, install it to e.g. /usr/local/bin, and verify with "$ teqc -version" that it is working.
