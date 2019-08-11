@@ -1,4 +1,6 @@
 # ppp-tools
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools?ref=badge_shield)
+
 
 This is a collection of python scripts for GPS-Precise Point Positioning 
 post-processing of RINEX files. 
@@ -65,3 +67,7 @@ The resulting binary can be placed in e.g. /usr/local/bin
 * run "make" in RTKLIB/app/rnx2rtkp/gcc
 * move the binary "rnx2rtkp" to e.g. /usr/local/bin
 * test with "rnx2rtkp -help"
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools?ref=badge_large)
