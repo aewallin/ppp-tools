@@ -7,12 +7,12 @@ post-processing of RINEX files.
 GPS-PPP solutions can be found with the following software packages: 
 * rtklib, http://www.rtklib.com/
 * ESA gLab, 5.1.3 released 2018-01 http://gage.upc.edu/gLAB
-* NRCan gpsppp (CSRS-PPP) (this fortran code is not publicly available, but can be obtained from NRCan/CSRS for academic/non-commercial use)
+* NRCan gpsppp (CSRS-PPP) (NOTE: this fortran code is not publicly available, but can be obtained from NRCan/CSRS for academic/non-commercial use)
 
 In addition to the GPS-PPP software some utilities may be required:
-* Teqc, for concatenating many 1-day RINEX files into multi-day files,  https://www.unavco.org/software/data-processing/teqc/teqc.html, install it to e.g. /usr/local/bin, and verify with "$ teqc -version" that it is working.
+* Teqc, for concatenating many 1-day RINEX files into multi-day files,  https://www.unavco.org/software/data-processing/teqc/teqc.html, install it to e.g. /usr/local/bin, and verify with ```$ teqc -version``` that it is working.
 as of 2018 March the latest version is "2018Jan11"
-* RNXCMP, for decompressing Hatanaka compressed RINEX files, http://terras.gsi.go.jp/ja/crx2rnx.html, install to e.g. /usr/local/bin and verify that CRX2RNX is working with "$ CRX2RNX -h".
+* RNXCMP, for decompressing Hatanaka compressed RINEX files, http://terras.gsi.go.jp/ja/crx2rnx.html, install to e.g. /usr/local/bin and verify that CRX2RNX is working with ```$ CRX2RNX -h```
 As of 2018 March the latest version is 4.0.7.
 
 ## Running PPP
@@ -49,15 +49,19 @@ The scripts store input and output files under the main folder:
 ## ESA gLAB installation
 
 * dowload package from http://gage.upc.edu/gLAB
-* build binary "gLAB_linux" with "make"
-* test that it works "$ ./gLAB_linux -help"
+* build binary gLAB_linux" with "make"
+* test that it works ```$ ./gLAB_linux -help```
 * move the binary to e.g. /usr/local/bin
 
 ## NRCan gpsppp Installation
 
+This Fortran code is not publicly available, but can be obtained from NRCan/CSRS for academic/non-commercial use.
+
 The gfortran package is required on Ubuntu. NRCAN gpsppp is compiled with
 
+```
 Dist34613b/source/$ gfortran -o gpsppp *.f
+```
 
 The resulting binary can be placed in e.g. /usr/local/bin
 
@@ -71,3 +75,4 @@ The resulting binary can be placed in e.g. /usr/local/bin
 
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools?ref=badge_large)
+
