@@ -8,7 +8,7 @@
     - LZ (offset from RINEX receiver clock to UTC(k))
     
     This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
-    GPL license.
+    GPLv2 license.
 """
 # import ftplib
 import datetime
