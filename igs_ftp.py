@@ -56,14 +56,14 @@ def CODE_rapid_files(dt, prefixdir=""):
     clk = "COD%s%s.CLK_R" % ( week,  dow )
     sp3 = "COD%s%s.EPH_R" % ( week, dow )
     erp = "COD%s%s.ERP_R" % ( week, dow )
-    print "CODE rapid products for %d-%02d-%0d" %( dt.year , dt.month, dt.day )
-    print "CLK = ", clk
-    print "SP3 = ", sp3
-    print "ERP = ", erp
+    print("CODE rapid products for %d-%02d-%0d" %( dt.year , dt.month, dt.day ))
+    print("CLK = ", clk)
+    print("SP3 = ", sp3)
+    print("ERP = ", erp)
     
     ftp_tools.check_dir(prefixdir + "/products/")
     localdir = prefixdir + "/products/CODE_rapid/"
-    print "local dir = ", localdir
+    print("local dir = ", localdir)
     
     #return  CODE_download(server, directory, [clk, sp3, erp], localdir)
     return  (server, "", "", remotedir, [clk, sp3, erp], localdir)
@@ -77,24 +77,24 @@ def CODE_final_files(dt, prefixdir=""):
     clk = "COD%s%s.CLK.Z" % ( week, dow ) # clock
     sp3 = "COD%s%s.EPH.Z" % ( week, dow ) # orbit
     erp = "COD%s%s.ERP.Z" % ( week, dow ) # earth
-    print "CODE final products for %d-%02d-%0d" %( dt.year , dt.month, dt.day )
-    print "CLK = ", clk
-    print "SP3 = ", sp3
-    print "ERP = ", erp
+    print("CODE final products for %d-%02d-%0d" %( dt.year , dt.month, dt.day ))
+    print("CLK = ", clk)
+    print("SP3 = ", sp3)
+    print("ERP = ", erp)
     
     ftp_tools.check_dir(prefixdir + "/products/")
     localdir = prefixdir + "/products/CODE_final/"
-    print "local dir = ", localdir
+    print("local dir = ", localdir)
     return  (server, "", "", remotedir, [clk, sp3, erp], localdir)
 
 def CODE_download( server, username, password, remotedir, files, localdir):
-    print "CODE_download start ", datetime.datetime.now()
+    print("CODE_download start ", datetime.datetime.now())
     ftp_tools.check_dir(localdir)
 
     for f in files:
         local_file = localdir+f
         ftp_tools.ftp_download( server, username, password, remotedir, f, localdir)
-    print "CODE_download Done ", datetime.datetime.now()
+    print("CODE_download Done ", datetime.datetime.now())
     sys.stdout.flush()
     output=[]
     for f in files:
@@ -108,10 +108,10 @@ def example_igs_ftp():
     dt_final = datetime.datetime.now() - datetime.timedelta(days=14) # final product worst case latency 14 days ?
     (server, username, password, directory, files, localdir) = CODE_final_files(dt_final, prefixdir=current_dir)
     files = CODE_download(server, username, password, directory, files, localdir)
-    print files # [CLK, EPH, ERP]  note that final products are zipped
+    print(files) # [CLK, EPH, ERP]  note that final products are zipped
     (server, username, password, directory, files, localdir) = CODE_rapid_files(dt_rapid, prefixdir=current_dir)
     files = CODE_download(server, username, password, directory, files, localdir)
-    print files # [CLK, EPH, ERP] rapid products are unzipped
+    print(files) # [CLK, EPH, ERP] rapid products are unzipped
     """
     sample output:
     

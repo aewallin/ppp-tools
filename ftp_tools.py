@@ -6,7 +6,7 @@ import sys
 def check_dir(target_dir):
     # check that local target directory exists, create it if not
     if not os.path.isdir(target_dir):
-        print "creating target directory ", target_dir
+        print("creating target directory ", target_dir)
         os.mkdir(target_dir)
 
 def delete_files(folder):
@@ -17,8 +17,8 @@ def delete_files(folder):
         try:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             
 def ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=False):
     """
@@ -29,10 +29,10 @@ def ftp_download( server, username, password, remotedir, remotefile, localdir, o
     """
     check_dir( localdir )  # check that target dir exists, if not create it
     local_fullname = localdir + remotefile 
-    print "ftp_download start at ", datetime.datetime.utcnow()
+    print("ftp_download start at ", datetime.datetime.utcnow())
     if not os.path.exists( local_fullname ) or overwrite:
-        print 'Remote: ', remotedir + " " + remotefile
-        print 'Local : ', local_fullname
+        print('Remote: ', remotedir + " " + remotefile)
+        print('Local : ', local_fullname)
         sys.stdout.flush()
         ftp = ftplib.FTP(server)  # Establish the connection
         ftp.login(username, password)
@@ -42,8 +42,8 @@ def ftp_download( server, username, password, remotedir, remotefile, localdir, o
         fhandle.close()
         ftp.close()
     else:
-        print remotefile," already exists locally, not downloading."
-    print "ftp_download Done ", datetime.datetime.utcnow()
+        print(remotefile," already exists locally, not downloading.")
+    print("ftp_download Done ", datetime.datetime.utcnow())
     sys.stdout.flush()
     return local_fullname
 

@@ -75,7 +75,8 @@ class Station():
 #
 ########################################################################
 
-bipm_server = '5.144.141.242'
+#bipm_server = '5.144.141.242'
+bipm_server = 'ftp2.bipm.org'
 bipm_username = 'labotai'
 bipm_password = 'dataTAI'
 
@@ -193,12 +194,12 @@ if __name__ == "__main__":
     # an example of how to retrieve a RINEX file
     dt = datetime.datetime.utcnow() - datetime.timedelta(days=5) # some days back from now
     
-    print usno.get_rinex(dt)
-    print nist.get_rinex(dt)
-    print mikes.get_rinex(dt)
-    print op.get_rinex(dt)
-    print sp.get_rinex(dt)
-    print nict.get_rinex(dt)
-    print npl.get_rinex(dt)
-    print ptb.get_rinex(dt)
+    print(usno.get_rinex(dt))
+    print(nist.get_rinex(dt))
+    print(mikes.get_rinex(dt))
+    print(op.get_rinex(dt))
+    print(sp.get_rinex(dt))
+    print(nict.get_rinex(dt))
+    print(npl.get_rinex(dt))
+    print(ptb.get_rinex(dt))
     

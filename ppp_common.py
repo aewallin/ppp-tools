@@ -33,12 +33,12 @@ def diff_stations(prefixdir, station1, station2, dt, products, program):
     ftp_tools.check_dir(diff_dir)
     fname = diff_dir + "%s.diff.%s.%d.%s.%s.txt" % ( station1.receiver , station2.receiver, mjd, products, program )
     if os.path.exists(fname):
-        print fname," already exists - nothing to do."
+        print(fname," already exists - nothing to do.")
         return # result already exists, nothing to do
     
     r1 = read_result_file(station1, dt, products, program, prefixdir)
     r2 = read_result_file(station2, dt, products, program, prefixdir)
-    print "diff ", station1.name, " - ", station2.name,
+    print("diff ", station1.name, " - ", station2.name, end=' ')
     #print "diff station2 ", len(r2)
     #read_result_file( )
     #2,x2) = bipm_ftp.COD_read_day(prefixdir, station2, year, doy, rapid)
@@ -46,7 +46,7 @@ def diff_stations(prefixdir, station1, station2, dt, products, program):
     
     
     (t_diff, clock_diff) = diff(r1, r2)
-    print len(t_diff), " points"
+    print(len(t_diff), " points")
     #print len(td), len(d)
     #print d
     #print numpy.median(d)
@@ -80,8 +80,8 @@ def diff(result1, result2):
                 idx1 = t1.index(t)
                 idx2 = t2.index(t)
                 if idx1<0 or idx1>len(ns1)-1: # an error!
-                    print t, idx1, len(ns1), t1.index(t), t in t1
-                    print t, idx2, len(ns2), t2.index(t), t in t2
+                    print(t, idx1, len(ns1), t1.index(t), t in t1)
+                    print(t, idx2, len(ns2), t2.index(t), t in t2)
                 d.append( ns1[idx1]-ns2[idx2] )
                 td.append(t)
     assert( len(td) == len(d) )
@@ -111,7 +111,7 @@ def write_result_file( ppp_result ,  preamble="" , rapid=True, tag="ppp", prefix
         for point in ppp_result.observations:
             f.write(str(point) + "\n")
 
-    print " wrote results to ", outfile
+    print(" wrote results to ", outfile)
     return outfile
 
 def read_result_file(station, dt, products, program, prefixdir):
@@ -231,10 +231,10 @@ if __name__=="__main__":
     products="rapid"
     program="nrcan"
     r = read_result_file(station1, dt, products, program, prefixdir)
-    print "read ",len(r), " points"
+    print("read ",len(r), " points")
     station1 = station.usno
     station2 = station.ptb
     (t,d) = diff_stations(prefixdir, station1, station2, dt, products, "nrcan")
     (t2,d2) = diff_stations(prefixdir, station1, station2, dt, products, "glab")
 
-    print d
+    print(d)

@@ -86,7 +86,7 @@ def wtFromUTCpy(pyUTC, leapSecs=14):
     """convenience function: 87 allows to use python UTC times and 
     returns only week and tow""" 
     ymdhms = ymdhmsFromPyUTC(pyUTC) 
-    wSowDSoD = apply(gpsFromUTC, ymdhms + (leapSecs,)) 
+    wSowDSoD = gpsFromUTC(*ymdhms + (leapSecs,)) 
     return wSowDSoD[0:2]
 
 def gpsFromUTC(year, month, day, hour, min, sec, leapSecs=14):
@@ -154,65 +154,65 @@ def PyUTCFromGpsSeconds(gpsseconds):
 #===== Tests  ========================================= 
 
 def testTimeStuff():
-    print "-"*20 
-    print 
-    print "The GPS Epoch when everything began (1980, 1, 6, 0, 0, 0, leapSecs=0)" 
+    print("-"*20) 
+    print() 
+    print("The GPS Epoch when everything began (1980, 1, 6, 0, 0, 0, leapSecs=0)") 
     (w, sow, d, sod) = gpsFromUTC(1980, 1, 6, 0, 0, 0, leapSecs=0) 
-    print "**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod) 
-    print " and hopefully back:" 
-    print "**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=0)
-    print "The time of first Rollover of GPS week (1999, 8, 21, 23, 59, 47)" 
+    print("**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod)) 
+    print(" and hopefully back:") 
+    print("**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=0))
+    print("The time of first Rollover of GPS week (1999, 8, 21, 23, 59, 47)") 
     (w, sow, d, sod) = gpsFromUTC(1999, 8, 21, 23, 59, 47) 
-    print "**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod) 
-    print " and hopefully back:" 
-    print "**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=14)
+    print("**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod)) 
+    print(" and hopefully back:") 
+    print("**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow, leapSecs=14))
     
-    print "Today is GPS week 1186, day 3, seems to run ok (2002, 10, 2, 12, 6, 13.56)" 
+    print("Today is GPS week 1186, day 3, seems to run ok (2002, 10, 2, 12, 6, 13.56)") 
     (w, sow, d, sod) = gpsFromUTC(2002, 10, 2, 12, 6, 13.56) 
-    print "**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod) 
-    print " and hopefully back:" 
-    print "**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow)
+    print("**** week: %s, sow: %s, day: %s, sod: %s" % (w, sow, d, sod)) 
+    print(" and hopefully back:") 
+    print("**** %s, %s, %s, %s, %s, %s\n" % UTCFromGps(w, sow))
 
 def testJulD():
-    print "testJulD()"
-    print '2002, 10, 11 -> 284 ==??== ', julianDay(2002, 10, 11)
-    print " "
+    print("testJulD()")
+    print('2002, 10, 11 -> 284 ==??== ', julianDay(2002, 10, 11))
+    print(" ")
     
 def testGpsWeek():
-    print "testGpsWeek()"
-    print '2002, 10, 11 -> 1187 ==??== ', gpsWeek(2002, 10, 11)
-    print " "
+    print("testGpsWeek()")
+    print('2002, 10, 11 -> 1187 ==??== ', gpsWeek(2002, 10, 11))
+    print(" ")
     
 def testDayOfWeek():
-    print "testDayOfWeek()"
-    print '2002, 10, 12 -> 6 ==??== dayOfWeek = ', dayOfWeek(2002, 10, 12) 
-    print '2002, 10, 6 -> 0 ==??== dayOfWeek =', dayOfWeek(2002, 10, 6)
-    print " "
+    print("testDayOfWeek()")
+    print('2002, 10, 12 -> 6 ==??== dayOfWeek = ', dayOfWeek(2002, 10, 12)) 
+    print('2002, 10, 6 -> 0 ==??== dayOfWeek =', dayOfWeek(2002, 10, 6))
+    print(" ")
 
 def testNow():
     now = datetime.datetime.now() - datetime.timedelta(days=2)
     #now = datetime.datetime(2014,2,23 ) # doy 54
-    print "testNow()"
-    print " now = ", now
-    print " Julian day      = ", julianDay( now.year, now.month, now.day )
-    print " GPS week        = ", gpsWeek( now.year, now.month, now.day) 
-    print " GPS day of week = ", dayOfWeek( now.year, now.month, now.day) 
-    print " date from Julian= ", dateFromJulian( now.year, julianDay(now.year, now.month, now.day) )
-    print '2002, 10, 6 -> 0 ==??== dayOfWeek =', dayOfWeek(2014, 01, 9)
+    print("testNow()")
+    print(" now = ", now)
+    print(" Julian day      = ", julianDay( now.year, now.month, now.day ))
+    print(" GPS week        = ", gpsWeek( now.year, now.month, now.day)) 
+    print(" GPS day of week = ", dayOfWeek( now.year, now.month, now.day)) 
+    print(" date from Julian= ", dateFromJulian( now.year, julianDay(now.year, now.month, now.day) ))
+    print('2002, 10, 6 -> 0 ==??== dayOfWeek =', dayOfWeek(2014, 0o1, 9))
     
 def testPyUtilties():
-    print "testDayOfWeek()"
+    print("testDayOfWeek()")
     ymdhms = (2014, 1, 9, 8, 34, 12.3) 
-    print "testing for: ", ymdhms 
-    pyUtc = apply(mkUTC, ymdhms) 
+    print("testing for: ", ymdhms) 
+    pyUtc = mkUTC(*ymdhms) 
     back = ymdhmsFromPyUTC(pyUtc) 
-    print "yields : ", back 
+    print("yields : ", back) 
     #*********************** !!!!!!!! 
     #assert(ymdhms == back) 208 
     #! TODO: this works only with int seconds!!! fix!!! 
     (w, t) = wtFromUTCpy(pyUtc) 
-    print "week and time: ", (w,t)
-    print " "
+    print("week and time: ", (w,t))
+    print(" ")
 
 #===== Main ========================================= 
 if __name__ == "__main__": 

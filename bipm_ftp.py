@@ -28,7 +28,7 @@ def bipm_utcr_download():
     Download UTC-rapid datafile from BIPM
     place result in the UTCr/ subdirectory
     """
-    print "bipm_utcR_download start ", datetime.datetime.utcnow()
+    print("bipm_utcR_download start ", datetime.datetime.utcnow())
     
     current_dir = os.getcwd() # the current directory
     localdir = current_dir + "/UTCr/"
@@ -49,7 +49,7 @@ def bipm_utcr_download():
     for (remotedir, remotefile) in utcr_files:
         ftp_tools.ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=True)
 
-    print "bipm_utcR_download Done ", datetime.datetime.utcnow()
+    print("bipm_utcR_download Done ", datetime.datetime.utcnow())
           
 def bipm_utc_download(prefixdir=""):
     """
@@ -57,7 +57,7 @@ def bipm_utc_download(prefixdir=""):
     
     placed in UTC/ subdirectory
     """
-    print "bipm_utc_download start ", datetime.datetime.utcnow()
+    print("bipm_utc_download start ", datetime.datetime.utcnow())
     current_dir = os.getcwd()
     localdir = current_dir + "/UTC/"
     # Connection information
@@ -79,7 +79,7 @@ def bipm_utc_download(prefixdir=""):
         ftp_tools.ftp_download( server, username, password, remotedir, remotefile, localdir, overwrite=True)
 
     
-    print "bipm_utc_download Done ", datetime.datetime.utcnow()
+    print("bipm_utc_download Done ", datetime.datetime.utcnow())
 
 def read_UTC(prefixdir, station, rapid=False):
     """
@@ -95,7 +95,7 @@ def read_UTC(prefixdir, station, rapid=False):
         utcfile = prefixdir + "/UTCr/utcr-%s" % station.utctag
     else:
         utcfile = prefixdir + "/UTC/utc-%s" % station.utctag
-    print "read_UTC reading: ", utcfile
+    print("read_UTC reading: ", utcfile)
     t = [] # mjd
     x = [] # UTC-UTC(k) in nanoseconds
     with open(utcfile) as f: # parse the circular-T or UTC-rapid format

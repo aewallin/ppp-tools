@@ -64,7 +64,7 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
             else:
                 f.write(a[:-2]+"\n")
         f.close()
-    print "INP= ", inpfile
+    print("INP= ", inpfile)
     return inpfile
 
 
@@ -133,16 +133,16 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
     nrcan_result = ppp_common.PPP_Result()
     nrcan_result.station = station
     if not os.path.exists(filename):
-        print "No pos file to read!"
-        print "expexted to find ", filename
+        print("No pos file to read!")
+        print("expexted to find ", filename)
         assert(0)
         
-    print " read results from ", filename
+    print(" read results from ", filename)
     with open(filename, "r") as f:
         for line in f:
             if line.startswith("FWD") or line.startswith("BWD"):
                 vals = line.split(" ")
-                vals = filter(None, vals)
+                vals = [_f for _f in vals if _f]
                 (year,month,day) = struct.unpack("4sx2sx2s", vals[4])
                 tod = vals[5].replace(":","")
                 (h,m,s) = struct.unpack("2s2s6s", tod)
@@ -171,9 +171,9 @@ def run(station, dt, rapid=True, prefixdir=""):
     requires "gpsppp" binary
     
     """
-    print "------------------------------------"
+    print("------------------------------------")
     
-    print "PPP-processing with NRCan ppp."
+    print("PPP-processing with NRCan ppp.")
     
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow() # for timing how long processing takes
@@ -233,7 +233,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     run_log += "       CLK: %s\n" % clk_files  # allow for multiple clk-files!?
     run_log += "       EPH: %s\n" % eph_files
     run_log += "       ERP: %s\n" % erp_file
-    print run_log
+    print(run_log)
 
     # move RINEX, CLK, EPH, ERP files to temp_dir
     files_to_move = [ rinex, clk1, clk2, eph1, eph2, erp_file ]
@@ -242,14 +242,14 @@ def run(station, dt, rapid=True, prefixdir=""):
         shutil.copy2( f, tempdir )
         (tmp,fn ) = os.path.split(f)
         moved_files.append( tempdir + fn )
-    print moved_files
+    print(moved_files)
     
     # unzip zipped files. this may include the RINEX, CLK, EPH files.
     for f in moved_files:
         if f[-1] == "Z" or f[-1] == "z": # compressed .z or .Z file
             cmd ='/bin/gunzip'
             cmd = cmd + " -f " + f # -f overwrites existing file
-            print "unzipping: ", cmd
+            print("unzipping: ", cmd)
             p = subprocess.Popen(cmd, shell=True)
             p.communicate()
     
@@ -258,12 +258,12 @@ def run(station, dt, rapid=True, prefixdir=""):
     gpsppp_erp = prefixdir + "/temp/gpsppp.ERP"
     (tmp,fn ) = os.path.split(erp_file)  # [:-2]
     cmd = cmd + " " + tempdir + fn + " " + gpsppp_erp 
-    print "rename command: ", cmd
+    print("rename command: ", cmd)
     p = subprocess.Popen(cmd, shell=True)
     p.communicate()
     
     # figure out the rinex file name
-    print "rinex= ", rinex
+    print("rinex= ", rinex)
     (tmp,rinexfile ) = os.path.split(rinex)
     inputfile = rinexfile[:-2] # strip off ".Z"
     if inputfile[-1] == ".": # ends in a dot
@@ -277,7 +277,7 @@ def run(station, dt, rapid=True, prefixdir=""):
             hata_file = hata_file[:-1] # stip off more
             
         cmd = "CRX2RNX " + hata_file
-        print "Hatanaka uncompress: ", cmd
+        print("Hatanaka uncompress: ", cmd)
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
     
@@ -291,8 +291,8 @@ def run(station, dt, rapid=True, prefixdir=""):
     delta = dt_end-dt_start
     run_log2  = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     run_log2 += "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
-    print run_log2
-    print "---------------------------------"
+    print(run_log2)
+    print("---------------------------------")
 
     # we may now do postprocessing and store the results.
     # the result is named RINEX.pos, for example "usn63440.pos"
