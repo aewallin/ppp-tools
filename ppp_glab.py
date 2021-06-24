@@ -54,7 +54,7 @@ def glab_parse_result(fname, station, backward=True):
                 bwd_obs.append(p)
         bwd_obs.reverse() # back to chronological order
         ppp_result.observations = bwd_obs 
-    print len(ppp_result)
+    print(len(ppp_result))
     return ppp_result
 
 def glab_result_write(outfile, data, preamble=""):
@@ -67,25 +67,25 @@ def glab_result_write(outfile, data, preamble=""):
         f.write( "# year doy secs x y z t ztd ambig.\n")
         for row in data:
             f.write( "%04d %03d %05.03f %f %f %f %f %f %f \n" % (row[0], row[1], row[2], row[3], row[4],  row[5], row[6], row[7], row[8] ) )
-    print "gLAB parsed output: ", outfile
+    print("gLAB parsed output: ", outfile)
 
 def run(station, dt, rapid=True, prefixdir=""):
     """
     PPP run using ESA gLAB
     
     """
-    print "ESA gLAB PPP-run"
+    print("ESA gLAB PPP-run")
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()
 
     doy = dt.timetuple().tm_yday
     rinex = station.get_rinex( dt ) # download rinex file
 
-    print "getting IGS products:"
+    print("getting IGS products:")
     # download IGS products 
     (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
-    print "IGS products done."
-    print "-------------------"
+    print("IGS products done.")
+    print("-------------------")
 
     # log input files, for writing to the result file
     run_log  = " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
@@ -97,8 +97,8 @@ def run(station, dt, rapid=True, prefixdir=""):
     run_log += "       CLK: %s\n" % clk
     run_log += "       EPH: %s\n" % eph
     run_log += "       ERP: %s\n" % erp
-    print run_log
-    print "-------------------"
+    print(run_log)
+    print("-------------------")
     
     # we do processing in a temp directory
     tempdir = prefixdir + "/temp/"
@@ -118,7 +118,7 @@ def run(station, dt, rapid=True, prefixdir=""):
         if f[-1] == "Z" or f[-1] == "z": # compressed .z or .Z file
             cmd ='/bin/gunzip'
             cmd = cmd + " -f " + f # -f overwrites existing file
-            print "unzipping: ", cmd
+            print("unzipping: ", cmd)
             p = subprocess.Popen(cmd, shell=True)
             p.communicate()
 
@@ -131,7 +131,7 @@ def run(station, dt, rapid=True, prefixdir=""):
             hata_file = hata_file[:-1] # stip off more
         #print "hata ", hata_file
         cmd = "CRX2RNX " + hata_file
-        print "Hatanaka uncompress: ", cmd
+        print("Hatanaka uncompress: ", cmd)
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
     
@@ -151,13 +151,13 @@ def run(station, dt, rapid=True, prefixdir=""):
     # now ppp itself:
     os.chdir( tempdir )
 
-    antfile = prefixdir + "/common/igs08.atx"
+    antfile = prefixdir + "/common/igs14.atx"
     outfile = tempdir + "out.txt"
     eph = copied_files[2]
     clk = copied_files[1]
     inputfile = tempdir + inputfile
     
-    print "inputfile for gLAB is: ",inputfile
+    print("inputfile for gLAB is: ",inputfile)
     
     cmd =  glab_binary # must have this executable in path
     # see doc/glab_options.txt
@@ -166,7 +166,7 @@ def run(station, dt, rapid=True, prefixdir=""):
                 " -input:orb %s" % eph,                     # SP3 Orbits
                 " -input:ant %s" % antfile,
                 # " -model:recphasecenter ANTEX", 
-                # " -model:recphasecenter no",                
+                # " -model:recphasecenter no",              # use this option if RINEX-file antenna not in ANTEX file  
                 " -model:trop",                             # correct for troposphere
                 #" -model:iono FPPP",
                 " -output:file %s" % outfile,
@@ -187,6 +187,8 @@ def run(station, dt, rapid=True, prefixdir=""):
 
     for opt in options:
         cmd += opt
+    
+    print("gLAB command: %s"% cmd)
     p = subprocess.Popen(cmd, shell=True, cwd = tempdir )
     p.communicate() # wait for processing to finish
 
@@ -194,8 +196,8 @@ def run(station, dt, rapid=True, prefixdir=""):
     delta = dt_end-dt_start
     run_log2  = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     run_log2 += "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
-    print run_log2
-    print "-------------------"
+    print(run_log2)
+    print("-------------------")
 
     # here we may parse the output and store it to file somewhere
     ppp_result = glab_parse_result(outfile, station)
@@ -205,11 +207,10 @@ def run(station, dt, rapid=True, prefixdir=""):
 if __name__ == "__main__":
 
     # example processing:
-    station1 = station.ptb
-    #station2 = UTCStation.ptb
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=5)
+    station1 = station.mi04
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=6)
     current_dir = os.getcwd()
 
     # run gLAB PPP for given station, day
     run(station1, dt, prefixdir=current_dir)
-    #glab_run(station2, dt, prefixdir=current_dir)
+    
