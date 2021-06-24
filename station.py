@@ -76,9 +76,26 @@ class Station():
 ########################################################################
 
 #bipm_server = '5.144.141.242'
+# NOTE: as of 2021 BIPM does not make public RINEX files anymore!
 bipm_server = 'ftp2.bipm.org'
 bipm_username = 'labotai'
 bipm_password = 'dataTAI'
+
+mikes_server = "monitor.mikes.fi"
+mikes_username = "anonymous"
+mikes_password = "ppp-tools"
+
+#### MI04, VTT MIKES timing receiver 
+mi04 = Station()
+mi04.name="MI04"
+mi04.utctag="MI04"
+mi04.ftp_server = mikes_server
+mi04.ftp_username = mikes_username
+mi04.ftp_password = mikes_password
+mi04.ftp_dir="/GNSS/MI04/RINEX/"
+mi04.refdelay=0.0
+mi04.receiver= "MI04" # start of the RINEX filename
+mi04.rinex_filename = mi04.rinex4 # naming style is MI040040.21D.Z
 
 
 #### USNO 

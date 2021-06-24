@@ -15,8 +15,9 @@ import igs_ftp
 import ppp_common
 
 gpsppp_binary = "gpsppp"
+gpsppp_binary = "gpspace"
 gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
-gpsppp_tag = "nrcan" # used in the result file names
+gpsppp_tag = "gpsppp" # used in the result file names
 
 
 def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
@@ -303,7 +304,7 @@ def run(station, dt, rapid=True, prefixdir=""):
 
 if __name__ == "__main__":
     # example processing:
-    station1 = station.usno
+    station1 = station.mi04
     #station = UTCStation.ptb
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=4) # 4 days ago
     current_dir = os.getcwd()
