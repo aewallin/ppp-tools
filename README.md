@@ -6,9 +6,9 @@ This is a collection of python scripts for GPS-Precise Point Positioning
 post-processing of RINEX files. 
 GPS-PPP solutions can be found with the following software packages: 
 * rtklib, http://www.rtklib.com/
-* ESA gLab, 5.1.3 released 2018-01 http://gage.upc.edu/gLAB
+* ESA gLab, 5.5.1 released 2020-12 http://gage.upc.edu/gLAB
 * NRCan gpsppp (CSRS-PPP) (NOTE: this fortran code is not publicly available, but can be obtained from NRCan/CSRS for academic/non-commercial use). Replaced with gpspace, see next item.
-* gpspace available from https://github.com/CGS-GIS/GPSPACE Note that this repository is inclomplete. A repository that includes the missing IERS2010 code is e.g. https://github.com/aewallin/GPSPACE
+* GPSPACE available from https://github.com/CGS-GIS/GPSPACE Note that this repository is inclomplete. A repository that includes the missing IERS2010 code is e.g. https://github.com/aewallin/GPSPACE
 
 In addition to the GPS-PPP software some utilities may be required:
 * Teqc, for concatenating many 1-day RINEX files into multi-day files,  https://www.unavco.org/software/data-processing/teqc/teqc.html, install it to e.g. /usr/local/bin, and verify with ```$ teqc -version``` that it is working.

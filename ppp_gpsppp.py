@@ -79,13 +79,13 @@ def nrcan_def_file(prefixdir, def_file):
     example gpsppp.def file:
     ---------
     'LNG' 'ENGLISH' 
-    'TRF' '/home/anders/gpsppp/gpsppp.trf'
-    'SVB' '/home/anders/gpsppp/gpsppp.svb_gnss_yrly'
-    'PCV' '/home/anders/gpsppp/igs08.atx'
-    'FLT' '/home/anders/gpsppp/gpsppp.flt'
-    'OLC' '/home/anders/gpsppp/gpsppp_with_mike_kaja.olc'
-    'MET' '/home/anders/gpsppp/gpsppp.met'
-    'ERP' '/home/anders/BIPM/temp/gpsppp.ERP'
+    'TRF' '/gpsppp/gpsppp.trf'
+    'SVB' '/gpsppp/gpsppp.svb_gnss_yrly'
+    'PCV' '/gpsppp/igs08.atx'
+    'FLT' '/gpsppp/gpsppp.flt'
+    'OLC' '/gpsppp/gpsppp_with_mike_kaja.olc'
+    'MET' '/gpsppp/gpsppp.met'
+    'ERP' '/BIPM/temp/gpsppp.ERP'
     'GSD' 'Natural Resources Canada, Geodetic Survey Division, Geomatics Canada'
     'GSD' '615 Booth Street, room 440, Ottawa, Ontario, Canada, K1A 0E9'
     'GSD' 'Phone: (613) 995-4410, fax: (613) 995-3215'
@@ -99,7 +99,7 @@ def nrcan_def_file(prefixdir, def_file):
     # these are fixed files for now. in principle they could vary from run to run.
     trf = "'%s/gpsppp/gpsppp.trf'" % prefixdir
     svb = "'%s/gpsppp/gpsppp.svb_gnss_yrly'" % prefixdir
-    atx = "'%s/common/igs08.atx'" % prefixdir
+    atx = "'%s/common/igs14.atx'" % prefixdir
     flt = "'%s/gpsppp/gpsppp.flt'" % prefixdir
     olc = "'%s/gpsppp/gpsppp.olc'" % prefixdir
     met = "'%s/gpsppp/gpsppp.met'" % prefixdir
@@ -131,6 +131,15 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
 # 0   1             2          3   4          5              6   7       8      9           19             11            12              13       14       15       16       17         18       19     20     21      22      23      24      25        26     27    28    29    30    31       32        33           34     35     36        37        38            39            40             41
 # DIR FRAME        STN         DOY YEAR-MM-DD HR:MN:SS.SSS NSV GDOP    SDC    SDP       DLAT(m)       DLON(m)       DHGT(m)         CLK(ns)   TZD(m)   SLAT(m)  SLON(m)  SHGT(m)   SCLK(ns)  STZD(m) LAT(d) LAT(m)    LAT(s) LON(d) LON(m)    LON(s)   HGT(m)   AM GRAD1 GRAD2 SGRD1 SGRD2 WETZD(m) GLNCLK(ns) SGLNCLK(ns)  MAXNL  MAXWL  AVGNL(m)  AVGWL(m)  VTEC(.1TECU)  GPS_DP1P2(ns) GLN_DP1P2(ns)
 # FWD ITRF(IGb08) usn6 344.0000000 2015-12-10 00:00:00.000  14  2.3   0.69 0.0000         0.532        -0.960        -2.344          -4.054   2.3456    1.286    1.217     2.935     7.468   0.0999     38     55 14.05525    -77      3 58.63558        56.579 14   0.0   0.0   0.0   0.0   0.0542     33.576       8.911 0.2000 1.5000   0.0000     0.0000         100.0            0.0           0.0
+#
+# as of 2021 June the pos file format with gpspace is:
+# (numbers refer to list-index after split())
+#
+# 0   1              2           3          4            5   6    7      8      9            10           11            12               13       14      15        16       17       18       19     20     21        22     23    24        25        26
+# DIR FRAME        STN         DOY YEAR-MM-DD HR:MN:SS.SSS NSV GDOP    SDC    SDP       DLAT(m)       DLON(m)       DHGT(m)         CLK(ns)   TZD(m)  SLAT(m)  SLON(m)  SHGT(m) SCLK(ns)  STZD(m) LAT(d) LAT(m)    LAT(s) LON(d) LON(m)    LON(s)   HGT(m)    AM GRAD1 GRAD2 SGRD1 SGRD2 WETZD(m) GLNCLK(ns) SGLNCLK(ns) GALCLK(ns) SGALCLK(ns) BEICLK(ns) SBEICLK(ns) MAXNL MAXWL AVGNL(m) AVGWL(m) VTEC(.1TECU) GPS_DP1P2(ns) GLN_DP1P2(ns) RIFRATE NAMBFIX NSVDWGT
+# FWD ITRF(IGb14) MARK 171.0000000 2021-06-20 00:00:00.000  10  2.2   0.80 0.0000        -0.156         0.286         2.134           4.111   2.3917    1.510    1.073    2.987    7.352   0.0999     60     10 49.23731     24     49 35.53626        62.451 10   0.0   0.0   0.0   0.0   0.0901           0.000    0.000          0.000    0.000          0.000    0.000     0.2000     1.5000     0.0000     0.0000    100.0      0.0      0.0      0.0  0  0
+
+
     nrcan_result = ppp_common.PPP_Result()
     nrcan_result.station = station
     if not os.path.exists(filename):
@@ -144,14 +153,17 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
             if line.startswith("FWD") or line.startswith("BWD"):
                 vals = line.split(" ")
                 vals = [_f for _f in vals if _f]
-                (year,month,day) = struct.unpack("4sx2sx2s", vals[4])
-                tod = vals[5].replace(":","")
-                (h,m,s) = struct.unpack("2s2s6s", tod)
+                #(year,month,day) = struct.unpack("4sx2sx2s", bytes(vals[4]))
+                #tod = vals[5].replace(":","")
+                #(h,m,s) = struct.unpack("2s2s6s", bytes(tod))
                 if bwd: # if we want BWD, then retain only backward solution
                     if vals[0] != "BWD":
                         continue
                 
-                dt = datetime.datetime( int(year),int(month),int(day),int(h),int(m),int(float(s))) 
+                #dt = datetime.datetime( int(year),int(month),int(day),int(h),int(m),int(float(s)))
+                
+                dt = datetime.datetime.strptime(vals[4]+" "+vals[5][:-4], '%Y-%m-%d %H:%M:%S')
+                
                 clk = float( vals[13] ) # receiver clock (ns)
                 ztd = float( vals[14] ) # zenith trposphere delay (m)
                 lat = float( vals[20] ) + float( vals[21] )/60.0 + float( vals[22] )/(3600.0) # latitude
@@ -160,7 +172,7 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
                 p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
                 nrcan_result.append(p)
 
-    if bwd: # for the BWD solution, flip order
+    if bwd: # for the BWD solution, flip order so results are 'forward' again
         nrcan_result.reverse()
     return nrcan_result
 
