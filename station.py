@@ -11,6 +11,7 @@ import ftp_tools
 class Station():
     """
     Class to represent a GPS station/receiver producing RINEX files.
+    We get RINEX files by downloading them from an FTP site.
     
     May be modified later to include 'local' stations where we find the RINEX
     on disk rather than via FTP.
@@ -54,7 +55,12 @@ class Station():
         fname = "%s%03d0.%02dD.gz" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
         self.hatanaka = True
         return fname
-            
+
+    def rinex6(self,dt): # "o", ending "gz"
+        fname = "%s%03d0.%02do.gz" % (self.receiver, dt.timetuple().tm_yday, dt.year-2000) 
+        self.hatanaka = False
+        return fname
+                    
     def antex(self):
         return self.antex
     
@@ -96,6 +102,32 @@ mi04.ftp_dir="/GNSS/MI04/RINEX/"
 mi04.refdelay=0.0
 mi04.receiver= "MI04" # start of the RINEX filename
 mi04.rinex_filename = mi04.rinex4 # naming style is MI040040.21D.Z
+
+#### MI05, VTT MIKES timing receiver, RINEX v2 files
+mi05 = Station()
+mi05.name="MI05"
+mi05.utctag="MI05"
+mi05.ftp_server = mikes_server
+mi05.ftp_username = mikes_username
+mi05.ftp_password = mikes_password
+mi05.ftp_dir="/GNSS/MI05/RINEX_v2_24h/"
+mi05.refdelay=0.0
+mi05.receiver= "MI05" # start of the RINEX filename
+mi05.rinex_filename = mi05.rinex6 # naming style is MI050020.21o.gz
+
+
+
+#### MI02, VTT MIKES timing receiver, RINEX v2 files
+mi02 = Station()
+mi02.name="MI02"
+mi02.utctag="MI02"
+mi02.ftp_server = mikes_server
+mi02.ftp_username = mikes_username
+mi02.ftp_password = mikes_password
+mi02.ftp_dir="/GNSS/MI02/RINEX/"
+mi02.refdelay=0.0
+mi02.receiver= "MI02" # start of the RINEX filename
+mi02.rinex_filename = mi02.rinex1 # naming style is MI021690.21O.Z
 
 
 #### USNO 

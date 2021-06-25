@@ -14,10 +14,12 @@ import bipm_ftp
 import igs_ftp
 import ppp_common
 
-gpsppp_binary = "gpsppp"
-gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
-gpsppp_tag = "gpsppp" # used in the result file names
+# NRCAN Fortran code requiring license
+# gpsppp_binary = "gpsppp"
+# gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
+# gpsppp_tag = "gpsppp" # used in the result file names
 
+# GPSPACE open source version
 # from https://github.com/aewallin/GPSPACE
 gpsppp_binary = "gpspace"
 gpsppp_version = "GPSPACE Precise Point Positioning (Version 1.10/25018/2018-09-07)"
@@ -322,7 +324,8 @@ def run(station, dt, rapid=True, prefixdir=""):
 if __name__ == "__main__":
     # example processing:
     station1 = station.mi04
-    #station = UTCStation.ptb
+    #station1 = station.mi05
+    station1 = station.mi02
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=4) # 4 days ago
     current_dir = os.getcwd()
     
