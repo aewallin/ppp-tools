@@ -102,7 +102,8 @@ def write_result_file( ppp_result ,  preamble="" , rapid=True, tag="ppp", prefix
     
     outfile = prefixdir + "/results/" + ppp_result.station.name + "/" + result_file
     with open(outfile,'w') as f:
-        datastring = "# " + result_file + " \n"
+        #            "# run start: 
+        datastring = "#  this file: " + result_file + " \n"
         f.write(datastring)
         for line in preamble.split('\n'):
             f.write( "# %s\n" % line)
@@ -110,7 +111,8 @@ def write_result_file( ppp_result ,  preamble="" , rapid=True, tag="ppp", prefix
         f.write(PPP_Point.column_labels())
         for point in ppp_result.observations:
             f.write(str(point) + "\n")
-
+        f.write("# end\n")
+        
     print(" wrote results to ", outfile)
     return outfile
 
@@ -192,7 +194,7 @@ class PPP_Point():
         return labels
         
     def __str__(self): # string representation
-         return "%d\t%d\t%d\t%d\t%d\t%d\t%0.6f\t%0.6f\t%0.3f\t\t%0.3f\t\t%0.4f" % ( self.epoch.year, self.epoch.month, self.epoch.day, 
+         return "%d\t%d\t%d\t%d\t%d\t%d\t%0.6f\t%0.6f\t%0.6f\t%0.6f\t%0.6f" % ( self.epoch.year, self.epoch.month, self.epoch.day, 
                                                                    self.epoch.hour, self.epoch.minute, self.epoch.second, 
                                                                    self.lat, self.lon, self.height, self.clock, self.ztd  )
 

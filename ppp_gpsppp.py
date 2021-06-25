@@ -15,16 +15,21 @@ import igs_ftp
 import ppp_common
 
 gpsppp_binary = "gpsppp"
-gpsppp_binary = "gpspace"
 gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
 gpsppp_tag = "gpsppp" # used in the result file names
+
+# from https://github.com/aewallin/GPSPACE
+gpsppp_binary = "gpspace"
+gpsppp_version = "GPSPACE Precise Point Positioning (Version 1.10/25018/2018-09-07)"
+gpsppp_tag = "gpspace"
+
 
 
 def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
     """
     write an inp-file for gpsppp. 
     this corresponds to the keyboard-input we would type if we would
-    run gpsppp manually.
+    run gpsppp/gpspace manually.
     
     example:
     ---------------
@@ -242,10 +247,10 @@ def run(station, dt, rapid=True, prefixdir=""):
     run_log += "      Year: %d\n" % year
     run_log += "       DOY: %03d\n" % doy
     run_log += "      date: %d-%02d-%02d\n" % (dt.year, dt.month, dt.day)
-    run_log += "     RINEX: %s\n" % rinex
-    run_log += "       CLK: %s\n" % clk_files  # allow for multiple clk-files!?
-    run_log += "       EPH: %s\n" % eph_files
-    run_log += "       ERP: %s\n" % erp_file
+    run_log += "     RINEX: %s\n" % rinex[len(prefixdir):]
+    run_log += "       CLK: %s\n" % [c[len(prefixdir):] for c in clk_files]
+    run_log += "       EPH: %s\n" % [e[len(prefixdir):] for e in eph_files]
+    run_log += "       ERP: %s\n" % erp_file[len(prefixdir):]
     print(run_log)
 
     # move RINEX, CLK, EPH, ERP files to temp_dir
