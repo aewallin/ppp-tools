@@ -4,15 +4,15 @@
 
 This is a collection of python scripts for GPS-Precise Point Positioning 
 post-processing of RINEX files. 
-GPS-PPP solutions can be found with the following software packages: 
+GPS-PPP solutions can be found with the following open source software packages: 
 * rtklib, http://www.rtklib.com/
-* ESA gLab, 5.5.1 released 2020-12 http://gage.upc.edu/gLAB
-* NRCan gpsppp (CSRS-PPP) (NOTE: this fortran code is not publicly available, but can be obtained from NRCan/CSRS for academic/non-commercial use). Replaced with gpspace, see next item.
+* ESA gLab, v5.5.1 (Jun 28 2021) http://gage.upc.edu/gLAB
 * GPSPACE available from https://github.com/CGS-GIS/GPSPACE Note that this repository is inclomplete. A repository that includes the missing IERS2010 code is e.g. https://github.com/aewallin/GPSPACE
 
 In addition to the GPS-PPP software some utilities may be required:
+* GFZRNX (https://gnss.gfz-potsdam.de/services/gfzrnx) for RINEX file splice, split, repair, format conversion (RINEX 2 to 3). As of 2021 June the version is gfzrnx-1.15-8044
 * Teqc, for concatenating many 1-day RINEX files into multi-day files,  https://www.unavco.org/software/data-processing/teqc/teqc.html, install it to e.g. /usr/local/bin, and verify with ```$ teqc -version``` that it is working.
-as of 2018 March the latest version is "2018Jan11"
+as of 2018 March the latest version is "2018Jan11". Teqc is no longer maintained, but binaries are available.
 * RNXCMP, for decompressing Hatanaka compressed RINEX files, http://terras.gsi.go.jp/ja/crx2rnx.html, install to e.g. /usr/local/bin and verify that CRX2RNX is working with ```$ CRX2RNX -h```
 As of 2018 March the latest version is 4.0.7.
 
@@ -45,7 +45,7 @@ The scripts store input and output files under the main folder:
 * 'UTC' has Circular-T data from the BIPM ftp site.
 * 'UTCr' has rapid-UTC data from the BIPM ftp site.
 * 'doc' has documentation
-* 'temp' is used as a temporary directory for gps-ppp calculations
+* 'temp' is used as a temporary directory for gpspace calculations
 
 ## ESA gLAB installation
 
@@ -53,18 +53,6 @@ The scripts store input and output files under the main folder:
 * build binary gLAB_linux" with "make"
 * test that it works ```$ ./gLAB_linux -help```
 * move the binary to e.g. /usr/local/bin
-
-## NRCan gpsppp Installation
-
-This Fortran code is not publicly available, but can be obtained from NRCan/CSRS for academic/non-commercial use.
-
-The gfortran package is required on Ubuntu. NRCAN gpsppp is compiled with
-
-```
-Dist34613b/source/$ gfortran -o gpsppp *.f
-```
-
-The resulting binary can be placed in e.g. /usr/local/bin
 
 ## RTKLib installation
 
