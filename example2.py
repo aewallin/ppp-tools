@@ -36,7 +36,8 @@ dt = datetime.datetime.utcnow()-datetime.timedelta(days=4) # 4 days ago
 current_dir = os.getcwd()
 
 day_list = []
-for n in [8, 7, 6, 5, 4, 3]:
+#for n in [8, 7, 6, 5, 4, 3]:
+for n in [ 6, 5, 4, 3]:
     day_list.append( datetime.datetime.utcnow()-datetime.timedelta(days=n) )
 
 (t45, d45) = read_days( station.mi04, station.mi05, day_list )
@@ -52,11 +53,11 @@ plt.figure()
 plt.title("%s - %s receiver clock, double difference"%(station1.name, station2.name))
 #plt.plot(t_glab,d_glab, label="glab")
 #plt.plot(t_rtklib,d_rtklib, label="rtklib")
-plt.plot(t45, numpy.array(d45)+114, label="4-5 gpspace")
-plt.plot(t25, numpy.array(d25)+114, label="2-5 gpspace")
+plt.plot(t45, numpy.array(d45), label="4-5 gpspace")
+plt.plot(t25, numpy.array(d25), label="2-5 gpspace")
 plt.plot(t24, d24, label="2-4 gpspace")
 
-plt.ylim((-3, 3))
+#plt.ylim((-3, 3))
 plt.legend(loc="best")
 plt.grid()
 plt.ylabel("%s - %s / ns" %(station1.name, station2.name))

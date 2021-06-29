@@ -19,7 +19,7 @@ if __name__ == "__main__":
     my_stations = [station.mi04, station.mi05, station.mi02]
     #my_stations = [station.mi02]
     
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=3)  # 4 days ago
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=6)  # 4 days ago
     current_dir = os.getcwd()
 
     # run NRCAN PPP for given station and datetime dt

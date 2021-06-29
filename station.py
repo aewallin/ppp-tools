@@ -33,6 +33,19 @@ class Station():
         self.hatanaka = False   # flag is True for Hatanaka compressed RINEX
         self.antex = True       # receiver antenna in ANTEX file?
 
+        self.ref_dly = 0.0
+        self.cab_dly = 0.0
+        
+    def int_dly_p3(self):
+        """
+            ionosphere-free P3 internal delay.
+            linear combination of calibrated P1 and P3 delays
+        """
+        try:
+            return 2.5457*self.int_dly_p1 - 1.5457*self.int_dly_p2
+        except:
+            return 0.0
+        
     # the RINEX naming convention is that there is no convention...
     # we define rinex_filename() in the constructor, which calls one of rinex1(), rinex2(), etc.
 
@@ -109,11 +122,11 @@ mi04.ftp_server = mikes_server
 mi04.ftp_username = mikes_username
 mi04.ftp_password = mikes_password
 mi04.ftp_dir = "/GNSS/MI04/RINEX/"
-mi04.refdelay = 0.0
 mi04.receiver = "MI04"  # start of the RINEX filename
 mi04.rinex_filename = mi04.rinex4  # naming style is MI040040.21D.Z
 
 # MI05, VTT MIKES timing receiver, RINEX v2 files
+#  ftp://monitor.mikes.fi/GNSS/MI05/RINEX_v2_24h/
 mi05 = Station()
 mi05.name = "MI05"
 mi05.utctag = "MI05"
@@ -121,10 +134,12 @@ mi05.ftp_server = mikes_server
 mi05.ftp_username = mikes_username
 mi05.ftp_password = mikes_password
 mi05.ftp_dir = "/GNSS/MI05/RINEX_v2_24h/"
-mi05.refdelay = 0.0
 mi05.receiver = "MI05"  # start of the RINEX filename
 mi05.rinex_filename = mi05.rinex6  # naming style is MI050020.21o.gz
-
+mi05.ref_dly = 5.092 # ns
+mi05.cab_dly = 96.2 # ns
+mi05.int_dly_p1 = 20.17 # ns, see Cal_ID: 1016-2019
+mi05.int_dly_p2 = 18.18 # ns
 
 # MI02, VTT MIKES timing receiver, RINEX v2 files
 mi02 = Station()
@@ -134,7 +149,6 @@ mi02.ftp_server = mikes_server
 mi02.ftp_username = mikes_username
 mi02.ftp_password = mikes_password
 mi02.ftp_dir = "/GNSS/MI02/RINEX/"
-mi02.refdelay = 0.0
 mi02.receiver = "MI02"  # start of the RINEX filename
 mi02.rinex_filename = mi02.rinex1  # naming style is MI021690.21O.Z
 

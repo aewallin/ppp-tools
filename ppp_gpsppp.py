@@ -127,7 +127,7 @@ def nrcan_def_file(prefixdir, def_file):
         f.write("'GSD' 'ppp-tools, from https://github.com/aewallin/ppp-tools'\n")
 
 
-def nrcan_parse_result(filename, station, inputfile, bwd=False):
+def nrcan_parse_result(filename, my_station, inputfile, bwd=False):
     # This function reads and parses the .pos file
     #
     # This is an older format:
@@ -149,7 +149,7 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
     # FWD ITRF(IGb14) MARK 171.0000000 2021-06-20 00:00:00.000  10  2.2   0.80 0.0000        -0.156         0.286         2.134           4.111   2.3917    1.510    1.073    2.987    7.352   0.0999     60     10 49.23731     24     49 35.53626        62.451 10   0.0   0.0   0.0   0.0   0.0901           0.000    0.000          0.000    0.000          0.000    0.000     0.2000     1.5000     0.0000     0.0000    100.0      0.0      0.0      0.0  0  0
 
     nrcan_result = ppp_common.PPP_Result()
-    nrcan_result.station = station
+    nrcan_result.station = my_station
     if not os.path.exists(filename):
         print("No pos file to read!")
         print("expexted to find ", filename)
@@ -174,6 +174,7 @@ def nrcan_parse_result(filename, station, inputfile, bwd=False):
                     vals[4]+" "+vals[5][:-4], '%Y-%m-%d %H:%M:%S')
 
                 clk = float(vals[13])  # receiver clock (ns)
+                clk = clk - my_station.cab_dly - my_station.int_dly_p3() + my_station.ref_dly
                 ztd = float(vals[14])  # zenith trposphere delay (m)
                 lat = float(vals[20]) + float(vals[21])/60.0 + \
                     float(vals[22])/(3600.0)  # latitude
