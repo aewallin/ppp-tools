@@ -4,6 +4,8 @@
 """
 import os
 import datetime
+import shutil
+import subprocess
 
 import bipm_ftp
 import ftp_tools
@@ -96,17 +98,104 @@ class Station():
     def get_rinex(self, dt):
         """
             Retrieve RINEX file using ftp
+            dt is the datetime for the file we want
+            
+            return filename (including path) of RINEX
+            this is usually in the form:
+            /stations/MYSTATION/rinex_filename.gz
+            
         """
         current_dir = os.getcwd()
         localdir = current_dir + '/stations/' + self.name + '/'
         ftp_tools.check_dir(localdir)  # create directory if it doesn't exist
         return ftp_tools.ftp_download(self.ftp_server, self.ftp_username, self.ftp_password,
                                       self.ftp_dir, self.rinex_filename(dt), localdir)
+    
+    
+    def get_multiday_rinex(self, dtend, num_days=2):
+        """
+            get multiple 24h RINEX files
+            splice them together with gfzrnx
+            
+            dtend is the datetime of the last day
+            num_days is the number of days
+            
+            return filename (including path) of spliced RINEX
+        """
+        dtlist = [dtend - datetime.timedelta(days=n) for n in reversed(range(num_days))]
+        day_files = []
+        for day in dtlist:
+            day_files.append( self.get_rinex(day) )
+        print('splicing files: ' + str(day_files))
+        # we now have a list of zipped v2 or v3 files
+        # we do processing in a temp directory
+        current_dir = os.getcwd()
+        tempdir = current_dir + "/temp/"
+        ftp_tools.check_dir(tempdir)
+        #ftp_tools.delete_files(tempdir)  # empty the temp directory
+        
+        # move files to the temp-directory
+        moved_files=[]
+        for f in day_files:
+            shutil.copy2(f, tempdir)
+            (tmp, fn) = os.path.split(f)
+            moved_files.append(tempdir + fn)
+        print(moved_files)
+    
+        
+        
+        # now unzip the files
+        # unzip zipped files. this may include the RINEX, CLK, EPH files.
+        for f in moved_files:
+            if f[-1] == "Z" or f[-1] == "z":  # compressed .z or .Z file
+                cmd = '/bin/gunzip'
+                cmd = cmd + " -f " + f  # -f overwrites existing file
+                print("unzipping: ", cmd)
+                p = subprocess.Popen(cmd, shell=True)
+                p.communicate()
 
+        # figure out the unzipped rinex file name
+        unzipped_files =[]
+        #print("rinex= ", rinex)
+        for f in moved_files:
+            (tmp, rinexfile) = os.path.split(f)
+            inputfile = rinexfile[:-2]  # strip off ".Z"
+            if inputfile[-1] == ".":  # ends in a dot
+                inputfile = inputfile[:-1]  # strip off
+            unzipped_files.append(inputfile)
+        print("unzipped files: ", str(unzipped_files))
+        
+        # if files are Hatanaka compressed, uncompress
+        rnx_files=[]
+        for inputfile in unzipped_files:
+            if inputfile[-1] == "d" or inputfile[-1] == "D":
+                cmd = "CRX2RNX " + tempdir+inputfile
+                print("Hatanaka uncompress: ", cmd)
+                p = subprocess.Popen(cmd, shell=True)
+                p.communicate()
+                rnx_files.append( inputfile[:-1]+"O" ) # CRX2RNX changes ending to "O"
+            else:
+                rnx_files.append( inputfile )
+        
+        print("rinex files to splice: ", len(rnx_files), " ", str(rnx_files))
+        # now splice files together
+        cmd = "gfzrnx -finp "
+        for f in rnx_files:
+            cmd += tempdir+f+" "
+        # kv option to keep rinex version of splice same as input files
+        # f option to overwrite output file, if it already exists
+        cmd += " -fout " + tempdir+"splice.rnx" + " -kv -f"
+        print("splice command: ",cmd)
+        p = subprocess.Popen(cmd, shell=True)
+        p.communicate()
+        
+        # return the resulting spliced RINEX filename
+        return dtlist, tempdir+"splice.rnx"
+        
 ########################################################################
 # example stations
 #
-# these are from the BIPM ftp-server, but could be from anywhere.
+# these are from the varous ftp-servers, usually UTC-laboratories.
 #
 ########################################################################
 
@@ -275,10 +364,14 @@ npl.rinex_filename = npl.rinex1
 ########################################################################
 
 if __name__ == "__main__":
-
+    
+    
     # an example of how to retrieve a RINEX file
     dt = datetime.datetime.utcnow() - datetime.timedelta(days=5)  # some days back from now
-    print(mi05.get_rinex(dt))
+    #print(mi05.get_rinex(dt))
+    #print(mi04.get_multiday_rinex(dt, 2))
+    
+    print(mi05.get_multiday_rinex(dt, num_days = 8))
     
     """
     print(usno.get_rinex(dt))

@@ -188,12 +188,148 @@ def nrcan_parse_result(filename, my_station, inputfile, bwd=False):
         nrcan_result.reverse()
     return nrcan_result
 
+def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
+    """
+        multi-day run, ending at given datetime dtend
+        num_days specifies number of days.
+        
+    """
+    original_dir = prefixdir
+    dt_start = datetime.datetime.utcnow()  # for timing how long processing takes
 
+    # we do processing in a temp directory
+    tempdir = prefixdir + "/temp/"
+    ftp_tools.check_dir(tempdir)
+    ftp_tools.delete_files(tempdir)  # empty the temp directory
+    
+    # get spliced multi-day rinex file
+    dtlist, rinex = station.get_multiday_rinex(dtend, num_days=num_days)  # this downloads RINEX over ftp, if needed
+    # results in uncompressed "splice.rnx" file in the temp-directory.
+    # dtlist has the datetimes for the days we will process
+    print(dtlist)
+    print(rinex)
+    
+
+    
+    # get GPS Products
+    # nrcan ppp wants IGS products for two days.
+    # if we process day N, we need products for N and N+1
+    clk_files = []
+    eph_files = []
+    erp_file = ""  # we do not use the ERP files, for now.
+    dtlist.append( dtlist[-1]+datetime.timedelta(days=1) ) # add one day
+    for dt in dtlist:
+        if not rapid:  # Final products
+            (clk1, eph1, erp1) = igs_ftp.get_CODE_final(dt, prefixdir)
+
+        elif rapid:  # Rapid products
+            (clk1, eph1, erp1) = igs_ftp.get_CODE_rapid(dt, prefixdir)
+        clk_files.append(clk1)
+        eph_files.append(eph1)
+        erp_file = erp1
+    print("clk_files: ",str(clk_files))
+    print("eph_files: ",str(eph_files))
+    
+    run_log = ""
+    run_log += " run start: %d-%02d-%02d %02d:%02d:%02d\n" % (
+        dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
+    run_log += "   Program: %s\n" % gpsppp_version
+    run_log += "   Station: %s\n" % station.name
+    run_log += "  Year_end: %d\n" % dtend.timetuple().tm_year
+    run_log += "   DOY_end: %03d\n" % dtend.timetuple().tm_yday
+    run_log += "      date: %d-%02d-%02d\n" % (dt.year, dt.month, dt.day)
+    run_log += "  num_days: %d\n" % num_days
+    run_log += "     RINEX: %s\n" % rinex
+    run_log += "       CLK: %s\n" % [c[len(prefixdir):] for c in clk_files]
+    run_log += "       EPH: %s\n" % [e[len(prefixdir):] for e in eph_files]
+    run_log += "       ERP: %s\n" % erp_file[len(prefixdir):]
+    print(run_log)
+    
+    
+    # use an existing cmd-file (doesn't change from run to run)
+    cmdfile = prefixdir + "/gpsppp/2day.cmd"
+
+    # write an INP file, corresponding to the keyboard-input required
+    inp_file = nrcan_inp_file(
+        tempdir + "run.inp", rinex+".Z", cmdfile, eph_files, clk_files, rapid)
+    
+    # write a DEF file
+    nrcan_def_file(prefixdir, "gpsppp.def")
+    nrcan_pos_file = tempdir + "splice.pos"
+    
+    # move  CLK, EPH, ERP files to temp_dir
+    files_to_move = clk_files + eph_files + [erp_file]
+    moved_files = []
+    for f in files_to_move:
+        shutil.copy2(f, tempdir)
+        (tmp, fn) = os.path.split(f)
+        moved_files.append(tempdir + fn)
+    print("moved files: ",str(moved_files))
+
+    # unzip zipped files. this may include the RINEX, CLK, EPH files.
+    for f in moved_files:
+        if f[-1] == "Z" or f[-1] == "z":  # compressed .z or .Z file
+            cmd = '/bin/gunzip'
+            cmd = cmd + " -f " + f  # -f overwrites existing file
+            print("unzipping: ", cmd)
+            p = subprocess.Popen(cmd, shell=True)
+            p.communicate()
+
+    # rename the ERP file - becase the name is fixed to gpsppp.ERP in the DEF file.
+    cmd = '/bin/mv'
+    gpsppp_erp = prefixdir + "/temp/gpsppp.ERP"
+    (tmp, fn) = os.path.split(erp_file)  # [:-2]
+    cmd = cmd + " " + tempdir + fn + " " + gpsppp_erp
+    print("rename command: ", cmd)
+    p = subprocess.Popen(cmd, shell=True)
+    p.communicate()
+    
+    # if RINEX version 3, use gfzrnx to convert 3->2
+    if station.rinex3:
+        print('Converting RINEX v3 to v2')
+        v3file = tempdir+rinex + "_rx3" # rename the v3 file
+        cmd = "mv " + tempdir + rinex + " " + v3file
+        print("rename v3 file: ", cmd)
+        p = subprocess.Popen(cmd, shell=True)
+        p.communicate()
+    
+        #v2file = inputfile[:-1]+"2"  # name ending in "O" or "o" is replaced with "2" for v2 rinex
+        cmd = "gfzrnx -finp " + v3file + " -fout " + tempdir+rinex + " --version_out 2"
+        print("3to2 command: ",cmd)
+        p = subprocess.Popen(cmd, shell=True)
+        p.communicate()
+        # use the v2 file for the rest of the run
+        #inputfile = v2file
+
+    # now gpsppp itself:
+    os.chdir(tempdir)
+    cmd = gpsppp_binary + " < " + inp_file
+    p = subprocess.Popen(cmd, shell=True, cwd=tempdir)
+    p.communicate()  # wait for processing to finish
+
+    dt_end = datetime.datetime.utcnow()
+    delta = dt_end-dt_start
+    run_log2 = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % (
+        dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
+    run_log2 += "   elapsed: %.2f s\n" % (delta.seconds +
+                                          delta.microseconds/1.0e6)
+    print(run_log2)
+    print("---------------------------------")
+
+    # we may now do postprocessing and store the results.
+    # the result is named RINEX.pos, for example "usn63440.pos"
+    ppp_result = nrcan_parse_result(
+        nrcan_pos_file, station, rinex, bwd=True)
+    result_file = ppp_common.write_result_file(
+        ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir, num_days=num_days)
+    os.chdir(original_dir)  # change back to original directory
+    return result_file
+    
 def run(station, dt, rapid=True, prefixdir=""):
     """
     PPP-processing with NRCan ppp.
 
-    requires "gpsppp" binary
+    requires "gpsppp" or "gpspace" binary
 
     """
     print("------------------------------------")
@@ -233,7 +369,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     ftp_tools.check_dir(tempdir)
     ftp_tools.delete_files(tempdir)  # empty the temp directory
 
-    # us an existing cmd-file (doesn't change from run to run)
+    # use an existing cmd-file (doesn't change from run to run)
     cmdfile = prefixdir + "/gpsppp/1day.cmd"
 
     # write an INP file, corresponding to the keyboard-input required
@@ -347,7 +483,8 @@ def run(station, dt, rapid=True, prefixdir=""):
     ppp_result = nrcan_parse_result(
         nrcan_pos_file, station, inputfile, bwd=True)
     result_file = ppp_common.write_result_file(
-        ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir)
+        ppp_result=ppp_result, preamble=run_log+run_log2, 
+        rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir)
     os.chdir(original_dir)  # change back to original directory
     return result_file
 

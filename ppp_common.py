@@ -90,7 +90,7 @@ def diff(result1, result2):
     return (td, d)
 
 
-def write_result_file(ppp_result,  preamble="", rapid=True, tag="ppp", prefixdir=""):
+def write_result_file(ppp_result,  preamble="", rapid=True, tag="ppp", prefixdir="", num_days=1):
     """ 
     write a PPP_Result object out to a text file 
     """
@@ -101,9 +101,16 @@ def write_result_file(ppp_result,  preamble="", rapid=True, tag="ppp", prefixdir
     rapid_final = "final"
     if rapid:
         rapid_final = "rapid"
-    result_file = ppp_result.station.receiver + "." + \
-        str(first_obs_mjd) + "." + rapid_final + "." + tag + ".txt"
-
+    # filename for result file
+    # single day: MI04.59385.rapid.gpspace.txt
+    # multi-day: 
+    if num_days==1:
+        result_file = ppp_result.station.receiver + "." + \
+            str(first_obs_mjd) + "." + rapid_final + "." + tag + ".txt"
+    else:
+        result_file = ppp_result.station.receiver + "." + \
+            str(first_obs_mjd) + ".MD_"+str(num_days) + "." + rapid_final + "." + tag + ".txt"
+            
     outfile = prefixdir + "/results/" + ppp_result.station.name + "/" + result_file
     with open(outfile, 'w') as f:
         #            "# run start:
