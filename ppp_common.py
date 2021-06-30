@@ -15,7 +15,7 @@ import ftp_tools
 import jdutil
 
 
-def diff_stations(prefixdir, station1, station2, dt, products, program):
+def diff_stations(prefixdir, station1, station2, dt, products, program, num_days=1):
     """
     calculate clock difference between two stations
     Station1 PPP result is receive_clock_offset = IGST(rapid/final) - Station1
@@ -32,14 +32,15 @@ def diff_stations(prefixdir, station1, station2, dt, products, program):
     # output filename
     diff_dir = prefixdir + "/results/diff/"
     ftp_tools.check_dir(diff_dir)
-    fname = diff_dir + "%s.diff.%s.%d.%s.%s.txt" % (
-        station1.receiver, station2.receiver, mjd, products, program)
-    if os.path.exists(fname):
-        print(fname, " already exists - nothing to do.")
-        return  # result already exists, nothing to do
+    
+    #fname = diff_dir + "%s.diff.%s.%d.%s.%s.txt" % (
+    #    station1.receiver, station2.receiver, mjd, products, program)
+    #if os.path.exists(fname):
+    #    print(fname, " already exists - nothing to do.")
+    #    return  # result already exists, nothing to do
 
-    r1 = read_result_file(station1, dt, products, program, prefixdir)
-    r2 = read_result_file(station2, dt, products, program, prefixdir)
+    r1 = read_result_file(station1, dt, products, program, prefixdir, num_days=num_days)
+    r2 = read_result_file(station2, dt, products, program, prefixdir, num_days=num_days)
     print("diff ", station1.name, " - ", station2.name, end=' ')
     # print "diff station2 ", len(r2)
     #read_result_file( )
@@ -128,12 +129,15 @@ def write_result_file(ppp_result,  preamble="", rapid=True, tag="ppp", prefixdir
     return outfile
 
 
-def read_result_file(station, dt, products, program, prefixdir):
+def read_result_file(station, dt, products, program, prefixdir, num_days=1):
     """
     read text-file and return PPP_Result
     """
     mjd = jdutil.datetime_to_mjd(dt)
-    fname = "%s.%d.%s.%s.txt" % (station.receiver, mjd, products, program)
+    if num_days==1:
+        fname = "%s.%d.%s.%s.txt" % (station.receiver, mjd, products, program)
+    else:
+        fname = "%s.%d.MD_%d.%s.%s.txt" % (station.receiver, mjd, num_days, products, program)
     r = PPP_Result()
     with open(prefixdir+"/results/" + station.name + "/" + fname) as f:
         for line in f:
