@@ -37,7 +37,7 @@ p3 = ppp_common.read_result_file(station2, dt, products, "rtklib", prefixdir)
 lat1, lon1, h1, ztd1, ns1=parse(p1)
 lat2, lon2, h2, ztd2, ns2=parse(p2)
 lat3, lon3, h3, ztd3, ns3=parse(p3)
-print lat1[0], lat2[0], lat3[0]
+print(lat1[0], lat2[0], lat3[0])
 """
 plt.figure()
 plt.plot( lat1)
