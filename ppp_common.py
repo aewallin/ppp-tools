@@ -97,8 +97,10 @@ def write_result_file(ppp_result,  preamble="", rapid=True, tag="ppp", prefixdir
     """
     ftp_tools.check_dir(prefixdir + "/results")
     ftp_tools.check_dir(prefixdir + "/results/" + ppp_result.station.name)
-    first_obs = ppp_result.observations[0]
-    first_obs_mjd = int(jdutil.datetime_to_mjd(first_obs.epoch))
+
+    last_obs = ppp_result.observations[-1]
+    last_obs_mjd = int(jdutil.datetime_to_mjd(last_obs.epoch))
+
     rapid_final = "final"
     if rapid:
         rapid_final = "rapid"
@@ -107,10 +109,10 @@ def write_result_file(ppp_result,  preamble="", rapid=True, tag="ppp", prefixdir
     # multi-day: 
     if num_days==1:
         result_file = ppp_result.station.receiver + "." + \
-            str(first_obs_mjd) + "." + rapid_final + "." + tag + ".txt"
+            str(last_obs_mjd) + "." + rapid_final + "." + tag + ".txt"
     else:
         result_file = ppp_result.station.receiver + "." + \
-            str(first_obs_mjd) + ".MD_"+str(num_days) + "." + rapid_final + "." + tag + ".txt"
+            str(last_obs_mjd) + ".MD_"+str(num_days) + "." + rapid_final + "." + tag + ".txt"
             
     outfile = prefixdir + "/results/" + ppp_result.station.name + "/" + result_file
     with open(outfile, 'w') as f:

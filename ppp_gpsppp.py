@@ -126,7 +126,60 @@ def nrcan_def_file(prefixdir, def_file):
         # this might include a version-string for ppp-tools also?
         f.write("'GSD' 'ppp-tools, from https://github.com/aewallin/ppp-tools'\n")
 
+def nrcan_cmd_file(prefixdir, cmd_file, num_days=1):
+    """
+    create a  cmd file for gpspace
 
+    example 1day.cmd file:
+    ---------
+    ' UT DAYS OBSERVED                      (1-45)'                   2
+    ' USER DYNAMICS         (1=STATIC,2=KINEMATIC)'                   1
+    ' OBSERVATION TO PROCESS         (1=COD,2=C&P)'                   2
+    ' FREQUENCY TO PROCESS        (1=L1,2=L2,3=L3)'                   3
+    ' SATELLITE EPHEMERIS INPUT     (1=BRD ,2=SP3)'                   2
+    ' SAT CLOCKS(1=NO,2=Prc,3=RTCA,4=RTCM,+10=!AR)'                   2
+    ' SATELLITE CLOCK INTERPOLATION   (1=NO,2=YES)'                   1
+    ' IONOSPHERIC GRID (1=NO,2=YES,3=INIT,+10*MFi)'                   1
+    ' SOLVE STATION COORDINATES       (1=NO,2=YES)'                   2
+    ' SOLVE TROP. (1=NO,2-5=RW MM/HR)  (+100=grad)'                 105
+    ' BACKWARD SUBSTITUTION    (1=NO,2=YES,3=!CLK)'                   2
+    ' REFERENCE SYSTEM            (1=NAD83,2=ITRF)'                   2
+    ' COORDINATE SYSTEM(1=ELLIPSOIDAL,2=CARTESIAN)'                   1
+    ' A-PRIORI PSEUDORANGE SIGMA(m)    [&MISC TOL]'              5.0000   9.00
+    ' A-PRIORI CARRIER PHASE SIGMA(m)  [&MISC TOL]'               .0100   9.00
+    ' LAT(ddmmss.sss,+N) | ECEF X(m) [&VEL(mm/yr)]'              0.0000   0.00
+    ' LON(ddmmss.sss,+E) | ECEF Y(m) [&VEL(mm/yr)]'              0.0000   0.00
+    ' HEIGHT (m)         | ECEF Z(m) [&VEL(mm/yr)]'              0.0000   0.00
+    ' ANTENNA HEIGHT                           (m)'              0.0000
+    ' CUTOFF ELEVATION                       (deg)'              5.0000
+    ' GDOP CUTOFF                                 '             20.0000
+    ---------
+    """
+    with open(prefixdir + "/temp/" + cmd_file, 'w') as f:
+        f.write("' UT DAYS OBSERVED                      (1-45)'%20d\n"%(num_days+1))
+        # f.write("' UT DAYS OBSERVED                      (1-45)'                   2\n")
+        f.write("' USER DYNAMICS         (1=STATIC,2=KINEMATIC)'                   1\n")
+        f.write("' OBSERVATION TO PROCESS         (1=COD,2=C&P)'                   2\n")
+        f.write("' FREQUENCY TO PROCESS        (1=L1,2=L2,3=L3)'                   3\n")
+        f.write("' SATELLITE EPHEMERIS INPUT     (1=BRD ,2=SP3)'                   2\n")
+        f.write("' SAT CLOCKS(1=NO,2=Prc,3=RTCA,4=RTCM,+10=!AR)'                   2\n")
+        f.write("' SATELLITE CLOCK INTERPOLATION   (1=NO,2=YES)'                   1\n")
+        f.write("' IONOSPHERIC GRID (1=NO,2=YES,3=INIT,+10*MFi)'                   1\n")
+        f.write("' SOLVE STATION COORDINATES       (1=NO,2=YES)'                   2\n")
+        f.write("' SOLVE TROP. (1=NO,2-5=RW MM/HR)  (+100=grad)'                 105\n")
+        f.write("' BACKWARD SUBSTITUTION    (1=NO,2=YES,3=!CLK)'                   2\n")
+        f.write("' REFERENCE SYSTEM            (1=NAD83,2=ITRF)'                   2\n")
+        f.write("' COORDINATE SYSTEM(1=ELLIPSOIDAL,2=CARTESIAN)'                   1\n")
+        f.write("' A-PRIORI PSEUDORANGE SIGMA(m)    [&MISC TOL]'              5.0000   9.00\n")
+        f.write("' A-PRIORI CARRIER PHASE SIGMA(m)  [&MISC TOL]'               .0100   9.00\n")
+        f.write("' LAT(ddmmss.sss,+N) | ECEF X(m) [&VEL(mm/yr)]'              0.0000   0.00\n")
+        f.write("' LON(ddmmss.sss,+E) | ECEF Y(m) [&VEL(mm/yr)]'              0.0000   0.00\n")
+        f.write("' HEIGHT (m)         | ECEF Z(m) [&VEL(mm/yr)]'              0.0000   0.00\n")
+        f.write("' ANTENNA HEIGHT                           (m)'              0.0000\n")
+        f.write("' CUTOFF ELEVATION                       (deg)'              5.0000\n")
+        f.write("' GDOP CUTOFF                                 '             20.0000\n")
+    return cmd_file
+    
 def nrcan_parse_result(filename, my_station, inputfile, bwd=False):
     # This function reads and parses the .pos file
     #
@@ -246,9 +299,12 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     print(run_log)
     
     
+    cmd_file = nrcan_cmd_file(prefixdir, "md.cmd", num_days)
+    
     # use an existing cmd-file (doesn't change from run to run)
-    cmdfile = prefixdir + "/gpsppp/2day.cmd"
-
+    #cmdfile = prefixdir + "/gpsppp/2day.cmd"
+    cmdfile = tempdir + cmd_file
+    
     # write an INP file, corresponding to the keyboard-input required
     inp_file = nrcan_inp_file(
         tempdir + "run.inp", rinex+".Z", cmdfile, eph_files, clk_files, rapid)
@@ -287,14 +343,14 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     # if RINEX version 3, use gfzrnx to convert 3->2
     if station.rinex3:
         print('Converting RINEX v3 to v2')
-        v3file = tempdir+rinex + "_rx3" # rename the v3 file
-        cmd = "mv " + tempdir + rinex + " " + v3file
+        v3file = rinex + "_rx3" # rename the v3 file
+        cmd = "mv " + rinex + " " + v3file
         print("rename v3 file: ", cmd)
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
     
         #v2file = inputfile[:-1]+"2"  # name ending in "O" or "o" is replaced with "2" for v2 rinex
-        cmd = "gfzrnx -finp " + v3file + " -fout " + tempdir+rinex + " --version_out 2"
+        cmd = "gfzrnx -finp " + v3file + " -fout " + rinex + " --version_out 2"
         print("3to2 command: ",cmd)
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
@@ -320,6 +376,11 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     # the result is named RINEX.pos, for example "usn63440.pos"
     ppp_result = nrcan_parse_result(
         nrcan_pos_file, station, rinex, bwd=True)
+        
+    run_log2 += " first obs: %s\n" % ppp_result.observations[0].epoch
+    run_log2 += "  last obs: %s\n" % ppp_result.observations[-1].epoch
+    run_log2 += "   num obs: %d\n" % len(ppp_result.observations)
+    
     result_file = ppp_common.write_result_file(
         ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir, num_days=num_days)
     os.chdir(original_dir)  # change back to original directory
@@ -482,6 +543,9 @@ def run(station, dt, rapid=True, prefixdir=""):
     # the result is named RINEX.pos, for example "usn63440.pos"
     ppp_result = nrcan_parse_result(
         nrcan_pos_file, station, inputfile, bwd=True)
+    run_log2 += " first obs: %s\n" % ppp_result.observations[0].epoch
+    run_log2 += "  last obs: %s\n" % ppp_result.observations[-1].epoch
+    run_log2 += "   num obs: %d\n" % len(ppp_result.observations)
     result_file = ppp_common.write_result_file(
         ppp_result=ppp_result, preamble=run_log+run_log2, 
         rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir)

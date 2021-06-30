@@ -27,27 +27,17 @@ products = "rapid"
 program = "gpspace"
 current_dir = os.getcwd()
 
-def read_days( station1, station2, dt_list ):
-    current_dir = os.getcwd()
     
-    all_t=[]
-    all_d=[]
-    for dt in dt_list:
-        (t_gpspace, d_gpspace) = ppp_common.diff_stations(current_dir, station1, station2, dt, products, "gpspace")
-        for (t,d) in zip(t_gpspace, d_gpspace):
-            all_t.append(t)
-            all_d.append(d)
-    return (all_t, all_d)
-    
-dt = datetime.datetime.utcnow()-datetime.timedelta(days=4) # 4 days ago
+dt = datetime.datetime.utcnow()-datetime.timedelta(days=3) # 4 days ago
 current_dir = os.getcwd()
+num_days = 5
 
 #day_list = []
 #for n in [8, 7, 6, 5, 4, 3]:
 #for n in [ 10, 9, 8, 7, 6, 5, 4, 3, 2]:
 #    day_list.append( datetime.datetime.utcnow()-datetime.timedelta(days=n) )
 
-(t45, d45) = ppp_common.diff_stations( current_dir, station.mi04, station.mi05, dt, products, program, num_days=2)
+(t45, d45) = ppp_common.diff_stations( current_dir, station.ptbb, station.mi05, dt, products, program, num_days=num_days)
 mjd = jdutil.dt2mjd(t45)
 d45 = numpy.array(d45)
 #(t25, d25) = read_days( station.mi02, station.mi05, day_list )
