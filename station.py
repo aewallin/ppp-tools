@@ -32,19 +32,20 @@ class Station():
         self.rinex_filename = self.rinex1
         self.hatanaka = False   # flag is True for Hatanaka compressed RINEX
         self.antex = True       # receiver antenna in ANTEX file?
-
+        self.rinex3 = False     # RINEX version 3, requiring conversion to version 2
+        
         self.ref_dly = 0.0
         self.cab_dly = 0.0
+        self.int_dly_p1 = 0.0
+        self.int_dly_p2 = 0.0
         
     def int_dly_p3(self):
         """
             ionosphere-free P3 internal delay.
             linear combination of calibrated P1 and P3 delays
         """
-        try:
-            return 2.5457*self.int_dly_p1 - 1.5457*self.int_dly_p2
-        except:
-            return 0.0
+        return 2.5457*self.int_dly_p1 - 1.5457*self.int_dly_p2
+
         
     # the RINEX naming convention is that there is no convention...
     # we define rinex_filename() in the constructor, which calls one of rinex1(), rinex2(), etc.
@@ -82,7 +83,13 @@ class Station():
             self.receiver, dt.timetuple().tm_yday, dt.year-2000)
         self.hatanaka = False
         return fname
-
+        
+    def rinex7(self, dt):  # "O", ending "gz"
+        fname = "%s%03d0.%02dO.gz" % (
+            self.receiver, dt.timetuple().tm_yday, dt.year-2000)
+        self.hatanaka = False
+        return fname
+        
     def antex(self):
         return self.antex
 
@@ -106,21 +113,21 @@ class Station():
 
 #bipm_server = '5.144.141.242'
 # NOTE: as of 2021 BIPM does not make public RINEX files anymore!
-bipm_server = 'ftp2.bipm.org'
-bipm_username = 'labotai'
-bipm_password = 'dataTAI'
+# bipm_server = 'ftp2.bipm.org'
+# bipm_username = 'labotai'
+# bipm_password = 'dataTAI'
 
 mikes_server = "monitor.mikes.fi"
-mikes_username = "anonymous"
-mikes_password = "ppp-tools"
+anonymous_username = "anonymous"
+anonymous_password = "ppp-tools"
 
 # MI04, VTT MIKES timing receiver
 mi04 = Station()
 mi04.name = "MI04"
 mi04.utctag = "MI04"
 mi04.ftp_server = mikes_server
-mi04.ftp_username = mikes_username
-mi04.ftp_password = mikes_password
+mi04.ftp_username = anonymous_username
+mi04.ftp_password = anonymous_password
 mi04.ftp_dir = "/GNSS/MI04/RINEX/"
 mi04.receiver = "MI04"  # start of the RINEX filename
 mi04.rinex_filename = mi04.rinex4  # naming style is MI040040.21D.Z
@@ -131,8 +138,8 @@ mi05 = Station()
 mi05.name = "MI05"
 mi05.utctag = "MI05"
 mi05.ftp_server = mikes_server
-mi05.ftp_username = mikes_username
-mi05.ftp_password = mikes_password
+mi05.ftp_username = anonymous_username
+mi05.ftp_password = anonymous_password
 mi05.ftp_dir = "/GNSS/MI05/RINEX_v2_24h/"
 mi05.receiver = "MI05"  # start of the RINEX filename
 mi05.rinex_filename = mi05.rinex6  # naming style is MI050020.21o.gz
@@ -146,13 +153,42 @@ mi02 = Station()
 mi02.name = "MI02"
 mi02.utctag = "MI02"
 mi02.ftp_server = mikes_server
-mi02.ftp_username = mikes_username
-mi02.ftp_password = mikes_password
+mi02.ftp_username = anonymous_username
+mi02.ftp_password = anonymous_password
 mi02.ftp_dir = "/GNSS/MI02/RINEX/"
 mi02.receiver = "MI02"  # start of the RINEX filename
 mi02.rinex_filename = mi02.rinex1  # naming style is MI021690.21O.Z
 
+# PTB, see ftp.ptb.de
+# ftp://ftp.ptb.de/pub/time/GNSS/GNSS_readme_20200129.pdf
+ptb_server = "ftp.ptb.de"
+ptbb = Station()
+ptbb.name = "PTBB" # PolaRx5_TR
+ptbb.utctag = "pt13"
+ptbb.ftp_server = ptb_server
+ptbb.ftp_username = anonymous_username
+ptbb.ftp_password = anonymous_password
+ptbb.ftp_dir = "pub/time/GNSS/PT13/RINEX3/"
+ptbb.refdelay = 335.6+132.0
+ptbb.receiver = "PTBB"
+ptbb.rinex_filename = ptbb.rinex7 # PTBB0880.21O.gz
+ptbb.rinex3 = True
 
+# PT10, Dicom/Mesit receiver
+pt10 = Station()
+pt10.name = "PT10" # mesit/Dicom
+pt10.utctag = "pt10"
+pt10.ftp_server = ptb_server
+pt10.ftp_username = anonymous_username
+pt10.ftp_password = anonymous_password
+pt10.ftp_dir = "pub/time/GNSS/PT10/RINEX3/"
+pt10.refdelay = 335.6+132.0
+pt10.receiver = "PT10"
+pt10.rinex_filename = pt10.rinex1 # PT100880.21O.Z
+pt10.rinex3 = True
+
+
+"""
 # USNO
 usno = Station()
 usno.name = "USNO"
@@ -179,18 +215,6 @@ nist.receiver = "NIST"
 nist.rinex_filename = nist.rinex1
 
 
-# MIKES
-mikes = Station()
-mikes.name = "MIKES"
-mikes.utctag = "mike"
-mikes.ftp_server = bipm_server
-mikes.ftp_username = bipm_username
-mikes.ftp_password = bipm_password
-mikes.ftp_dir = "data/UTC/MIKE/links/rinex/"
-mikes.refdelay = 2.9
-mikes.receiver = "MI04"
-mikes.rinex_filename = mikes.rinex4
-mikes.antex = False
 
 
 # OP
@@ -245,19 +269,8 @@ npl.ftp_dir = "data/UTC/NPL/links/rinex/"
 npl.refdelay = -2.797
 npl.receiver = "NP11"
 npl.rinex_filename = npl.rinex1
+"""
 
-
-# PTB
-ptb = Station()
-ptb.name = "PTB"
-ptb.utctag = "ptb"
-ptb.ftp_server = bipm_server
-ptb.ftp_username = bipm_username
-ptb.ftp_password = bipm_password
-ptb.ftp_dir = "data/UTC/PTB/links/rinex/PTBG/"
-ptb.refdelay = 335.6+132.0
-ptb.receiver = "PTBG"
-ptb.rinex_filename = ptb.rinex5
 
 ########################################################################
 
@@ -265,7 +278,9 @@ if __name__ == "__main__":
 
     # an example of how to retrieve a RINEX file
     dt = datetime.datetime.utcnow() - datetime.timedelta(days=5)  # some days back from now
-
+    print(mi05.get_rinex(dt))
+    
+    """
     print(usno.get_rinex(dt))
     print(nist.get_rinex(dt))
     print(mikes.get_rinex(dt))
@@ -274,3 +289,4 @@ if __name__ == "__main__":
     print(nict.get_rinex(dt))
     print(npl.get_rinex(dt))
     print(ptb.get_rinex(dt))
+    """

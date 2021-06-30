@@ -310,6 +310,23 @@ def run(station, dt, rapid=True, prefixdir=""):
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
 
+    # if RINEX version 3, use gfzrnx to convert 3->2
+    if station.rinex3:
+        print('Converting RINEX v3 to v2')
+        v3file = tempdir+inputfile + "_rx3" # rename the v3 file
+        cmd = "mv " + tempdir + inputfile + " " + v3file
+        print("rename v3 file: ", cmd)
+        p = subprocess.Popen(cmd, shell=True)
+        p.communicate()
+    
+        #v2file = inputfile[:-1]+"2"  # name ending in "O" or "o" is replaced with "2" for v2 rinex
+        cmd = "gfzrnx -finp " + v3file + " -fout " + tempdir+inputfile + " --version_out 2"
+        print("3to2 command: ",cmd)
+        p = subprocess.Popen(cmd, shell=True)
+        p.communicate()
+        # use the v2 file for the rest of the run
+        #inputfile = v2file
+
     # now gpsppp itself:
     os.chdir(tempdir)
     cmd = gpsppp_binary + " < " + inp_file

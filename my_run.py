@@ -17,7 +17,7 @@ if __name__ == "__main__":
     #station1 = station.mi02
     
     my_stations = [station.mi04, station.mi05, station.mi02]
-    #my_stations = [station.mi02]
+    my_stations = [station.pt10]
     
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=2)  # 4 days ago
     current_dir = os.getcwd()
