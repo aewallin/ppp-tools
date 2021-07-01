@@ -19,10 +19,10 @@ if __name__ == "__main__":
     my_stations = [station.mi04, station.mi05, station.mi02, station.pt10, station.ptbb]
     #my_stations = [station.pt10]
     
-    dt = datetime.datetime.utcnow()-datetime.timedelta(days=3)  # 4 days ago
+    dt = datetime.datetime.utcnow()-datetime.timedelta(days=16)  # 4 days ago
     current_dir = os.getcwd()
 
-    ppp_gpsppp.run_multiday( station.mi04, dt, num_days=7, prefixdir=current_dir)
+    ppp_gpsppp.run_multiday( station.mi04, dt, num_days=2, rapid=False, prefixdir=current_dir)
 
     """
     # run NRCAN PPP for given station and datetime dt

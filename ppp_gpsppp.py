@@ -335,6 +335,8 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     cmd = '/bin/mv'
     gpsppp_erp = prefixdir + "/temp/gpsppp.ERP"
     (tmp, fn) = os.path.split(erp_file)  # [:-2]
+    if fn[-1]=='Z': # final products are zipped
+        fn = fn[:-2] # strip off '.Z'S
     cmd = cmd + " " + tempdir + fn + " " + gpsppp_erp
     print("rename command: ", cmd)
     p = subprocess.Popen(cmd, shell=True)
