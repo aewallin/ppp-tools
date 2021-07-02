@@ -16,7 +16,7 @@ if __name__ == "__main__":
     #station1 = station.mi05
     #station1 = station.mi02
     
-    my_stations = [station.mi04, station.mi05, station.mi02, station.pt10, station.ptbb]
+    my_stations = [station.mi06, station.mi04, station.mi05, station.mi02, station.pt10, station.ptbb]
     #my_stations = [station.pt10]
     
     dt = datetime.datetime.utcnow()-datetime.timedelta(days=3)  # 4 days ago

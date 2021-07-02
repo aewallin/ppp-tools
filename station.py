@@ -248,6 +248,18 @@ mi02.ftp_dir = "/GNSS/MI02/RINEX/"
 mi02.receiver = "MI02"  # start of the RINEX filename
 mi02.rinex_filename = mi02.rinex1  # naming style is MI021690.21O.Z
 
+# MI06, VTT MIKES timing receiver, RINEX v3 files
+mi06 = Station()
+mi06.name = "MI06"
+mi06.utctag = "MI06"
+mi06.ftp_server = mikes_server
+mi06.ftp_username = anonymous_username
+mi06.ftp_password = anonymous_password
+mi06.ftp_dir = "/GNSS/MI06/RINEX_v3_24h/"
+mi06.receiver = "MI06"  # start of the RINEX filename
+mi06.rinex_filename = mi06.rinex6  # naming style is MI021690.21O.Z
+mi06.rinex3 = True
+
 # PTB, see ftp.ptb.de
 # ftp://ftp.ptb.de/pub/time/GNSS/GNSS_readme_20200129.pdf
 ptb_server = "ftp.ptb.de"
