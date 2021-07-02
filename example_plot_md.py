@@ -30,14 +30,14 @@ current_dir = os.getcwd()
     
 dt = datetime.datetime.utcnow()-datetime.timedelta(days=3) # 4 days ago
 current_dir = os.getcwd()
-num_days = 7
+num_days = 8
 
 #day_list = []
 #for n in [8, 7, 6, 5, 4, 3]:
 #for n in [ 10, 9, 8, 7, 6, 5, 4, 3, 2]:
 #    day_list.append( datetime.datetime.utcnow()-datetime.timedelta(days=n) )
 
-(t45, d45) = ppp_common.diff_stations( current_dir, station.mi04, station.mi05, dt, products, program, num_days=num_days)
+(t45, d45) = ppp_common.diff_stations( current_dir, station.mi05, station.pt10, dt, products, program, num_days=num_days)
 mjd = jdutil.dt2mjd(t45)
 d45 = numpy.array(d45)
 #(t25, d25) = read_days( station.mi02, station.mi05, day_list )

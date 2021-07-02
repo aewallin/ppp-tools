@@ -190,7 +190,7 @@ class Station():
         p.communicate()
         
         # return the resulting spliced RINEX filename
-        return dtlist, tempdir+"splice.rnx"
+        return dtlist, tempdir+"splice.rnx", moved_files
         
 ########################################################################
 # example stations

@@ -15,12 +15,13 @@ import igs_ftp
 import ppp_common
 
 # NRCAN Fortran code requiring license
-# gpsppp_binary = "gpsppp"
-# gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
-# gpsppp_tag = "gpsppp" # used in the result file names
+#gpsppp_binary = "gpsppp"
+#gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
+#gpsppp_tag = "gpsppp" # used in the result file names
 
 # GPSPACE open source version
 # from https://github.com/aewallin/GPSPACE
+
 gpsppp_binary = "gpspace"
 gpsppp_version = "GPSPACE Precise Point Positioning (Version 1.10/25018/2018-09-07)"
 gpsppp_tag = "gpspace"
@@ -256,7 +257,7 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     ftp_tools.delete_files(tempdir)  # empty the temp directory
     
     # get spliced multi-day rinex file
-    dtlist, rinex = station.get_multiday_rinex(dtend, num_days=num_days)  # this downloads RINEX over ftp, if needed
+    dtlist, rinex, rlist = station.get_multiday_rinex(dtend, num_days=num_days)  # this downloads RINEX over ftp, if needed
     # results in uncompressed "splice.rnx" file in the temp-directory.
     # dtlist has the datetimes for the days we will process
     print(dtlist)
@@ -292,9 +293,13 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     run_log += "   DOY_end: %03d\n" % dtend.timetuple().tm_yday
     run_log += "      date: %d-%02d-%02d\n" % (dt.year, dt.month, dt.day)
     run_log += "  num_days: %d\n" % num_days
-    run_log += "     RINEX: %s\n" % rinex
-    run_log += "       CLK: %s\n" % [c[len(prefixdir):] for c in clk_files]
-    run_log += "       EPH: %s\n" % [e[len(prefixdir):] for e in eph_files]
+    run_log += "     RINEX: %s\n" % rinex[len(tempdir):]
+    for r in rlist:
+        run_log += " src RINEX: %s\n" % r[len(tempdir):]
+    for c in clk_files:
+        run_log += "       CLK: %s\n" % c[len(prefixdir):]
+    for e in eph_files:
+        run_log += "       EPH: %s\n" % e[len(prefixdir):]
     run_log += "       ERP: %s\n" % erp_file[len(prefixdir):]
     print(run_log)
     

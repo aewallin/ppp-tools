@@ -37,7 +37,7 @@ current_dir = os.getcwd()
 
 day_list = []
 #for n in [8, 7, 6, 5, 4, 3]:
-for n in [ 11, 10, 9, 8, 7, 6, 5, 4, 3]:
+for n in [ 12, 11, 10, 9, 8, 7, 6, 5, 4, 3]:
     day_list.append( datetime.datetime.utcnow()-datetime.timedelta(days=n) )
 
 (t45, d45) = read_days( station.mi04, station.mi05, day_list )
