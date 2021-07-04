@@ -20,6 +20,11 @@ import gpstime
 
 
 def cddis_brdc_file(dt, prefixdir=""):
+    """
+        This was used previously for rtklib runs.
+        
+        Could be replaced with a nav-file from the station?
+    """
     server = "cddis.gsfc.nasa.gov"
     remotedir = "gnss/data/daily/%d/brdc" % dt.year
     doy = dt.timetuple().tm_yday
@@ -32,11 +37,24 @@ def cddis_brdc_file(dt, prefixdir=""):
                            remotedir=remotedir, remotefile=f, localdir=localdir)
     return localdir+f
 
+def get_IGS_rapid(dt, prefixdir=""):
+    (server, username, password, directory, files,
+     localdir) = IGS_rapid_files(dt, prefixdir)
+    (clk1, eph1, erp1) = download(
+        server, username, password, directory, files, localdir)
+    return (clk1, eph1, erp1)
+    
+def get_IGS_final(dt, prefixdir=""):
+    (server, username, password, directory, files,
+     localdir) = IGS_final_files(dt, prefixdir)
+    (clk1, eph1, erp1) = download(
+        server, username, password, directory, files, localdir)
+    return (clk1, eph1, erp1)
 
 def get_CODE_final(dt, prefixdir=""):
     (server, username, password, directory, files,
      localdir) = CODE_final_files(dt, prefixdir)
-    (clk1, eph1, erp1) = CODE_download(
+    (clk1, eph1, erp1) = download(
         server, username, password, directory, files, localdir)
     return (clk1, eph1, erp1)
 
@@ -44,7 +62,7 @@ def get_CODE_final(dt, prefixdir=""):
 def get_CODE_rapid(dt, prefixdir=""):
     (server, username, password, directory, files,
      localdir) = CODE_rapid_files(dt, prefixdir)
-    (clk1, eph1, erp1) = CODE_download(
+    (clk1, eph1, erp1) = download(
         server, username, password, directory, files, localdir)
     return (clk1, eph1, erp1)
 
@@ -82,8 +100,6 @@ def CODE_rapid_files(dt, prefixdir=""):
     # return  CODE_download(server, directory, [clk, sp3, erp], localdir)
     return (server, "", "", remotedir, [clk, sp3, erp], localdir)
 
-# retrieve final CODE products
-
 
 def CODE_final_files(dt, prefixdir=""):
     """
@@ -110,21 +126,106 @@ def CODE_final_files(dt, prefixdir=""):
     print("local dir = ", localdir)
     return (server, "", "", remotedir, [clk, sp3, erp], localdir)
 
+def IGS_rapid_files(dt, prefixdir=""):
+    """
+        retrieve rapid IGS products for the datetime dt
+        
+        files are in:
+        ftp://gssc.esa.int/gnss/products/<gpsWeek>/
+        
+        WWWW/igrWWWWD.sp3.Z     Satellite orbit solution
+        WWWW/igrWWWWD.erp.Z     Earth orientation parameter solution
+        WWWW/igrWWWWd.clk_30.Z  Satellite and station clock solution (30 second)
+    """
+    week = gpstime.gpsWeek(dt.year, dt.month, dt.day)
+    dow = gpstime.dayOfWeek(dt.year, dt.month, dt.day)
+    
+    #server = "gssc.esa.int"
+    #remotedir = "gnss/products/%d/" % (week)
 
-def CODE_download(server, username, password, remotedir, files, localdir):
-    print("CODE_download start ", datetime.datetime.now())
+    server = "igs.ensg.ign.fr"
+    remotedir = "pub/igs/products/%d/" % (week)
+
+    
+    #clk = "igs%s%s.clk_30s.Z" % (week, dow)  # clock, 30s interval
+    #clk = "igs%s%s.clk.Z" % (week, dow)  # clock, (5 minute interval?)
+    
+    #server = "gssc.esa.int"
+    #week = gpstime.gpsWeek(dt.year, dt.month, dt.day)
+    #dow = gpstime.dayOfWeek(dt.year, dt.month, dt.day)
+    
+    #remotedir = "gnss/products/%d/" % (week)
+
+    clk = "igr%s%s.clk.Z" % (week, dow)  # clock
+    sp3 = "igr%s%s.sp3.Z" % (week, dow)  # orbit
+    erp = "igr%s%s.erp.Z" % (week, dow)  # earth rotation parameters, 7 = weeklys
+    print("IGS rapid products for %d-%02d-%0d" % (dt.year, dt.month, dt.day))
+    print("CLK = ", clk)
+    print("SP3 = ", sp3)
+    print("ERP = ", erp)
+
+    ftp_tools.check_dir(prefixdir + "/products/")
+    localdir = prefixdir + "/products/IGS_rapid/"
+    print("local dir = ", localdir)
+    return (server, "", "", remotedir, [clk, sp3, erp], localdir)
+
+def IGS_final_files(dt, prefixdir=""):
+    """
+        retrieve final IGS products for the datetime dt
+        
+        files are in:
+        ftp://gssc.esa.int/gnss/products/<gpsWeek>/
+        ftp://igs.ensg.ign.fr/pub/igs/products/2160/
+        
+        
+        WWWW/igsWWWWD.sp3.Z     Satellite orbit solution
+        WWWW/igsWWWWD.erp.Z     Earth orientation parameter solution
+        WWWW/igsWWWWd.clk_30.Z  Satellite and station clock solution (30 second)
+    """
+    week = gpstime.gpsWeek(dt.year, dt.month, dt.day)
+    dow = gpstime.dayOfWeek(dt.year, dt.month, dt.day)
+    
+    #server = "gssc.esa.int"
+    #remotedir = "gnss/products/%d/" % (week)
+
+    server = "igs.ensg.ign.fr"
+    remotedir = "pub/igs/products/%d/" % (week)
+
+    
+    clk = "igs%s%s.clk_30s.Z" % (week, dow)  # clock, 30s interval
+    #clk = "igs%s%s.clk.Z" % (week, dow)  # clock, (5 minute interval?)
+    sp3 = "igs%s%s.sp3.Z" % (week, dow)  # orbit
+    erp = "igs%s%s.erp.Z" % (week, 7)  # earth rotation parameters, 7 = weeklys
+    print("IGS final products for %d-%02d-%0d" % (dt.year, dt.month, dt.day))
+    print("CLK = ", clk)
+    print("SP3 = ", sp3)
+    print("ERP = ", erp)
+
+    ftp_tools.check_dir(prefixdir + "/products/")
+    localdir = prefixdir + "/products/IGS_final/"
+    print("local dir = ", localdir)
+    return (server, "", "", remotedir, [clk, sp3, erp], localdir)
+        
+
+def download(server, username, password, remotedir, files, localdir):
+    """
+        Download a list of files from given ftp server
+        
+        Return list of local downloaded files
+    """
+    print("download start ", datetime.datetime.now())
     ftp_tools.check_dir(localdir)
 
     for f in files:
         local_file = localdir+f
         ftp_tools.ftp_download(
             server, username, password, remotedir, f, localdir)
-    print("CODE_download Done ", datetime.datetime.now())
+    print("download Done ", datetime.datetime.now())
     sys.stdout.flush()
     output = []
     for f in files:
         output.append(localdir+f)
-    return output  # returns list of files: [CLK, EPH, ERP]
+    return output  # returns list of local files: [CLK, EPH, ERP]
 
 
 def example_igs_ftp():
@@ -136,12 +237,12 @@ def example_igs_ftp():
     dt_final = datetime.datetime.now() - datetime.timedelta(days=15)
     (server, username, password, directory, files,
      localdir) = CODE_final_files(dt_final, prefixdir=current_dir)
-    files = CODE_download(server, username, password,
+    files = download(server, username, password,
                           directory, files, localdir)
     print(files)  # [CLK, EPH, ERP]  note that final products are zipped
     (server, username, password, directory, files,
      localdir) = CODE_rapid_files(dt_rapid, prefixdir=current_dir)
-    files = CODE_download(server, username, password,
+    files = download(server, username, password,
                           directory, files, localdir)
     print(files)  # [CLK, EPH, ERP] rapid products are unzipped
     """

@@ -21,22 +21,25 @@ import station
 import ppp_common
 import jdutil
 
-station1 = station.mi02
-station1 = station.mi04
+#station1 = station.mi02
+station1 = station.mi06
+#station2 = station.mi05
 station2 = station.mi05
+dt = datetime.datetime.utcnow()-datetime.timedelta(days=32) # 4 days ago
+current_dir = os.getcwd()
+num_days = 20
+products = "final"
+
 # mi05 - ptbb: +3.96e-16    4.13-16
 # mi05 - pt10: +2.62e-16    4.095e-16
 #    
 # mi05 - mi04:  5.43e-16
 
-products = "rapid"
 program = "gpspace"
 current_dir = os.getcwd()
 
     
-dt = datetime.datetime.utcnow()-datetime.timedelta(days=3) # 4 days ago
-current_dir = os.getcwd()
-num_days = 12
+
 
 #day_list = []
 #for n in [8, 7, 6, 5, 4, 3]:

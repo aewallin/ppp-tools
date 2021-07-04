@@ -62,16 +62,16 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
         f.write("0 0"+"\n")
         for a in eph_files:
             (tmp, a) = os.path.split(a)
-            if rapid:
-                f.write(a+"\n")
-            else:
-                f.write(a[:-2]+"\n")
+            if a[-2:] == ".Z":
+                a=a[:-2] # if zipped file, strip off ".Z"
+            f.write(a+"\n")
+
         for a in clk_files:
             (tmp, a) = os.path.split(a)
-            if rapid:
-                f.write(a+"\n")
-            else:
-                f.write(a[:-2]+"\n")
+            if a[-2:] == ".Z":
+                a=a[:-2] # if zipped file, strip off ".Z"
+            f.write(a+"\n")
+            
         f.close()
     print("INP= ", inpfile)
     return inpfile
@@ -106,7 +106,7 @@ def nrcan_def_file(prefixdir, def_file):
     """
     # these are fixed files for now. in principle they could vary from run to run.
     trf = "'%s/gpsppp/gpsppp.trf'" % prefixdir
-    svb = "'%s/gpsppp/gpsppp.svb'" % prefixdir # _gnss_yrly
+    svb = "'%s/gpsppp/gpsppp.svb_gnss_yrly'" % prefixdir
     atx = "'%s/common/igs14.atx'" % prefixdir
     flt = "'%s/gpsppp/gpsppp.flt'" % prefixdir
     olc = "'%s/gpsppp/gpsppp.olc'" % prefixdir
@@ -242,7 +242,7 @@ def nrcan_parse_result(filename, my_station, inputfile, bwd=False):
         nrcan_result.reverse()
     return nrcan_result
 
-def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
+def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="CODE"):
     """
         multi-day run, ending at given datetime dtend
         num_days specifies number of days.
@@ -274,10 +274,17 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     dtlist.append( dtlist[-1]+datetime.timedelta(days=1) ) # add one day
     for dt in dtlist:
         if not rapid:  # Final products
-            (clk1, eph1, erp1) = igs_ftp.get_CODE_final(dt, prefixdir)
+            if products=="CODE":
+                (clk1, eph1, erp1) = igs_ftp.get_CODE_final(dt, prefixdir)
+            elif products=="IGS":
+                (clk1, eph1, erp1) = igs_ftp.get_IGS_final(dt, prefixdir)
 
         elif rapid:  # Rapid products
-            (clk1, eph1, erp1) = igs_ftp.get_CODE_rapid(dt, prefixdir)
+            if products=="CODE":
+                (clk1, eph1, erp1) = igs_ftp.get_CODE_rapid(dt, prefixdir)
+            elif products=="IGS":
+                (clk1, eph1, erp1) = igs_ftp.get_IGS_rapid(dt, prefixdir)
+                
         clk_files.append(clk1)
         eph_files.append(eph1)
         erp_file = erp1
@@ -393,7 +400,7 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     os.chdir(original_dir)  # change back to original directory
     return result_file
     
-def run(station, dt, rapid=True, prefixdir=""):
+def run(station, dt, rapid=True, prefixdir="", products="CODE"):
     """
     PPP-processing with NRCan ppp.
 
@@ -418,16 +425,27 @@ def run(station, dt, rapid=True, prefixdir=""):
     eph_files = []
     erp_file = ""  # we do not use the ERP files, for now.
     if not rapid:  # Final products
-        (clk1, eph1, erp1) = igs_ftp.get_CODE_final(dt, prefixdir)
-        (clk2, eph2, erp2) = igs_ftp.get_CODE_final(
-            dt+datetime.timedelta(days=1), prefixdir)
+        if products=="CODE":
+            (clk1, eph1, erp1) = igs_ftp.get_CODE_final(dt, prefixdir)
+            (clk2, eph2, erp2) = igs_ftp.get_CODE_final(
+                dt+datetime.timedelta(days=1), prefixdir)
+        elif products=="IGS":
+            (clk1, eph1, erp1) = igs_ftp.get_IGS_final(dt, prefixdir)
+            (clk2, eph2, erp2) = igs_ftp.get_IGS_final(
+                dt+datetime.timedelta(days=1), prefixdir)
         clk_files = [clk1, clk2]
         eph_files = [eph1, eph2]
         erp_file = erp1
     elif rapid:  # Rapid products
-        (clk1, eph1, erp1) = igs_ftp.get_CODE_rapid(dt, prefixdir)
-        (clk2, eph2, erp2) = igs_ftp.get_CODE_rapid(
-            dt+datetime.timedelta(days=1), prefixdir)
+        if products=="CODE":
+            (clk1, eph1, erp1) = igs_ftp.get_CODE_rapid(dt, prefixdir)
+            (clk2, eph2, erp2) = igs_ftp.get_CODE_rapid(
+                dt+datetime.timedelta(days=1), prefixdir)
+        elif products=="IGS":
+            (clk1, eph1, erp1) = igs_ftp.get_IGS_rapid(dt, prefixdir)
+            (clk2, eph2, erp2) = igs_ftp.get_IGS_rapid(
+                dt+datetime.timedelta(days=1), prefixdir)
+                
         clk_files = [clk1, clk2]
         eph_files = [eph1, eph2]
         erp_file = erp1
