@@ -1,3 +1,10 @@
+"""
+    This file is part of ppp-tools, https://github.com/aewallin/ppp-tools/
+    
+    This file implements PPP-runs with ESA gLAB
+    http://gage.upc.edu/gLAB
+    
+"""
 import os
 import datetime
 import shutil
@@ -12,14 +19,14 @@ import ppp_common
 glab_tag = "glab" # used in the results-file filename
 glab_binary = "gLAB_linux" # must have this executable in path
 
-def glab_parse_result(fname, station, backward=True):
+def glab_parse_result(fname, my_station, backward=True):
     """
         parse the FILTER data fields from gLAB outuput
         to a format defined by PPP_Result
         
     """
     ppp_result = ppp_common.PPP_Result()
-    ppp_result.station=station
+    ppp_result.station = my_station
     with open(fname) as f:
         for line in f:
             if line.startswith("FILTER"):
@@ -34,6 +41,7 @@ def glab_parse_result(fname, station, backward=True):
                 z = float(fields[6])
                 (lat, lon, height ) = ppp_common.xyz2lla( x, y, z )
                 clk = float(fields[7]) * (1.0e9 / 299792458.0)   # Receiver clock [ns]
+                clk = clk - my_station.cab_dly - my_station.int_dly_p3() + my_station.ref_dly
                 ztd = float(fields[8]) # Zenith Tropospheric Delay [m]
                 p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
                 ppp_result.append(p)
@@ -82,21 +90,27 @@ def run(station, dt, rapid=True, prefixdir=""):
     rinex = station.get_rinex( dt ) # download rinex file
 
     print("getting IGS products:")
-    # download IGS products 
-    (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
+    # download IGS products
+    if rapid:
+        (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
+    else:
+        (clk, eph, erp) = igs_ftp.get_CODE_final(dt, prefixdir)
+
     print("IGS products done.")
     print("-------------------")
 
+    #(rnx_dir,rnx_filename ) = os.path.split(rinex)
     # log input files, for writing to the result file
     run_log  = " run start: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_start.year, dt_start.month, dt_start.day, dt_start.hour, dt_start.minute, dt_start.second)
     run_log += "   Station: %s\n" % station.name
     run_log += "      Year: %d\n" % dt.year
     run_log += "       DOY: %03d\n" % doy
     run_log += "      date:  %d-%02d-%02d\n" % (dt.year, dt.month, dt.day)
-    run_log += "     RINEX: %s\n" % rinex
-    run_log += "       CLK: %s\n" % clk
-    run_log += "       EPH: %s\n" % eph
-    run_log += "       ERP: %s\n" % erp
+    run_log += "     RINEX: %s\n" % rinex[len(prefixdir):]
+
+    run_log += "       CLK: %s\n" % clk[len(prefixdir):]
+    run_log += "       EPH: %s\n" % eph[len(prefixdir):]
+    run_log += "       ERP: %s\n" % erp[len(prefixdir):]
     print(run_log)
     print("-------------------")
     
@@ -106,12 +120,13 @@ def run(station, dt, rapid=True, prefixdir=""):
     ftp_tools.delete_files(tempdir) # empty the temp directory
 
     # copy files to tempdir
-    files_to_copy = [ rinex, clk, eph, eph, erp ]
+    files_to_copy = [ rinex, clk, eph,  erp ]
     copied_files = []
     for f in files_to_copy:
         shutil.copy2( f, tempdir )
         (tmp,fn ) = os.path.split(f)
         copied_files.append( tempdir + fn )
+    print("copied files: ", copied_files)
 
     # unzip zipped files, if needed
     for f in copied_files:
@@ -157,10 +172,19 @@ def run(station, dt, rapid=True, prefixdir=""):
     clk = copied_files[1]
     inputfile = tempdir + inputfile
     
+    if eph[-1] == "Z":
+        eph = eph[:-2]
+    if clk[-1] == "Z":
+        clk = clk[:-2]
+            
     print("inputfile for gLAB is: ",inputfile)
     
     cmd =  glab_binary # must have this executable in path
     # see doc/glab_options.txt
+    q_trop=1e-6 # [default 1e-4] (m^2/h)
+    q_clk = 9e6 # [default 9e10] (m^2)
+    p0_clk = 9e10 # [default 9e10] (m^2)
+    
     options = [ " -input:obs %s" % inputfile,               # RINEX observation file
                 " -input:clk %s" % clk,                     
                 " -input:orb %s" % eph,                     # SP3 Orbits
@@ -174,6 +198,9 @@ def run(station, dt, rapid=True, prefixdir=""):
                 " -pre:elevation 10",                       # elevation mask
                 " -pre:availf G12"                          # GPS frequencies L1 and L2
                 " -filter:trop",
+                " -filter:q:trop %.2g" % q_trop,            # Specify the Q noise variation value for troposphere unknown [default 1e-4] (m^2/h)
+                " -filter:q:clk %.2g" % q_clk,              # Specify the Q noise value for clock unknown [default 9e10] (m^2)
+                " -filter:p0:clk %.2g" % p0_clk,            # Specify the P0 initial value for clock unknown [default 9e10] (m^2)
                 " -filter:backward",                        # runs filter both FWD and BWD
                 " --print:input",                           # discard unnecessary output
                 " --print:model",
@@ -196,11 +223,16 @@ def run(station, dt, rapid=True, prefixdir=""):
     delta = dt_end-dt_start
     run_log2  = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     run_log2 += "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
+    
     print(run_log2)
     print("-------------------")
 
     # here we may parse the output and store it to file somewhere
     ppp_result = glab_parse_result(outfile, station)
+    run_log2 += " first obs: %s\n" % ppp_result.observations[0].epoch
+    run_log2 += "  last obs: %s\n" % ppp_result.observations[-1].epoch
+    run_log2 += "   num obs: %d\n" % len(ppp_result.observations)
+    
     ppp_common.write_result_file( ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=glab_tag, prefixdir=prefixdir )
     os.chdir(original_dir)
 

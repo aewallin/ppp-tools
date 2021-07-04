@@ -106,7 +106,7 @@ def nrcan_def_file(prefixdir, def_file):
     """
     # these are fixed files for now. in principle they could vary from run to run.
     trf = "'%s/gpsppp/gpsppp.trf'" % prefixdir
-    svb = "'%s/gpsppp/gpsppp.svb_gnss_yrly'" % prefixdir
+    svb = "'%s/gpsppp/gpsppp.svb'" % prefixdir # _gnss_yrly
     atx = "'%s/common/igs14.atx'" % prefixdir
     flt = "'%s/gpsppp/gpsppp.flt'" % prefixdir
     olc = "'%s/gpsppp/gpsppp.olc'" % prefixdir
@@ -291,7 +291,7 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir=""):
     run_log += "   Station: %s\n" % station.name
     run_log += "  Year_end: %d\n" % dtend.timetuple().tm_year
     run_log += "   DOY_end: %03d\n" % dtend.timetuple().tm_yday
-    run_log += "      date: %d-%02d-%02d\n" % (dt.year, dt.month, dt.day)
+    run_log += "      date: %d-%02d-%02d\n" % (dtend.year, dtend.month, dtend.day)
     run_log += "  num_days: %d\n" % num_days
     run_log += "     RINEX: %s\n" % rinex[len(tempdir):]
     for r in rlist:

@@ -41,14 +41,15 @@ def diff_stations(prefixdir, station1, station2, dt, products, program, num_days
 
     r1 = read_result_file(station1, dt, products, program, prefixdir, num_days=num_days)
     r2 = read_result_file(station2, dt, products, program, prefixdir, num_days=num_days)
-    print("diff ", station1.name, " - ", station2.name, end=' ')
+    
     # print "diff station2 ", len(r2)
     #read_result_file( )
     # 2,x2) = bipm_ftp.COD_read_day(prefixdir, station2, year, doy, rapid)
     # print len(t1), len(t2)
 
     (t_diff, clock_diff) = diff(r1, r2)
-    print(len(t_diff), " points")
+    print("diff %s - %s : %d points" % ( station1.name,  station2.name, len(t_diff) ) )
+    #print(len(t_diff), " points")
     # print len(td), len(d)
     # print d
     # print numpy.median(d)
@@ -158,6 +159,7 @@ def read_result_file(station, dt, products, program, prefixdir, num_days=1):
                 clock = float(line[9])
                 ztd = float(line[10])
                 r.append(PPP_Point(epoch, lat, lon, height, clock, ztd))
+    print("read %d points from %s"%(len(r), fname))
     return r
 
 
@@ -196,6 +198,9 @@ class PPP_Result():
     def clock(self):
         return [o.clock for o in self.observations]
 
+    def ztd(self):
+        return [o.ztd for o in self.observations]
+        
     def append(self, p):
         self.observations.append(p)
 

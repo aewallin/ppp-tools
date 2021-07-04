@@ -60,6 +60,8 @@ def CODE_rapid_files(dt, prefixdir=""):
         ftp://ftp.unibe.ch/aiub/CODE/COD17840.ERP_R    erp, earth rotation parameters
         ftp://ftp.unibe.ch/aiub/CODE/COD17840.CLK_R    clk, clocks
 
+        updated working link (as of 2021 July)
+        ftp://ftp.aiub.unibe.ch/CODE/
     """
     server = "ftp.aiub.unibe.ch"
     remotedir = "CODE/"
@@ -86,6 +88,10 @@ def CODE_rapid_files(dt, prefixdir=""):
 def CODE_final_files(dt, prefixdir=""):
     """
         retrieve final CODE products for the datetime dt
+        
+        files are in:
+        ftp://ftp.aiub.unibe.ch/CODE/2021/
+        
     """
     server = "ftp.aiub.unibe.ch"
     remotedir = "CODE/%s/" % (dt.year)
@@ -127,7 +133,7 @@ def example_igs_ftp():
     # rapid products avaible with 2(?) days latency
     dt_rapid = datetime.datetime.now() - datetime.timedelta(days=3)
     # final product worst case latency 14 days ?
-    dt_final = datetime.datetime.now() - datetime.timedelta(days=14)
+    dt_final = datetime.datetime.now() - datetime.timedelta(days=15)
     (server, username, password, directory, files,
      localdir) = CODE_final_files(dt_final, prefixdir=current_dir)
     files = CODE_download(server, username, password,

@@ -75,8 +75,8 @@ def parse_result(fname, station):
                 p = ppp_common.PPP_Point( dt, lat, lon, height, clk, ztd )
                 ppp_result.append(p)
                 n=n+1
-    print "clk len=",len(clock)
-    print "pos len=",len(ppp_result.observations)
+    print("clk len=",len(clock))
+    print("pos len=",len(ppp_result.observations))
     """
     if backward: # we retain data from the FILTER run backwards
         maxepoch=datetime.datetime(1900,1,1)
@@ -95,7 +95,7 @@ def parse_result(fname, station):
         bwd_obs.reverse() # back to chronological order
         ppp_result.observations = bwd_obs 
     """
-    print len(ppp_result)
+    print(len(ppp_result))
     return ppp_result
 
 """
@@ -118,8 +118,8 @@ def run(station, dt, rapid=True, prefixdir=""):
     PPP run using RTKLib rnx2rtkp
     
     """
-    print "------------------------------"
-    print "PPP run using RTKLib rnx2rtkp"
+    print("------------------------------")
+    print("PPP run using RTKLib rnx2rtkp")
 
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()
@@ -128,7 +128,8 @@ def run(station, dt, rapid=True, prefixdir=""):
     rinex = station.get_rinex( dt ) # doenload rinex file
     
     # GET NAV file
-    navfile = igs_ftp.cddis_brdc_file(dt, prefixdir)
+    # is this needed?
+    # navfile = igs_ftp.cddis_brdc_file(dt, prefixdir)
     
     # download IGS products 
     (clk, eph, erp) = igs_ftp.get_CODE_rapid(dt, prefixdir)
@@ -143,7 +144,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     run_log += "       CLK: %s\n" % clk
     run_log += "       EPH: %s\n" % eph
     run_log += "       ERP: %s\n" % erp
-    print run_log
+    print(run_log)
 
     # we do processing in a temp directory
     tempdir = prefixdir + "/temp/"
@@ -152,7 +153,7 @@ def run(station, dt, rapid=True, prefixdir=""):
 
     # copy files to tempdir
     
-    files_to_copy = [ rinex, clk, eph, eph, erp, navfile ]
+    files_to_copy = [ rinex, clk, eph, eph, erp] # , navfile 
     copied_files = []
     for f in files_to_copy:
         shutil.copy2( f, tempdir )
@@ -164,7 +165,7 @@ def run(station, dt, rapid=True, prefixdir=""):
         if f[-1] == "Z" or f[-1] == "z": # compressed .z or .Z file
             cmd ='/bin/gunzip'
             cmd = cmd + " -f " + f # -f overwrites existing file
-            print "unzipping: ", cmd
+            print("unzipping: ", cmd)
             p = subprocess.Popen(cmd, shell=True)
             p.communicate()
 
@@ -177,7 +178,7 @@ def run(station, dt, rapid=True, prefixdir=""):
             hata_file = hata_file[:-1] # stip off more
         #print "hata ", hata_file
         cmd = "CRX2RNX " + hata_file
-        print "Hatanaka uncompress: ", cmd
+        print("Hatanaka uncompress: ", cmd)
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
     
@@ -195,7 +196,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     # now ppp itself:
     os.chdir( tempdir )
 
-    antfile = prefixdir + "/common/igs08.atx"
+    antfile = prefixdir + "/common/igs14.atx"
     outfile = tempdir + "out.txt"
     
     clk = copied_files[1]
@@ -207,7 +208,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     p = subprocess.Popen(cmd, shell=True)
     p.communicate()
     clk = clk_new
-    print clk
+    print(clk)
     # RKLib wants eph files to be named sp3
     # from CODE they end .CLK_R
     eph = copied_files[2]
@@ -217,16 +218,16 @@ def run(station, dt, rapid=True, prefixdir=""):
     p = subprocess.Popen(cmd, shell=True)
     p.communicate()
     eph = eph_new
-    print eph
+    print(eph)
     
-    navfile = copied_files[5]
-    navfile = navfile[:-2] # strip off ".Z"
+    #navfile = copied_files[5]
+    #navfile = navfile[:-2] # strip off ".Z"
     
     inputfile = tempdir+inputfile
-    print "input ", inputfile
-    print "nav ", navfile
-    print "clk ", clk
-    print "eph ", eph
+    print("input ", inputfile)
+    # print("nav ", navfile)
+    print("clk ", clk)
+    print("eph ", eph)
     cmd =  rtklib_binary # must have this executable in path
     
     conf_file = prefixdir + "/common/rtklib_opts1.conf"
@@ -245,7 +246,7 @@ def run(station, dt, rapid=True, prefixdir=""):
                 " %s" % eph,
                 " %s" % clk,
                 " %s" % inputfile, # RINEX file
-                " %s" % navfile,   # brdc NAV file
+                #" %s" % navfile,   # brdc NAV file
                 #" %s" % (prefixdir + "/common/igs08.atx")
                 ]
 
@@ -258,7 +259,7 @@ def run(station, dt, rapid=True, prefixdir=""):
     delta = dt_end-dt_start
     run_log2  = "   run end: %d-%02d-%02d %02d:%02d:%02d\n" % ( dt_end.year, dt_end.month, dt_end.day, dt_end.hour, dt_end.minute, dt_end.second)
     run_log2 += "   elapsed: %.2f s\n" % (delta.seconds+delta.microseconds/1.0e6)
-    print run_log2
+    print(run_log2)
 
     # here we may parse the output and store it to file somewhere
     ppp_result = parse_result(outfile, station)
