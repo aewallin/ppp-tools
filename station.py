@@ -261,6 +261,17 @@ mi06.rinex_filename = mi06.rinex6  # naming style is .o.gz
 mi06.rinex3 = True
 # MI06 test with AHM3
 # start 59368.5 (full day 59369=doy154?) -  stop 59375.5
+mi06local = Station() # using local files, not on ftp-server
+mi06local.name = "MI06local"
+mi06local.utctag = "MI06local"
+#mi06.ftp_server = mikes_server
+#mi06.ftp_username = anonymous_username
+#mi06.ftp_password = anonymous_password
+#mi06.ftp_dir = "/GNSS/MI06/RINEX_v3_24h/"
+mi06local.receiver = "MI06"  # start of the RINEX filename
+mi06local.rinex_filename = mi06.rinex6  # naming style is .o.gz
+mi06local.rinex3 = False
+
 
 # PTB, see ftp.ptb.de
 # ftp://ftp.ptb.de/pub/time/GNSS/GNSS_readme_20200129.pdf
