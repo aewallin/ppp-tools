@@ -29,17 +29,20 @@ class Station():
         self.ftp_username = ""
         self.ftp_password = ""
         self.lz = False         # do we need an LZ file or not?
-        self.refdelay = 0.0     # reference delay, in nanoseconds
+        #self.refdelay = 0.0     # reference delay, in nanoseconds. FIXME: remove this!?
         self.receiver = ""        # receiver name, e.g. "MI02", used in the RINEX filename
         self.rinex_filename = self.rinex1
         self.hatanaka = False   # flag is True for Hatanaka compressed RINEX
         self.antex = True       # receiver antenna in ANTEX file?
         self.rinex3 = False     # RINEX version 3, requiring conversion to version 2
         
-        self.ref_dly = 0.0
-        self.cab_dly = 0.0
-        self.int_dly_p1 = 0.0
-        self.int_dly_p2 = 0.0
+        self.ref_dly = 0.0 # delay of PPS-cable from reference plane to GNSS receiver input
+        self.cab_dly = 0.0 # antenna cable delay from GNSS-receiver to antenna
+        self.int_dly_p1 = 0.0 # internal GNSS receiver delay for L1
+        self.int_dly_p2 = 0.0 # internal GNSS receiver delay for L2
+        
+        # raw PPP results are corrected with the calibrated delays as follows:
+        # RX_clk_corrected = RX_clk_raw - station.cab_dly - station.int_dly_p3() + station.ref_dly
         
     def int_dly_p3(self):
         """
@@ -222,7 +225,9 @@ mi04.receiver = "MI04"  # start of the RINEX filename
 mi04.rinex_filename = mi04.rinex4  # naming style is MI040040.21D.Z
 
 # MI05, VTT MIKES timing receiver, RINEX v2 files
-#  ftp://monitor.mikes.fi/GNSS/MI05/RINEX_v2_24h/
+# Information: https://monitor.mikes.fi/ftp/GNSS/MI05/MI05_info.txt
+# RINEX v2 files: ftp://monitor.mikes.fi/GNSS/MI05/RINEX_v2_24h/
+# Cal_ID: 1016-2019 https://webtai.bipm.org/ftp/pub/tai/publication/time-calibration/Current/1016-2019_GPSP3C1_MIKES_V1-0.pdf
 mi05 = Station()
 mi05.name = "MI05"
 mi05.utctag = "MI05"
@@ -249,6 +254,7 @@ mi02.receiver = "MI02"  # start of the RINEX filename
 mi02.rinex_filename = mi02.rinex1  # naming style is MI021690.21O.Z
 
 # MI06, VTT MIKES timing receiver, RINEX v3 files
+# https://monitor.mikes.fi/ftp/GNSS/MI06/
 mi06 = Station()
 mi06.name = "MI06"
 mi06.utctag = "MI06"
@@ -259,8 +265,18 @@ mi06.ftp_dir = "/GNSS/MI06/RINEX_v3_24h/"
 mi06.receiver = "MI06"  # start of the RINEX filename
 mi06.rinex_filename = mi06.rinex6  # naming style is .o.gz
 mi06.rinex3 = True
-# MI06 test with AHM3
-# start 59368.5 (full day 59369=doy154?) -  stop 59375.5
+mi06.ref_dly = 10.348 # ns
+mi06.cab_dly = 95.715 # ns (label on cable)
+mi06.int_dly_p1 = 20.17+1.7 # ns, MI05 Cal_ID: 1016-2019 - this applies for MI06 also?
+mi06.int_dly_p2 = 18.18+1.7 # ns, NOTE 1.7ns added to make MI05 - MI06 results match
+
+# prelim PPP analysis MI06-MI05 difference: 1.75 
+# start 2021-04-13
+# stop 2021-06-02
+#
+# new analysis DOY 122 to 153
+
+# MI06 tests with local files (not on FTP-site)
 mi06local = Station() # using local files, not on ftp-server
 mi06local.name = "MI06local"
 mi06local.utctag = "MI06local"
@@ -270,8 +286,11 @@ mi06local.utctag = "MI06local"
 #mi06.ftp_dir = "/GNSS/MI06/RINEX_v3_24h/"
 mi06local.receiver = "MI06"  # start of the RINEX filename
 mi06local.rinex_filename = mi06.rinex6  # naming style is .o.gz
-mi06local.rinex3 = False
-
+mi06local.rinex3 = False # RINEX v2
+mi06local.ref_dly = 10.348 # ns
+mi06local.cab_dly = 95.715 # ns
+mi06local.int_dly_p1 = 20.17+1.7  # ns
+mi06local.int_dly_p2 = 18.18+1.7  # ns
 
 # PTB, see ftp.ptb.de
 # ftp://ftp.ptb.de/pub/time/GNSS/GNSS_readme_20200129.pdf
