@@ -1,0 +1,169 @@
+HDR NOMINAL BEIDOU ANTENNA OFFSETS PER BLK
+HDR         dX(m)   dY(m)   dZ(m)
+BLK BE2  61 0.560    0.0      2.470    MEO      
+BLK BE2  62 0.560   -0.019    4.919    IGSO     
+BLK BE2  63 0.560   -0.019    4.919    GEO      
+BLK BE3  65 -.200    0.0      2.004    MEO  CAST      
+HDR BE3  65 0.600    0.040    1.119    MEO  SECM 
+BLK BE3  66 -.200    0.0      2.004    IGSO CAST
+HDR BE3  66 -.050 -300.0      3.260    IGSO SECM
+BLK BE3  67 0.600    0.0      1.1      GEO  CAST
+HDR
+HDR45678901234567890123456789012345678901234567890123456789012345678901234567890
+HDR
+HDR                                   B E I D O U   
+HDR
+HDR                                               International Designation
+HDR                                                  P2-C2 CODE BIAS      |
+HDR                   1 sec. ALLAN DEVIATION OF CLOCK(10E-11)      |      |
+HDR                                     P1-C1 CODE BIAS     |      |      |
+HDR                             P1-P2 CODE BIAS       |     |      |      |
+HDR                           CLK Cs=1,Rb=2   |       |     |      |      |
+HDR                            PLANE SLOT |   |       |     |      |      |
+HDR            PLANE    A=1,B=2,..,F=6  | |   |       |     |      |      |
+HDR    BLK (21,25-M,22,26-I,23,27-G) |  | |   |       |     |      |      |
+HDR       BLKs 25,26 - FORCE GAL ECL |  | |   |       |     |      |      |
+HDR                                | |  | |   |       |     |      |      |
+HDR LAUNCH     DCOMMISSION  P   S  B P  S C   |       |     |      |      |
+HDR DATE       DATE         R   V  L L  L L   |       |     |      |      |
+HDR YYYY MM DD YYYY MM DD   N   N  K N  T K   P1P2    P1C1  AVCLK  P2C2   INT. ID   Comment 
+HDR45678901234567890123456789012345678901234567890123456789012345678901234567890
+HDR
+HDR                       BEIDOU-2! BL: 65-67, (B1(L2I)/B3(L6I)
+HDR
+HDR BEI01  GEO-1          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   140East
+BEI 2010 01 16 2040 01 01 101  03 63 0  0 3   0.0     0.0   0.0    0.0    2010-001A
+HDR BEI02  GEO-6          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID    80East
+BEI 2012 10 25 2040 01 01 102  16 63 0  0 3   0.0     0.0   0.0    0.0    2012-059A
+HDR BEI03  GEO-3          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   110East
+BEI 2010 06 02 2018 09 28 103  04 63 0  0 3   0.0     0.0   0.0    0.0    2010-024A         
+HDR BEI03  GEO-7          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   110East
+BEI 2018 09 28 2040 01 01 103  18 63 0  0 3   0.0     0.0   0.0    0.0    2016/06/12       
+HDR BEI04  GEO-4          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   160East
+BEI 2010 10 31 2040 01 01 104  06 63 0  0 3   0.0     0.0   0.0    0.0    2010-057A         
+HDR BEI05  GEO-5          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID    60East
+BEI 2012 02 24 2040 01 01 105  11 63 0  0 3   0.0     0.0   0.0    0.0    2012-008A         
+HDR BEI06 IGSO-1          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~122E  
+BEI 2010 07 31 2017 04 01 106  05 62 0  0 3   0.000   0.0   0.0    0.0    2010-036A         
+HDR BEI06 IGSO-1          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~122E GALe  
+BEI 2017 04 01 2040 01 01 106  05 62 0  0 3  12.358   0.0   0.0    0.0    2010-036A         
+HDR BEI07 IGSO-2          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~119E  
+BEI 2010 12 17 2040 01 01 107  07 62 0  0 3  18.806   0.0   0.0    0.0    2010-068A           
+HDR BEI08 IGSO-3          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~120E  
+BEI 2011 04 09 2040 01 09 108  08 62 0  0 3  15.688   0.0   0.0    0.0    2011-013A         
+HDR BEI09 IGSO-4          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 96E  
+BEI 2011 07 26 2040 01 01 109  09 62 0  0 3  11.013   0.0   0.0    0.0    2011-038A         
+HDR BEI10 IGSO-5          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 92E  
+BEI 2011 12 01 2040 01 01 110  10 62 0  0 3  10.292   0.0   0.0    0.0    2011-073A         
+HDR BEI11  MEO-3          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Comment
+BEI 2012 04 29 2040 01 01 111  12 61 1  7 3   7.794   0.0   0.0    0.0    2012-018A         
+HDR BEI12  MEO-4          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Comment
+BEI 2012 04 29 2040 01 01 112  13 61 1  8 3   7.424   0.0   0.0    0.0    2012-018B         
+HDR BEI13  MEO-5          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Comment
+BEI 2012 09 18 2014 10 22 113  14 61 2  3 3   0.0     0.0   0.0    0.0    2012-050A         
+HDR BEI13 IGSO-6          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   GAL ecl
+BEI 2016 10 12 2040 01 01 113  17 62 0  0 3  -5.955   0.0   0.0    0.0    2016-021A         
+HDR BEI14  MEO-6          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Comment
+BEI 2012 09 18 2016 11 01 114  15 61 2  4 3   0.0     0.0   0.0    0.0    2012-050B         
+HDR BEI14  MEO-6          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   GAL ecl
+BEI 2016 11 01 2040 01 01 114  15 61 2  4 3  10.579   0.0   0.0    0.0    2012-050B         
+HDR BEI15 IGSO-6          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~95E GALe  
+BEI 2016 03 29 2016 10 11 115  17 62 0  0 3   0.0     0.0   0.0    0.0    2016-021A         
+HDR BEI16 IGSO-1          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 95E  
+BEI 2018 04 24 2018 07 10 116 101 62 0  0 3   0.0     0.0   0.0    0.0    2015-019A         
+HDR BEI16 IGSO-7          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 95E  
+BEI 2018 07 11 2040 01 01 116  19 62 0  0 3   0.868   0.0   0.0    0.0    2015-019A         
+HDR BEI17  GEO-7          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2016 06 12 2018 09 29 117  18 63 0  0 3   0.0     0.0   0.0    0.0    2016-037A         
+HDR BEI30  MEO-1          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Decom.?
+BEI 2007 04 13 2018 03 29 130  01 61 1  5 3   0.0     0.0   0.0    0.0    2007-011A         
+HDR
+HDR                       BEIDOU-3! BL: 65-67, (B1(L2I)/B3(L6I)
+HDR
+HDR BEI18 IGSO-2S         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 95E  
+BEI 2018 06 07 2019 04 23 118 104 66 0  0 3   0.0     0.0   0.0    0.0    2015-053A         
+HDR BEI19 MEO-1S          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Lunched
+BEI 2017 11 05 2018 06 12 119 201 65 2  7 3   0.0     0.0   0.0    0.0    2017-069A         
+HDR BEI19 MEO-1S  CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Lunched
+BEI 2018 11 15 2040 01 01 119 201 65 1  1 3  12.036   0.0   0.0    0.0    2015-037B         
+HDR BEI20  3MEO-2 CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Lunched
+BEI 2017 11 05 2040 01 01 120 202 65 2  8 3  22.242   0.0   0.0    0.0    2017-069B         
+HDR BEI21  3MEO-3 CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 02 12 2040 01 01 121 206 65 2  5 3  14.919   0.0   0.0    0.0    2018-018B         
+HDR BEI22  3MEO-4 CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 02 12 2040 01 01 122 205 65 2  6 3  16.947   0.0   0.0    0.0    2018-018A         
+HDR BEI23  3MEO-5 CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 07 29 2040 01 01 123 209 65 3  7 3  24.324   0.0   0.0    0.0    2018-062A         
+HDR BEI24  3MEO-6 CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 07 29 2040 01 01 124 210 65 3  1 3   7.701   0.0   0.0    0.0    2018-062B         
+HDR BEI25  3MEO-11 SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 08 24 2040 01 01 125 212 65 3  8 3   0.759   0.0   0.0    0.0    2018-067B         
+HDR BEI26  3MEO-12 SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 08 24 2040 01 01 126 211 65 3  2 3  -3.493   0.0   0.0    0.0    2018-067A         
+HDR BEI27  3MEO-7  SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID           
+BEI 2018 01 11 2040 01 01 127 203 65 1  4 3  -2.408   0.0   0.0    0.0    2018-003A         
+HDR BEI28  3MEO-8         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID           
+BEI 2018 01 11 2018 06 11 128 204 65 1  5 3   0.0     0.0   0.0    0.0    2018-003B         
+HDR BEI28  MEO-2S  SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 12 20 2040 12 20 128 103 65 1  5 3  -3.061   0.0   0.0    0.0    2015-037A         
+HDR BEI29  3MEO-9  SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 03 29 2040 01 01 129 207 65 1  2 3   1.03    0.0   0.0    0.0    2018-029A         
+HDR BEI30  3MEO-10 SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 03 29 2040 01 01 130 208 65 1  3 3  -8.821   0.0   0.0    0.0    2018-029B         
+HDR BEI31 IGSO-1          PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 95E  
+BEI 2015 03 30 2018 04 24 131 101 66 0  0 3   0.0     0.0   0.0    0.0    2015-019A         
+HDR BEI31 IGSO-1   SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 95E  
+BEI 2018 07 10 2040 01 01 131 101 66 0  0 3   0.0     0.0   0.0    0.0    2015-019A         
+HDR BEI32 IGSO-2S         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 95E  
+BEI 2015 09 29 2018 06 07 132 104 66 0  0 3   0.0     0.0   0.0    0.0    2015-053A         
+HDR BEI32  3MEO-13 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 09 19 2040 01 01 132 213 65 2  1 3  -8.896   0.0   0.0    0.0    2018-072A         
+HDR BEI33  MEO-1S         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2015 07 30 2018 06 12 133 102 65 1  1 3   0.0     0.0   0.0    0.0    2015-037B         
+HDR BEI33  3MEO-14 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 09 19 2040 01 01 133 214 65 2  3 3 -42.965   0.0   0.0    0.0    2018-072B         
+HDR BEI34  MEO-2S         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2015 07 30 2018 06 11 134 103 65 1  6 3   0.0     0.0   0.0    0.0    2015-037A         
+HDR BEI34 3MEO-15  SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 10 15 2040 01 01 134 216 65 1  7 3  -5.567   0.0   0.0    0.0    2015-037A         
+HDR BEI35  MEO-3S         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID tr. failure
+BEI 2016 02 01 2018 10 15 135 105 65 2  1 3   0.0     0.0   0.0    0.0    2016-006A         
+HDR BEI35 3MEO-15  SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID          
+BEI 2018 10 15 2040 01 01 135 216 65 1  1 3  -2.039   0.0   0.0    0.0    2016-006A         
+HDR BEI36 3MEO-17  CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID             
+BEI 2018 11 18 2040 01 01 136 218 65 3  4 3 -21.650   0.0   0.0    0.0    2018-093A         
+HDR BEI37 3MEO-18  CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID             
+BEI 2018 11 18 2040 01 01 137 219 65 3  6 3 -14.045   0.0   0.0    0.0    2018-093B         
+HDR BEI38  3IGSO-1 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID                 
+BEI 2019 04 20 2040 01 01 138 220 66 0  0 3   4.778   0.0   0.0    0.0    2019-023A ~ 110E  
+HDR BEI39  3IGSO-2 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID                 
+BEI 2019 06 24 2040 01 01 139 221 66 0  0 3   4.212   0.0   0.0    0.0    2019-035A         
+HDR BEI40  3IGSO-3 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID                 
+BEI 2019 11 04 2040 01 01 140 221 66 0  0 3   1.233   0.0   0.0    0.0    2019-073A         
+HDR BEI41  3MEO-19 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID                 
+BEI 2019 12 16 2040 01 01 141 227 65 2  2 3 -24.101   0.0   0.0    0.0    2019-090A         
+HDR BEI42  3MEO-20 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID                 
+BEI 2019 12 16 2040 01 01 142 228 65 2  4 3 -32.252   0.0   0.0    0.0    2019-090B         
+HDR BEI43  3MEO-21 SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID                 
+BEI 2019 11 23 2040 01 01 143 226 65 1  5 3  -2.524   0.0   0.0    0.0    2019-073B        
+HDR BEI44  3MEO-22 SECM   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID                 
+BEI 2019 11 23 2040 01 01 144 225 65 1  8 3  -1.264   0.0   0.0    0.0    2019-090A         
+HDR BEI45  3MEO-23 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Lunched
+BEI 2019 09 22 2040 01 01 145 223 65 3  3 3 -27.427   0.0   0.0    0.0    2019-061B         
+HDR BEI46  3MEO-23 CAST   PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Lunched
+BEI 2019 09 22 2040 01 01 146 222 65 3  5 3 -23.937   0.0   0.0    0.0    2019-061A         
+HDR BEI47  3MEO-1         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Lunched
+BEI 2018 06 12 2018 11 15 147 201 65 2  7 3   0.0     0.0   0.0    0.0    2017-069A         
+HDR BEI48  3MEO-8         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID           
+BEI 2018 06 11 2018 12 19 148 204 65 1  5 3   0.0     0.0   0.0    0.0    2018-003B         
+HDR BEI56 IGSO-2S         PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   ~ 95E
+BEI 2019 04 24 2040 01 01 156 104 66 0  0 3   0.0     0.0   0.0    0.0    2015-053A
+HDR BEI57  3MEO-1 CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID   Lunched
+BEI 2017 11 11 2040 01 01 157 102 65 2  7 3   0.0     0.0   0.0    0.0    2017-069A         
+HDR BEI58  MEO-2S CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID
+BEI 2018 12 21 2040 01 01 158 103 65 1  6 3   0.0     0.0   0.0    0.0    2015-037A
+HDR BEI59 3GEO-1  CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID
+BEI 2018 11 01 2040 01 01 159 217 67 0  0 3   0.0     0.0   0.0    0.0    2018-085A - 140E
+HDR BEI60 3GEO-2  CAST    PRN SVN BL P SL C   P1P2    P1C1  AV     P2C2   INT. ID
+BEI 2020 03 09 2040 01 01 160 229 67 0  0 3   0.0     0.0   0.0    0.0    2020-017A -  80E
+HDR45678901234567890123456789012345678901234567890123456789012345678901234567890
