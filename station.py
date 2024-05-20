@@ -241,6 +241,7 @@ mi05.ref_dly = 5.092 # ns
 mi05.cab_dly = 96.2 # ns
 mi05.int_dly_p1 = 20.17 # ns, see Cal_ID: 1016-2019
 mi05.int_dly_p2 = 18.18 # ns
+mi05.rinex3 = True
 
 # MI02, VTT MIKES timing receiver, RINEX v2 files
 mi02 = Station()
