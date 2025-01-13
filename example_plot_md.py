@@ -22,12 +22,26 @@ import ppp_common
 import jdutil
 
 #station1 = station.mi02
-station1 = station.mi06
+station1 = station.mi06local
 #station2 = station.mi05
 station2 = station.mi05
-dt = datetime.datetime.utcnow()-datetime.timedelta(days=32) # 4 days ago
+#dt = datetime.datetime.utcnow()-datetime.timedelta(days=32) # 4 days ago
+
+# first interval
+#dt = datetime.datetime(2024,5,19)
+#num_days = 5
+
+# second interval
+#dt = datetime.datetime(2024,5,29)
+#num_days = 8
+
+# third interval
+dt = datetime.datetime(2024,5,29)
+num_days = 8
+
+
 current_dir = os.getcwd()
-num_days = 20
+#num_days = 20
 products = "final"
 
 # mi05 - ptbb: +3.96e-16    4.13-16

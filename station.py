@@ -127,6 +127,7 @@ class Station():
         """
         dtlist = [dtend - datetime.timedelta(days=n) for n in reversed(range(num_days))]
         day_files = []
+        print(dtlist)
         for day in dtlist:
             day_files.append( self.get_rinex(day) )
         print('splicing files: ' + str(day_files))
@@ -287,7 +288,7 @@ mi06local.utctag = "MI06local"
 #mi06.ftp_dir = "/GNSS/MI06/RINEX_v3_24h/"
 mi06local.receiver = "MI06"  # start of the RINEX filename
 mi06local.rinex_filename = mi06.rinex6  # naming style is .o.gz
-mi06local.rinex3 = False # RINEX v2
+mi06local.rinex3 = True # RINEX v2
 mi06local.ref_dly = 10.348 # ns
 mi06local.cab_dly = 95.715 # ns
 mi06local.int_dly_p1 = 20.17+1.7  # ns
@@ -309,17 +310,21 @@ ptbb.rinex_filename = ptbb.rinex7 # PTBB0880.21O.gz
 ptbb.rinex3 = True
 
 # PT10, Dicom/Mesit receiver
-pt10 = Station()
-pt10.name = "PT10" # mesit/Dicom
-pt10.utctag = "pt10"
-pt10.ftp_server = ptb_server
-pt10.ftp_username = anonymous_username
-pt10.ftp_password = anonymous_password
-pt10.ftp_dir = "pub/time/GNSS/PT10/RINEX3/"
-pt10.refdelay = 335.6+132.0
-pt10.receiver = "PT10"
-pt10.rinex_filename = pt10.rinex1 # PT100880.21O.Z
-pt10.rinex3 = True
+pt09 = Station()
+pt09.name = "PT09" # mesit/Dicom
+pt09.utctag = "PT09"
+pt09.receiver = "PT09"  # start of the RINEX filename
+pt09.rinex_filename = pt09.rinex7  # naming style is  "O", ending "gz"
+pt09.rinex3 = True 
+
+#pt10.ftp_server = ptb_server
+#pt10.ftp_username = anonymous_username
+#pt10.ftp_password = anonymous_password
+#pt10.ftp_dir = "pub/time/GNSS/PT10/RINEX3/"
+#pt10.refdelay = 335.6+132.0
+#pt10.receiver = "PT10"
+#pt10.rinex_filename = pt10.rinex1 # PT100880.21O.Z
+#pt10.rinex3 = True
 
 
 """
@@ -410,13 +415,21 @@ npl.rinex_filename = npl.rinex1
 
 if __name__ == "__main__":
     
+    # results:
+    # clk = clk - my_station.cab_dly - my_station.int_dly_p3() + my_station.ref_dly
+    mi05d = -mi05.cab_dly + mi05.ref_dly - mi05.int_dly_p3()
+    mi06d = -mi06local.cab_dly + mi06local.ref_dly - mi06local.int_dly_p3()
+    print("mi05 corr: ",-mi05.cab_dly + mi05.ref_dly - mi05.int_dly_p3())
+    print("mi06local corr: ",-mi06local.cab_dly + mi06local.ref_dly - mi06local.int_dly_p3())
+    print(mi05d, mi06d, mi05d-mi06d)
+    #print("mi05 cab ",mi05.cab_dly)
     
     # an example of how to retrieve a RINEX file
-    dt = datetime.datetime.utcnow() - datetime.timedelta(days=5)  # some days back from now
+    #dt = datetime.datetime.utcnow() - datetime.timedelta(days=5)  # some days back from now
     #print(mi05.get_rinex(dt))
     #print(mi04.get_multiday_rinex(dt, 2))
     
-    print(mi05.get_multiday_rinex(dt, num_days = 8))
+    #print(mi05.get_multiday_rinex(dt, num_days = 8))
     
     """
     print(usno.get_rinex(dt))

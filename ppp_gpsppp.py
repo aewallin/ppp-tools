@@ -64,12 +64,16 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
             (tmp, a) = os.path.split(a)
             if a[-2:] == ".Z":
                 a=a[:-2] # if zipped file, strip off ".Z"
+            elif a[-3:] == ".gz":
+                a=a[:-3] 
             f.write(a+"\n")
 
         for a in clk_files:
             (tmp, a) = os.path.split(a)
             if a[-2:] == ".Z":
                 a=a[:-2] # if zipped file, strip off ".Z"
+            elif a[-3:] == ".gz":
+                a=a[:-3] 
             f.write(a+"\n")
             
         f.close()
@@ -347,8 +351,11 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
     cmd = '/bin/mv'
     gpsppp_erp = prefixdir + "/temp/gpsppp.ERP"
     (tmp, fn) = os.path.split(erp_file)  # [:-2]
+    print('erp file ', fn)
     if fn[-1]=='Z': # final products are zipped
         fn = fn[:-2] # strip off '.Z'S
+    elif fn[-3:]=='.gz':
+        fn = fn[:-3]
     cmd = cmd + " " + tempdir + fn + " " + gpsppp_erp
     print("rename command: ", cmd)
     p = subprocess.Popen(cmd, shell=True)
@@ -508,6 +515,9 @@ def run(station, dt, rapid=True, prefixdir="", products="CODE"):
     cmd = '/bin/mv'
     gpsppp_erp = prefixdir + "/temp/gpsppp.ERP"
     (tmp, fn) = os.path.split(erp_file)  # [:-2]
+    if fn[-3:]=='.gz':
+        fn = fn[:-3]
+        
     cmd = cmd + " " + tempdir + fn + " " + gpsppp_erp
     print("rename command: ", cmd)
     p = subprocess.Popen(cmd, shell=True)

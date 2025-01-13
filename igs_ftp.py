@@ -101,7 +101,7 @@ def CODE_rapid_files(dt, prefixdir=""):
     return (server, "", "", remotedir, [clk, sp3, erp], localdir)
 
 
-def CODE_final_files(dt, prefixdir=""):
+def CODE_final_files_old(dt, prefixdir=""):
     """
         retrieve final CODE products for the datetime dt
         
@@ -126,6 +126,37 @@ def CODE_final_files(dt, prefixdir=""):
     print("local dir = ", localdir)
     return (server, "", "", remotedir, [clk, sp3, erp], localdir)
 
+def CODE_final_files(dt, prefixdir=""):
+    """
+        retrieve final CODE products for the datetime dt
+        
+        files are in:
+        ftp://ftp.aiub.unibe.ch/CODE/2021/
+        
+        new format, update code 2024-06
+        COD0OPSFIN_20241510000_01D_30S_CLK.CLK.gz   new v3 format? not supported by gpsppp
+        COD0OPSFIN_20241390000_01D_30S_CLK.CLK_V2.gz
+        COD0OPSFIN_20241510000_01D_01D_ERP.ERP.gz
+        COD0OPSFIN_20241510000_01D_05M_ORB.SP3.gz 
+    """
+    server = "ftp.aiub.unibe.ch"
+    remotedir = "CODE/%s/" % (dt.year)
+    week = gpstime.gpsWeek(dt.year, dt.month, dt.day)
+    dow = gpstime.dayOfWeek(dt.year, dt.month, dt.day)
+    doy = dt.timetuple().tm_yday
+    clk = "COD0OPSFIN_%d%03d0000_01D_30S_CLK.CLK_V2.gz" % (dt.year, doy)  # clock
+    sp3 = "COD0OPSFIN_%d%03d0000_01D_05M_ORB.SP3.gz" % (dt.year, doy)  # orbit
+    erp = "COD0OPSFIN_%d%03d0000_01D_01D_ERP.ERP.gz" % (dt.year, doy)  # earth
+    print("CODE final products for %d-%02d-%0d" % (dt.year, dt.month, dt.day))
+    print("CLK = ", clk)
+    print("SP3 = ", sp3)
+    print("ERP = ", erp)
+
+    ftp_tools.check_dir(prefixdir + "/products/")
+    localdir = prefixdir + "/products/CODE_final/"
+    print("local dir = ", localdir)
+    return (server, "", "", remotedir, [clk, sp3, erp], localdir)
+    
 def IGS_rapid_files(dt, prefixdir=""):
     """
         retrieve rapid IGS products for the datetime dt

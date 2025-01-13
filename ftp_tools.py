@@ -30,6 +30,7 @@ def ftp_download( server, username, password, remotedir, remotefile, localdir, o
     check_dir( localdir )  # check that target dir exists, if not create it
     local_fullname = localdir + remotefile 
     print("ftp_download start at ", datetime.datetime.utcnow())
+    print(local_fullname,' exists? ', os.path.exists( local_fullname ) )
     if not os.path.exists( local_fullname ) or overwrite:
         print('Remote: ftp://%s/%s%s' % (server,remotedir, remotefile) )
         print('Local : ', local_fullname)
