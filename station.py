@@ -9,6 +9,7 @@ import subprocess
 
 import bipm_ftp
 import ftp_tools
+import wget
 
 
 class Station():
@@ -110,9 +111,14 @@ class Station():
         """
         current_dir = os.getcwd()
         localdir = current_dir + '/stations/' + self.name + '/'
-        ftp_tools.check_dir(localdir)  # create directory if it doesn't exist
-        return ftp_tools.ftp_download(self.ftp_server, self.ftp_username, self.ftp_password,
-                                      self.ftp_dir, self.rinex_filename(dt), localdir)
+        localfile = localdir + self.rinex_filename(dt)
+        if os.path.isfile(localfile):
+            return localfile
+        else:
+            return wget.download(self.ftp_server+self.ftp_dir+self.rinex_filename(dt), out=localdir)
+        #ftp_tools.check_dir(localdir)  # create directory if it doesn't exist
+        #return ftp_tools.ftp_download(self.ftp_server, self.ftp_username, self.ftp_password,
+        #                              self.ftp_dir, self.rinex_filename(dt), localdir)
     
     
     def get_multiday_rinex(self, dtend, num_days=2):
@@ -218,7 +224,7 @@ anonymous_password = "ppp-tools"
 mi04 = Station()
 mi04.name = "MI04"
 mi04.utctag = "MI04"
-mi04.ftp_server = mikes_server
+mi04.ftp_server = "https://monitor.mikes.fi/ftp"
 mi04.ftp_username = anonymous_username
 mi04.ftp_password = anonymous_password
 mi04.ftp_dir = "/GNSS/MI04/RINEX/"
