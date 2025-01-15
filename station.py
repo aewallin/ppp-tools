@@ -103,11 +103,9 @@ class Station():
         """
             Retrieve RINEX file using ftp
             dt is the datetime for the file we want
-            
             return filename (including path) of RINEX
             this is usually in the form:
             /stations/MYSTATION/rinex_filename.gz
-            
         """
         current_dir = os.getcwd()
         ftp_tools.check_dir(current_dir+'/stations/')
@@ -115,22 +113,21 @@ class Station():
         ftp_tools.check_dir(localdir)
         localfile = localdir + self.rinex_filename(dt)
         if os.path.isfile(localfile):
+            print(localfile, ' already exists, not downloading')
             return localfile
         else:
+            print('wget from ', self.ftp_server+self.ftp_dir+self.rinex_filename(dt))
             return wget.download(self.ftp_server+self.ftp_dir+self.rinex_filename(dt), out=localdir)
         #ftp_tools.check_dir(localdir)  # create directory if it doesn't exist
         #return ftp_tools.ftp_download(self.ftp_server, self.ftp_username, self.ftp_password,
         #                              self.ftp_dir, self.rinex_filename(dt), localdir)
-    
-    
+
     def get_multiday_rinex(self, dtend, num_days=2):
         """
             get multiple 24h RINEX files
             splice them together with gfzrnx
-            
             dtend is the datetime of the last day
             num_days is the number of days
-            
             return filename (including path) of spliced RINEX
         """
         dtlist = [dtend - datetime.timedelta(days=n) for n in reversed(range(num_days))]
@@ -240,10 +237,11 @@ mi04.rinex_filename = mi04.rinex4  # naming style is MI040040.21D.Z
 mi05 = Station()
 mi05.name = "MI05"
 mi05.utctag = "MI05"
-mi05.ftp_server = mikes_server
+#mi05.ftp_server = mikes_server
+mi05.ftp_server = "https://monitor.mikes.fi/ftp"
 mi05.ftp_username = anonymous_username
 mi05.ftp_password = anonymous_password
-mi05.ftp_dir = "/GNSS/MI05/RINEX_v2_24h/"
+mi05.ftp_dir = "/GNSS/MI05/RINEX_v3_24h/"
 mi05.receiver = "MI05"  # start of the RINEX filename
 mi05.rinex_filename = mi05.rinex6  # naming style is MI050020.21o.gz
 mi05.ref_dly = 5.092 # ns
