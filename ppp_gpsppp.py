@@ -14,17 +14,14 @@ import bipm_ftp
 import igs_ftp
 import ppp_common
 
-# NRCAN Fortran code requiring license
-#gpsppp_binary = "gpsppp"
-#gpsppp_version = "GPS Precise Point Positioning (CSRS-PPP ver.1.05/34613/2013-12-12)" # FIXME, obtain at run-time from binary
-#gpsppp_tag = "gpsppp" # used in the result file names
 
 # GPSPACE open source version
 # from https://github.com/aewallin/GPSPACE
 
 gpsppp_binary = "gpspace"
-gpsppp_version = "GPSPACE Precise Point Positioning (Version 1.10/25018/2018-09-07)"
-gpsppp_tag = "gpspace"
+#gpsppp_version = "GPSPACE Precise Point Positioning (Version 1.10/25018/2018-09-07)"
+gpsppp_version = "GPSPACE Precise Point Positioning (Version 1.20/24420/2020-08-31)"
+gpsppp_tag = "gpspace" # used in filename of results
 
 
 def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
