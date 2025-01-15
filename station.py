@@ -110,7 +110,9 @@ class Station():
             
         """
         current_dir = os.getcwd()
+        ftp_tools.check_dir(current_dir+'/stations/')
         localdir = current_dir + '/stations/' + self.name + '/'
+        ftp_tools.check_dir(localdir)
         localfile = localdir + self.rinex_filename(dt)
         if os.path.isfile(localfile):
             return localfile
