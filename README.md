@@ -14,10 +14,15 @@ e.g. https://github.com/aewallin/GPSPACE
 In addition to the GPS-PPP software some utilities may be required:
 * GFZRNX (https://gnss.gfz-potsdam.de/services/gfzrnx) for RINEX file splice, split, repair, 
 format conversion (RINEX 2 to 3). As of 2025 Janyary the version is gfzrnx-2.1.9
-* Teqc, for concatenating many 1-day RINEX files into multi-day files,  https://www.unavco.org/software/data-processing/teqc/teqc.html, install it to e.g. /usr/local/bin, and verify with ```$ teqc -version``` that it is working.
-as of 2018 March the latest version is "2018Jan11". Teqc is no longer maintained, but binaries are available.
-* RNXCMP, for decompressing Hatanaka compressed RINEX files, http://terras.gsi.go.jp/ja/crx2rnx.html, install to e.g. /usr/local/bin and verify that CRX2RNX is working with ```$ CRX2RNX -h```
-As of 2018 March the latest version is 4.0.7.
+* RNXCMP, for decompressing Hatanaka compressed RINEX files,
+http://terras.gsi.go.jp/ja/crx2rnx.html, install to e.g. /usr/local/bin and verify
+that CRX2RNX is working with ```$ CRX2RNX -h```
+As of 2025 January the latest version is 4.1.0.
+* (__old__) Teqc, for concatenating many 1-day RINEX files into multi-day files, 
+https://www.unavco.org/software/data-processing/teqc/teqc.html, install it to e.g. 
+/usr/local/bin, and verify with ```$ teqc -version```
+ that it is working. as of 2018 March the latest version is "2018Jan11". Teqc is no 
+longer maintained, but binaries are available.
 
 ## Running PPP
 
