@@ -1,16 +1,17 @@
 """
     This file is part of ppp-tools, https://github.com/aewallin/ppp-tools
     GPLv2 license.
-    
+
     Library for downloading GPS products (orbits & clocks) from
     an IGS datacenter.
-    
+
     Anders Wallin, 2013-2015
 """
 import ftplib
 import datetime
 import sys
 import os
+import wget
 
 import ftp_tools
 import gpstime
@@ -22,7 +23,6 @@ import gpstime
 def cddis_brdc_file(dt, prefixdir=""):
     """
         This was used previously for rtklib runs.
-        
         Could be replaced with a nav-file from the station?
     """
     server = "cddis.gsfc.nasa.gov"
@@ -43,7 +43,7 @@ def get_IGS_rapid(dt, prefixdir=""):
     (clk1, eph1, erp1) = download(
         server, username, password, directory, files, localdir)
     return (clk1, eph1, erp1)
-    
+
 def get_IGS_final(dt, prefixdir=""):
     (server, username, password, directory, files,
      localdir) = IGS_final_files(dt, prefixdir)
@@ -104,12 +104,11 @@ def CODE_rapid_files(dt, prefixdir=""):
 def CODE_final_files_old(dt, prefixdir=""):
     """
         retrieve final CODE products for the datetime dt
-        
+
         files are in:
         ftp://ftp.aiub.unibe.ch/CODE/2021/
-        
     """
-    server = "ftp.aiub.unibe.ch"
+    server = "http://ftp.aiub.unibe.ch/"
     remotedir = "CODE/%s/" % (dt.year)
     week = gpstime.gpsWeek(dt.year, dt.month, dt.day)
     dow = gpstime.dayOfWeek(dt.year, dt.month, dt.day)
@@ -129,17 +128,17 @@ def CODE_final_files_old(dt, prefixdir=""):
 def CODE_final_files(dt, prefixdir=""):
     """
         retrieve final CODE products for the datetime dt
-        
+
         files are in:
         ftp://ftp.aiub.unibe.ch/CODE/2021/
-        
+
         new format, update code 2024-06
         COD0OPSFIN_20241510000_01D_30S_CLK.CLK.gz   new v3 format? not supported by gpsppp
         COD0OPSFIN_20241390000_01D_30S_CLK.CLK_V2.gz
         COD0OPSFIN_20241510000_01D_01D_ERP.ERP.gz
         COD0OPSFIN_20241510000_01D_05M_ORB.SP3.gz 
     """
-    server = "ftp.aiub.unibe.ch"
+    server = "http://ftp.aiub.unibe.ch/"
     remotedir = "CODE/%s/" % (dt.year)
     week = gpstime.gpsWeek(dt.year, dt.month, dt.day)
     dow = gpstime.dayOfWeek(dt.year, dt.month, dt.day)
@@ -156,7 +155,7 @@ def CODE_final_files(dt, prefixdir=""):
     localdir = prefixdir + "/products/CODE_final/"
     print("local dir = ", localdir)
     return (server, "", "", remotedir, [clk, sp3, erp], localdir)
-    
+
 def IGS_rapid_files(dt, prefixdir=""):
     """
         retrieve rapid IGS products for the datetime dt
@@ -236,12 +235,11 @@ def IGS_final_files(dt, prefixdir=""):
     localdir = prefixdir + "/products/IGS_final/"
     print("local dir = ", localdir)
     return (server, "", "", remotedir, [clk, sp3, erp], localdir)
-        
+
 
 def download(server, username, password, remotedir, files, localdir):
     """
         Download a list of files from given ftp server
-        
         Return list of local downloaded files
     """
     print("download start ", datetime.datetime.now())
@@ -249,8 +247,10 @@ def download(server, username, password, remotedir, files, localdir):
 
     for f in files:
         local_file = localdir+f
-        ftp_tools.ftp_download(
-            server, username, password, remotedir, f, localdir)
+        #ftp_tools.ftp_download(
+        #    server, username, password, remotedir, f, localdir)
+        if not os.path.isfile(local_file):
+            wget.download(server+remotedir+f, out = local_file)
     print("download Done ", datetime.datetime.now())
     sys.stdout.flush()
     output = []

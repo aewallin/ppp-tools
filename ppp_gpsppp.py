@@ -184,7 +184,7 @@ def nrcan_cmd_file(prefixdir, cmd_file, num_days=1):
         f.write("' CUTOFF ELEVATION                       (deg)'              5.0000\n")
         f.write("' GDOP CUTOFF                                 '             20.0000\n")
     return cmd_file
-    
+
 def nrcan_parse_result(filename, my_station, inputfile, bwd=False):
     # This function reads and parses the .pos file
     #
@@ -250,7 +250,6 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
     """
         multi-day run, ending at given datetime dtend
         num_days specifies number of days.
-        
     """
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()  # for timing how long processing takes
@@ -259,7 +258,7 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
     tempdir = prefixdir + "/temp/"
     ftp_tools.check_dir(tempdir)
     ftp_tools.delete_files(tempdir)  # empty the temp directory
-    
+
     # get spliced multi-day rinex file
     dtlist, rinex, rlist = station.get_multiday_rinex(dtend, num_days=num_days)  # this downloads RINEX over ftp, if needed
     # results in uncompressed "splice.rnx" file in the temp-directory.
@@ -406,17 +405,17 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
         ppp_result=ppp_result, preamble=run_log+run_log2, rapid=rapid, tag=gpsppp_tag, prefixdir=prefixdir, num_days=num_days)
     os.chdir(original_dir)  # change back to original directory
     return result_file
-    
+
 def run(station, dt, rapid=True, prefixdir="", products="CODE"):
     """
-    PPP-processing with NRCan ppp.
+    Single day/RINEX-file PPP-processing with NRCan ppp.
 
     requires "gpsppp" or "gpspace" binary
 
     """
     print("------------------------------------")
 
-    print("PPP-processing with NRCan ppp.")
+    print("ppp-tools: PPP-processing with NRCan ppp.")
 
     original_dir = prefixdir
     dt_start = datetime.datetime.utcnow()  # for timing how long processing takes
@@ -452,7 +451,7 @@ def run(station, dt, rapid=True, prefixdir="", products="CODE"):
             (clk1, eph1, erp1) = igs_ftp.get_IGS_rapid(dt, prefixdir)
             (clk2, eph2, erp2) = igs_ftp.get_IGS_rapid(
                 dt+datetime.timedelta(days=1), prefixdir)
-                
+
         clk_files = [clk1, clk2]
         eph_files = [eph1, eph2]
         erp_file = erp1
@@ -517,7 +516,7 @@ def run(station, dt, rapid=True, prefixdir="", products="CODE"):
     (tmp, fn) = os.path.split(erp_file)  # [:-2]
     if fn[-3:]=='.gz':
         fn = fn[:-3]
-        
+
     cmd = cmd + " " + tempdir + fn + " " + gpsppp_erp
     print("rename command: ", cmd)
     p = subprocess.Popen(cmd, shell=True)
