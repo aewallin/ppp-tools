@@ -78,7 +78,7 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
     return inpfile
 
 
-def nrcan_def_file(prefixdir, def_file):
+def nrcan_def_file(prefixdir, def_file, erp_files=[]):
     """
     create a gpsppp.def file
     the file defines locations of helper files
@@ -92,7 +92,7 @@ def nrcan_def_file(prefixdir, def_file):
     'SVB' '/gpsppp/gpsppp.svb_gnss_yrly'
     'PCV' '/gpsppp/igs08.atx'
     'FLT' '/gpsppp/gpsppp.flt'
-    'OLC' '/gpsppp/gpsppp_with_mike_kaja.olc'
+    'OLC' '/gpsppp/gpsppp.olc'
     'MET' '/gpsppp/gpsppp.met'
     'ERP' '/BIPM/temp/gpsppp.ERP'
     'GSD' 'Natural Resources Canada, Geodetic Survey Division, Geomatics Canada'
@@ -112,8 +112,7 @@ def nrcan_def_file(prefixdir, def_file):
     flt = "'%s/gpsppp/gpsppp.flt'" % prefixdir
     olc = "'%s/gpsppp/gpsppp.olc'" % prefixdir
     met = "'%s/gpsppp/gpsppp.met'" % prefixdir
-    # NOTE: this file is in the temp directory!
-    erp = "'%s/temp/gpsppp.ERP'" % prefixdir
+    erp = "'%s/temp/gpsppp.ERP'" % prefixdir # NOTE: this file is in the temp directory!
 
     with open(prefixdir + "/temp/" + def_file, 'w') as f:
         f.write("'LNG' 'ENGLISH'\n")
@@ -123,8 +122,13 @@ def nrcan_def_file(prefixdir, def_file):
         f.write("'FLT' %s\n" % flt)  # Filter configuration file
         f.write("'OLC' %s\n" % olc)  # ocean tide loading coefficients
         f.write("'MET' %s\n" % met)  # meteorological conditions (?)
-        f.write("'ERP' %s\n" % erp)  # earth rotation parameters
-
+        
+        if len(erp_files):
+            for e in erp_files:
+                (head, tail) = os.path.split(e)
+                f.write("'ERP' '%s/temp/%s'\n" %(prefixdir, tail[:-3]))
+        else:
+            f.write("'ERP' %s\n" % erp)  # earth rotation parameters
         # this might include a version-string for ppp-tools also?
         f.write("'GSD' 'ppp-tools, from https://github.com/aewallin/ppp-tools'\n")
 
@@ -270,7 +274,7 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
     # if we process day N, we need products for N and N+1
     clk_files = []
     eph_files = []
-    erp_file = ""  # we do not use the ERP files, for now.
+    erp_files = []  
     dtlist.append( dtlist[-1]+datetime.timedelta(days=1) ) # add one day
     for dt in dtlist:
         if not rapid:  # Final products
@@ -287,9 +291,10 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
                 
         clk_files.append(clk1)
         eph_files.append(eph1)
-        erp_file = erp1
+        erp_files.append(erp1)
     print("clk_files: ",str(clk_files))
     print("eph_files: ",str(eph_files))
+    print("erp_files: ",str(erp_files))
     
     run_log = ""
     run_log += " run start: %d-%02d-%02d %02d:%02d:%02d\n" % (
@@ -307,7 +312,8 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
         run_log += "       CLK: %s\n" % c[len(prefixdir):]
     for e in eph_files:
         run_log += "       EPH: %s\n" % e[len(prefixdir):]
-    run_log += "       ERP: %s\n" % erp_file[len(prefixdir):]
+    for e in erp_files:
+        run_log += "       ERP: %s\n" % e[len(prefixdir):]
     print(run_log)
     
     
@@ -318,15 +324,14 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
     cmdfile = tempdir + cmd_file
     
     # write an INP file, corresponding to the keyboard-input required
-    inp_file = nrcan_inp_file(
-        tempdir + "run.inp", rinex+".Z", cmdfile, eph_files, clk_files, rapid)
+    inp_file = nrcan_inp_file(tempdir + "run.inp", rinex+".Z", cmdfile, eph_files, clk_files, rapid)
     
     # write a DEF file
-    nrcan_def_file(prefixdir, "gpsppp.def")
+    nrcan_def_file(prefixdir, "gpsppp.def", erp_files) # 
     nrcan_pos_file = tempdir + "splice.pos"
     
     # move  CLK, EPH, ERP files to temp_dir
-    files_to_move = clk_files + eph_files + [erp_file]
+    files_to_move = clk_files + eph_files + erp_files
     moved_files = []
     for f in files_to_move:
         shutil.copy2(f, tempdir)
@@ -344,9 +349,10 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
             p.communicate()
 
     # rename the ERP file - becase the name is fixed to gpsppp.ERP in the DEF file.
-    cmd = '/bin/mv'
+    # single ERP file used!?
+    cmd = '/bin/cp'
     gpsppp_erp = prefixdir + "/temp/gpsppp.ERP"
-    (tmp, fn) = os.path.split(erp_file)  # [:-2]
+    (tmp, fn) = os.path.split(erp_files[-1])  # [:-2]
     print('erp file ', fn)
     if fn[-1]=='Z': # final products are zipped
         fn = fn[:-2] # strip off '.Z'S
@@ -356,6 +362,7 @@ def run_multiday(station, dtend, num_days, rapid=True, prefixdir="", products="C
     print("rename command: ", cmd)
     p = subprocess.Popen(cmd, shell=True)
     p.communicate()
+    
     
     # if RINEX version 3, use gfzrnx to convert 3->2
     if station.rinex3:
