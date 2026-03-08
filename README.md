@@ -10,10 +10,11 @@ GPS-PPP solutions can be found with the following open source software packages:
 * GPSPACE available from https://github.com/CGS-GIS/GPSPACE Note that this repository is 
 inclomplete. A repository that includes the missing IERS2010 code is 
 e.g. https://github.com/aewallin/GPSPACE
+    * GPSPACE inputs should be RINEX v2.11 files. Newer RINEX v3 files can be converted to v2.11 with GFZRNX before processing.
 
 In addition to the GPS-PPP software some utilities may be required:
 * GFZRNX (https://gnss.gfz-potsdam.de/services/gfzrnx) for RINEX file splice, split, repair, 
-format conversion (RINEX 2 to 3). As of 2025 Janyary the version is gfzrnx-2.1.9
+format conversion (RINEX 2 to 3). As of 2025 January the version is gfzrnx-2.1.9
 * RNXCMP, for decompressing Hatanaka compressed RINEX files,
 http://terras.gsi.go.jp/ja/crx2rnx.html, install to e.g. /usr/local/bin and verify
 that CRX2RNX is working with ```$ CRX2RNX -h```
