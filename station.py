@@ -30,29 +30,30 @@ class Station():
         self.ftp_username = ""
         self.ftp_password = ""
         self.lz = False         # do we need an LZ file or not?
-        #self.refdelay = 0.0     # reference delay, in nanoseconds. FIXME: remove this!?
         self.receiver = ""        # receiver name, e.g. "MI02", used in the RINEX filename
         self.rinex_filename = self.rinex1
         self.hatanaka = False   # flag is True for Hatanaka compressed RINEX
         self.antex = True       # receiver antenna in ANTEX file?
         self.rinex3 = False     # RINEX version 3, requiring conversion to version 2
-        
+
         self.ref_dly = 0.0 # delay of PPS-cable from reference plane to GNSS receiver input
         self.cab_dly = 0.0 # antenna cable delay from GNSS-receiver to antenna
         self.int_dly_p1 = 0.0 # internal GNSS receiver delay for L1
         self.int_dly_p2 = 0.0 # internal GNSS receiver delay for L2
-        
+
         # raw PPP results are corrected with the calibrated delays as follows:
         # RX_clk_corrected = RX_clk_raw - station.cab_dly - station.int_dly_p3() + station.ref_dly
-        
+
     def int_dly_p3(self):
         """
             ionosphere-free P3 internal delay.
             linear combination of calibrated P1 and P3 delays
+
+            see e.g. https://gssc.esa.int/navipedia/index.php/Combination_of_GNSS_Measurements
         """
         return 2.5457*self.int_dly_p1 - 1.5457*self.int_dly_p2
 
-        
+
     # the RINEX naming convention is that there is no convention...
     # we define rinex_filename() in the constructor, which calls one of rinex1(), rinex2(), etc.
 
@@ -89,26 +90,26 @@ class Station():
             self.receiver, dt.timetuple().tm_yday, dt.year-2000)
         self.hatanaka = False
         return fname
-        
+
     def rinex7(self, dt):  # "O", ending "gz"
         fname = "%s%03d0.%02dO.gz" % (
             self.receiver, dt.timetuple().tm_yday, dt.year-2000)
         self.hatanaka = False
         return fname
-        
+
     def antex(self):
         return self.antex
 
     def get_rinex(self, dt):
         """
-            Retrieve RINEX file using ftp
+            Retrieve RINEX file using wget
             dt is the datetime for the file we want
             return filename (including path) of RINEX
             this is usually in the form:
             /stations/MYSTATION/rinex_filename.gz
         """
         current_dir = os.getcwd()
-        ftp_tools.check_dir(current_dir+'/stations/')
+        ftp_tools.check_dir(current_dir+'/stations/') # create directory, if it doesn't exist
         localdir = current_dir + '/stations/' + self.name + '/'
         ftp_tools.check_dir(localdir)
         localfile = localdir + self.rinex_filename(dt)
@@ -118,9 +119,6 @@ class Station():
         else:
             print('wget from ', self.ftp_server+self.ftp_dir+self.rinex_filename(dt))
             return wget.download(self.ftp_server+self.ftp_dir+self.rinex_filename(dt), out=localdir)
-        #ftp_tools.check_dir(localdir)  # create directory if it doesn't exist
-        #return ftp_tools.ftp_download(self.ftp_server, self.ftp_username, self.ftp_password,
-        #                              self.ftp_dir, self.rinex_filename(dt), localdir)
 
     def get_multiday_rinex(self, dtend, num_days=2):
         """
@@ -141,8 +139,7 @@ class Station():
         current_dir = os.getcwd()
         tempdir = current_dir + "/temp/"
         ftp_tools.check_dir(tempdir)
-        #ftp_tools.delete_files(tempdir)  # empty the temp directory
-        
+
         # move files to the temp-directory
         moved_files=[]
         for f in day_files:
@@ -150,9 +147,7 @@ class Station():
             (tmp, fn) = os.path.split(f)
             moved_files.append(tempdir + fn)
         print(moved_files)
-    
-        
-        
+
         # now unzip the files
         # unzip zipped files. this may include the RINEX, CLK, EPH files.
         for f in moved_files:
@@ -173,7 +168,7 @@ class Station():
                 inputfile = inputfile[:-1]  # strip off
             unzipped_files.append(inputfile)
         print("unzipped files: ", str(unzipped_files))
-        
+
         # if files are Hatanaka compressed, uncompress
         rnx_files=[]
         for inputfile in unzipped_files:
@@ -185,7 +180,7 @@ class Station():
                 rnx_files.append( inputfile[:-1]+"O" ) # CRX2RNX changes ending to "O"
             else:
                 rnx_files.append( inputfile )
-        
+
         print("rinex files to splice: ", len(rnx_files), " ", str(rnx_files))
         # now splice files together
         cmd = "gfzrnx -finp "
@@ -197,10 +192,11 @@ class Station():
         print("splice command: ",cmd)
         p = subprocess.Popen(cmd, shell=True)
         p.communicate()
-        
+
         # return the resulting spliced RINEX filename
         return dtlist, tempdir+"splice.rnx", moved_files
-        
+
+
 ########################################################################
 # example stations
 #
@@ -279,11 +275,6 @@ mi06.cab_dly = 95.715 # ns (label on cable)
 mi06.int_dly_p1 = 20.17+1.7 # ns, MI05 Cal_ID: 1016-2019 - this applies for MI06 also?
 mi06.int_dly_p2 = 18.18+1.7 # ns, NOTE 1.7ns added to make MI05 - MI06 results match
 
-# prelim PPP analysis MI06-MI05 difference: 1.75 
-# start 2021-04-13
-# stop 2021-06-02
-#
-# new analysis DOY 122 to 153
 
 # MI06 tests with local files (not on FTP-site)
 mi06local = Station() # using local files, not on ftp-server
@@ -322,129 +313,13 @@ pt09.name = "PT09" # mesit/Dicom
 pt09.utctag = "PT09"
 pt09.receiver = "PT09"  # start of the RINEX filename
 pt09.rinex_filename = pt09.rinex7  # naming style is  "O", ending "gz"
-pt09.rinex3 = True 
-
-#pt10.ftp_server = ptb_server
-#pt10.ftp_username = anonymous_username
-#pt10.ftp_password = anonymous_password
-#pt10.ftp_dir = "pub/time/GNSS/PT10/RINEX3/"
-#pt10.refdelay = 335.6+132.0
-#pt10.receiver = "PT10"
-#pt10.rinex_filename = pt10.rinex1 # PT100880.21O.Z
-#pt10.rinex3 = True
-
-
-"""
-# USNO
-usno = Station()
-usno.name = "USNO"
-usno.utctag = "usno"
-usno.ftp_server = bipm_server
-usno.ftp_username = bipm_username
-usno.ftp_password = bipm_password
-usno.ftp_dir = "/data/UTC/USNO/links/rinex/"
-usno.refdelay = 0.0
-usno.receiver = "usn6"
-usno.rinex_filename = usno.rinex2
-
-# NIST
-nist = Station()
-nist.name = "NIST"
-nist.utctag = "nist"
-nist.ftp_server = bipm_server
-nist.ftp_username = bipm_username
-nist.ftp_password = bipm_password
-nist.ftp_dir = "/data/UTC/NIST/links/rinex/"
-# Note on NIST reference delay ftp://5.144.141.242/data/UTC/NIST/links/cggtts/GMNI0056.735
-nist.refdelay = 120.0-7.043
-nist.receiver = "NIST"
-nist.rinex_filename = nist.rinex1
-
-
-
-
-# OP
-op = Station()
-op.name = "OP"
-op.utctag = "op"
-op.ftp_server = bipm_server
-op.ftp_username = bipm_username
-op.ftp_password = bipm_password
-op.ftp_dir = "data/UTC/OP/links/rinex/opmt/"
-op.refdelay = 349.0  # refdelay is empirically found mean of CirT error vs. usn3
-op.receiver = "opmt"
-op.rinex_filename = op.rinex3
-
-
-# SP
-sp = Station()
-sp.name = "SP"
-sp.utctag = "sp"
-sp.ftp_server = bipm_server
-sp.ftp_username = bipm_username
-sp.ftp_password = bipm_password
-sp.ftp_dir = "data/UTC/SP/links/rinex/"
-sp.refdelay = 221.5-2.279
-# ftp://5.144.141.242/data/UTC/SP/links/cggtts/gzSP0156.752
-# ftp://5.144.141.242/data/UTC/SP/links/cggtts/rzSP0256.751
-sp.receiver = "sp01"
-sp.rinex_filename = sp.rinex3
-
-
-# NICT
-nict = Station()
-nict.name = "NICT"
-nict.utctag = "nict"
-nict.ftp_server = bipm_server
-nict.ftp_username = bipm_username
-nict.ftp_password = bipm_password
-nict.ftp_dir = "data/UTC/NICT/links/rinex/"
-nict.refdelay = 17.628
-nict.receiver = "nc02"
-nict.rinex_filename = nict.rinex2
-
-
-# NPL
-npl = Station()
-npl.name = "NPL"
-npl.utctag = "npl"
-npl.ftp_server = bipm_server
-npl.ftp_username = bipm_username
-npl.ftp_password = bipm_password
-npl.ftp_dir = "data/UTC/NPL/links/rinex/"
-npl.refdelay = -2.797
-npl.receiver = "NP11"
-npl.rinex_filename = npl.rinex1
-"""
+pt09.rinex3 = True
 
 
 ########################################################################
 
 if __name__ == "__main__":
-    
-    # results:
-    # clk = clk - my_station.cab_dly - my_station.int_dly_p3() + my_station.ref_dly
-    mi05d = -mi05.cab_dly + mi05.ref_dly - mi05.int_dly_p3()
-    mi06d = -mi06local.cab_dly + mi06local.ref_dly - mi06local.int_dly_p3()
-    print("mi05 corr: ",-mi05.cab_dly + mi05.ref_dly - mi05.int_dly_p3())
-    print("mi06local corr: ",-mi06local.cab_dly + mi06local.ref_dly - mi06local.int_dly_p3())
-    print(mi05d, mi06d, mi05d-mi06d)
-    #print("mi05 cab ",mi05.cab_dly)
-    
     # an example of how to retrieve a RINEX file
-    #dt = datetime.datetime.utcnow() - datetime.timedelta(days=5)  # some days back from now
-    #print(mi05.get_rinex(dt))
-    #print(mi04.get_multiday_rinex(dt, 2))
-    
-    #print(mi05.get_multiday_rinex(dt, num_days = 8))
-    
-    """
-    print(usno.get_rinex(dt))
-    print(nist.get_rinex(dt))
-    print(mikes.get_rinex(dt))
-    print(op.get_rinex(dt))
-    print(sp.get_rinex(dt))
-    print(nict.get_rinex(dt))
-    print(npl.get_rinex(dt))
-    print(ptb.get_rinex(dt))
-    """
+    dt = datetime.datetime.utcnow() - datetime.timedelta(days=5)  # some days back from now
+    print(mi05.get_rinex(dt))
+    print(mi04.get_multiday_rinex(dt, 2))
