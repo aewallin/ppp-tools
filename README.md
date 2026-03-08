@@ -1,6 +1,7 @@
 # ppp-tools
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Faewallin%2Fppp-tools?ref=badge_shield)
 
+* 2026-03 new ANTEX file `igs20.atx` from https://igs.org/wg/antenna/#files
 
 This is a collection of python scripts for GPS-Precise Point Positioning 
 post-processing of RINEX files. 
