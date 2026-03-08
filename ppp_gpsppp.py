@@ -26,7 +26,7 @@ gpsppp_tag = "gpspace" # used in filename of results
 
 def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
     """
-    write an inp-file for gpsppp. 
+    write an inp-file for gpsppp.
     this corresponds to the keyboard-input we would type if we would
     run gpsppp/gpspace manually.
 
@@ -62,7 +62,7 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
             if a[-2:] == ".Z":
                 a=a[:-2] # if zipped file, strip off ".Z"
             elif a[-3:] == ".gz":
-                a=a[:-3] 
+                a=a[:-3]
             f.write(a+"\n")
 
         for a in clk_files:
@@ -70,9 +70,9 @@ def nrcan_inp_file(inpfile, rinex, cmdfile, eph_files, clk_files, rapid):
             if a[-2:] == ".Z":
                 a=a[:-2] # if zipped file, strip off ".Z"
             elif a[-3:] == ".gz":
-                a=a[:-3] 
+                a=a[:-3]
             f.write(a+"\n")
-            
+
         f.close()
     print("INP= ", inpfile)
     return inpfile
@@ -87,7 +87,7 @@ def nrcan_def_file(prefixdir, def_file):
 
     example gpsppp.def file:
     ---------
-    'LNG' 'ENGLISH' 
+    'LNG' 'ENGLISH'
     'TRF' '/gpsppp/gpsppp.trf'
     'SVB' '/gpsppp/gpsppp.svb_gnss_yrly'
     'PCV' '/gpsppp/igs08.atx'
@@ -108,7 +108,7 @@ def nrcan_def_file(prefixdir, def_file):
     # these are fixed files for now. in principle they could vary from run to run.
     trf = "'%s/gpsppp/gpsppp.trf'" % prefixdir
     svb = "'%s/gpsppp/gpsppp.svb_gnss_yrly'" % prefixdir
-    atx = "'%s/common/igs14.atx'" % prefixdir
+    atx = "'%s/common/igs20.atx'" % prefixdir
     flt = "'%s/gpsppp/gpsppp.flt'" % prefixdir
     olc = "'%s/gpsppp/gpsppp.olc'" % prefixdir
     met = "'%s/gpsppp/gpsppp.met'" % prefixdir
